@@ -48,10 +48,10 @@ export const handlers = [
 
   http.post(`${API_BASE}/api/config/validate`, async ({ request }) => {
     await delay(150);
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, any>;
 
     // Simulate validation
-    if (!body.plex || !body.libraries) {
+    if (!body?.plex || !body?.libraries) {
       return HttpResponse.json(
         {
           valid: false,
@@ -85,10 +85,10 @@ export const handlers = [
 
   http.post(`${API_BASE}/api/keys`, async ({ request }) => {
     await delay(200);
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, any>;
     return HttpResponse.json({
       success: true,
-      service: body.service,
+      service: body?.service,
       configured: true,
     });
   }),
@@ -135,11 +135,11 @@ export const handlers = [
 
   http.post(`${API_BASE}/api/operations/start`, async ({ request }) => {
     await delay(200);
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, any>;
     return HttpResponse.json({
       success: true,
       operationId: 'op_' + Date.now(),
-      type: body.type,
+      type: body?.type,
       status: 'queued',
     });
   }),

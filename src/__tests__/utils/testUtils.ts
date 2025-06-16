@@ -43,7 +43,7 @@ export const formHelpers = {
   },
 
   async checkCheckbox(label: string) {
-    const checkbox = screen.getByLabelText(label);
+    const checkbox = screen.getByLabelText(label) as HTMLInputElement;
     if (!checkbox.checked) {
       await userEvent.click(checkbox);
     }
@@ -60,7 +60,8 @@ export const formHelpers = {
 // API testing helpers
 export const apiHelpers = {
   expectApiCall(url: string, method = 'GET') {
-    const calls = global.fetch.mock.calls.filter(
+    const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+    const calls = mockFetch.mock.calls.filter(
       ([callUrl, options]) =>
         callUrl === url && (!options?.method || options.method === method)
     );

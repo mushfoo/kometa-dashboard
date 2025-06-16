@@ -101,12 +101,17 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/app/api/operations/route.ts` - Operations history API endpoint
 - `src/app/api/logs/route.ts` - Log retrieval API endpoint
 - `src/__tests__/lib/api-utils-simple.test.ts` - Unit tests for API utilities
+- `.github/workflows/ci.yml` - GitHub Actions CI workflow for test, lint, build, and typecheck
+- `.github/workflows/pr-title-check.yml` - GitHub Actions workflow for PR title validation
+- `README.md` - Project documentation with CI status badges and setup instructions
 
 ### Modified Files
 
 - `next.config.js` - Updated with API headers configuration and server options
 - `jest.setup.js` - Enhanced with Web API polyfills for testing
 - `src/components/Button.stories.tsx` - Fixed Storybook story TypeScript issues
+- `src/__tests__/mocks/api.ts` - Fixed TypeScript strict mode issues with request body parsing
+- `src/__tests__/utils/testUtils.ts` - Fixed TypeScript strict mode issues with type assertions
 
 ---
 
@@ -219,12 +224,12 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Automated CI/CD pipeline for pull request validation
 
-- [ ] Create `.github/workflows/` directory structure
-- [ ] Create `ci.yml` workflow for pull request checks (test, lint, build, typecheck)
-- [ ] Create `pr-title-check.yml` workflow to validate PR title format
-- [ ] Configure workflow to run on pull requests and pushes to main branch
-- [ ] Add workflow status badges to README and configure branch protection rules
-- [ ] **Test:** PR workflows run successfully, all checks pass before merge allowed
+- [x] Create `.github/workflows/` directory structure
+- [x] Create `ci.yml` workflow for pull request checks (test, lint, build, typecheck)
+- [x] Create `pr-title-check.yml` workflow to validate PR title format
+- [x] Configure workflow to run on pull requests and pushes to main branch
+- [x] Add workflow status badges to README and configure branch protection rules
+- [x] **Test:** PR workflows run successfully, all checks pass before merge allowed
 
 #### Task 3.3: File Storage System Setup
 
