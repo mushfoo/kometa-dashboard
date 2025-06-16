@@ -27,7 +27,12 @@ This is an ongoing development project with systematic task completion. Your rol
 
 ## Development Workflow
 
-- **Git Strategy**: Create feature branches for multi-task work, commit after each parent task completion
+- **Git Strategy**:
+  - **NEVER commit or merge directly to main branch**
+  - **ALWAYS create a new feature branch** for each task or set of related changes
+  - Create feature branches from main: `git checkout -b feature/task-name`
+  - Commit after each parent task completion on the feature branch
+  - Create pull requests to merge feature branches into main
 - **Code Quality**: All code must pass ESLint, Prettier, TypeScript strict mode, and testing requirements
 - **Testing**: Maintain >90% test coverage, write tests before or alongside implementation
 - **Architecture**: Follow file-based storage approach (no database), Next.js API routes, smart polling + SSE
@@ -45,5 +50,21 @@ This is an ongoing development project with systematic task completion. Your rol
 - **Repository**: https://github.com/mushfoo/kometa-dashboard
 - **Architecture**: Next.js 15, TypeScript strict mode, Tailwind CSS, file-based storage
 - **Systematic Approach**: Follow the established task breakdown structure and commit patterns
+
+## ⚠️ CRITICAL: Git Workflow Requirements
+
+**NEVER work directly on the main branch. ALWAYS:**
+
+1. **Create a feature branch first**: `git checkout -b feature/task-description`
+2. **Make all commits on the feature branch**
+3. **Create a pull request** when the task is complete
+4. **Let the CI/CD pipeline validate** the changes before merging
+
+**This ensures:**
+
+- Code quality through automated CI checks
+- Proper code review process
+- Protection of the main branch stability
+- Consistent development workflow
 
 Start by reading the task breakdown file and current git status to determine exactly where to continue development.
