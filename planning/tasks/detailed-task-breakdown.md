@@ -44,6 +44,13 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 4. `Complete Task 1.4: Docker Development Environment` (on foundations branch)
 5. `Complete Task 1.5: Code Quality Tools Setup` (on foundations branch)
 
+**Expected Day 3 Commit Sequence:**
+
+1. `Complete Task 3.1: Next.js API Foundation` (create feature branch from main)
+2. `Complete Task 3.2: GitHub Actions CI/CD Setup` (continue on feature branch)
+3. `Complete Task 3.3: File Storage System Setup` (continue on feature branch)
+4. `Complete Task 3.4: Settings Management System` (continue on feature branch)
+
 ---
 
 ## Relevant Files
@@ -208,7 +215,18 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [x] Add request logging and error boundary middleware
 - [x] **Test:** API routes respond correctly, middleware functions properly
 
-#### Task 3.2: File Storage System Setup
+#### Task 3.2: GitHub Actions CI/CD Setup
+
+**Deliverable:** Automated CI/CD pipeline for pull request validation
+
+- [ ] Create `.github/workflows/` directory structure
+- [ ] Create `ci.yml` workflow for pull request checks (test, lint, build, typecheck)
+- [ ] Create `pr-title-check.yml` workflow to validate PR title format
+- [ ] Configure workflow to run on pull requests and pushes to main branch
+- [ ] Add workflow status badges to README and configure branch protection rules
+- [ ] **Test:** PR workflows run successfully, all checks pass before merge allowed
+
+#### Task 3.3: File Storage System Setup
 
 **Deliverable:** JSON-based settings and data storage
 
@@ -219,7 +237,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create settings schema with default values for application configuration
 - [ ] **Test:** Files write atomically, concurrent access handled correctly
 
-#### Task 3.3: Settings Management System
+#### Task 3.4: Settings Management System
 
 **Deliverable:** Application settings and preferences storage
 
