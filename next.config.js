@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Output configuration for Docker builds
+  output: 'standalone',
+
   // Logging configuration
   logging: {
     fetches: {
