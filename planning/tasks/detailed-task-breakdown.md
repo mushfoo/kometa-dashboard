@@ -1,0 +1,845 @@
+# Kometa GUI - Detailed Task Breakdown for Junior Developers
+
+## Overview
+Each task includes specific deliverables, acceptance criteria, and test requirements to minimize scope creep and ensure precise implementation.
+
+**Note:** This task breakdown implements the MVP architecture as specified in the PRD:
+- **No Authentication**: Authentication moved to Phase 2 for MVP simplicity
+- **File-based Storage**: Using JSON files for easier deployment and development
+- **Next.js API Routes**: Using Next.js built-in API routes for serverless deployment
+- **Smart Polling**: Using efficient polling + SSE for real-time updates
+
+## Task Management Protocol
+
+### Completion Rules
+1. **One sub-task at a time**: Work through each `[ ]` checkbox sequentially
+2. **Immediate completion marking**: Change `[ ]` to `[x]` immediately after finishing each sub-task
+3. **Parent task completion**: Only mark parent tasks (like "Task 1.1") as `[x]` when ALL sub-tasks are complete
+4. **File tracking**: Add all created/modified files to "Relevant Files" section after each sub-task
+5. **Emerging tasks**: Insert new tasks as they're discovered during development
+
+### Development Workflow
+- **Before starting work**: Check this file to identify next incomplete sub-task
+- **During work**: Focus on single sub-task completion with defined acceptance criteria
+- **After each sub-task**: Update this file with progress and file changes
+- **After each parent task**: Commit all changes with descriptive commit message
+- **Quality gate**: Each task has test criteria that must pass before marking complete
+
+### Git Workflow
+- **Foundation Phase (Day 1)**: Work on single `foundations` branch for all setup tasks
+- **Feature Development**: Create feature branches for major components after foundations
+- **Commit Strategy**: One commit per completed parent task (e.g., after all Task 1.1 sub-tasks done)
+- **Commit Messages**: Use format "Complete Task X.X: [Task Description]"
+
+**Expected Day 1 Commit Sequence:**
+1. `Initial Next.js setup` (on main branch, then switch to foundations branch)
+2. `Complete Task 1.2: Create CLAUDE.md Project Context` (on foundations branch)
+3. `Complete Task 1.3: Configure TypeScript Strict Mode` (on foundations branch)
+4. `Complete Task 1.4: Docker Development Environment` (on foundations branch)
+5. `Complete Task 1.5: Code Quality Tools Setup` (on foundations branch)
+
+---
+
+## Relevant Files
+
+### Created Files
+_(Files will be listed here as they're created during development)_
+
+### Modified Files
+_(Files will be listed here as they're modified during development)_
+
+---
+
+## Week 1: Foundation & Core Backend (Days 1-7)
+
+### Day 1: Project Foundation Setup
+
+#### Task 1.1: Initialize Git Repository and Project
+**Deliverable:** Working Next.js project with proper Git setup
+- [ ] Run `npx create-next-app@latest kometa-gui --typescript --tailwind --eslint --app --src-dir`
+- [ ] Initialize git repository with `git init`
+- [ ] Create `.gitignore` file including: `node_modules/`, `.env*`, `.next/`, `dist/`, `coverage/`, `storage/`
+- [ ] Create initial commit with "Initial Next.js setup"
+- [ ] Create and switch to `foundations` branch with `git checkout -b foundations`
+- [ ] **Test:** Verify `npm run dev` starts successfully on port 3000
+
+#### Task 1.2: Create CLAUDE.md Project Context
+**Deliverable:** Comprehensive project context file for Claude Code
+- [ ] Create `CLAUDE.md` in project root with architectural decisions and patterns
+- [ ] Document code style guidelines and naming conventions
+- [ ] Add testing standards and patterns (>90% coverage requirement)
+- [ ] Document integration patterns for Kometa subprocess calls
+- [ ] Add component structure and organization rules
+- [ ] Include development commands and workflow patterns
+- [ ] Document file-based storage patterns and API route structure
+- [ ] Add task management workflow referencing `planning/tasks/detailed-task-breakdown.md`
+- [ ] Include development protocol for updating task progress and file tracking
+- [ ] Document git workflow (foundations branch strategy, commit-per-task pattern)
+- [ ] **Test:** File exists and contains all required project context sections
+
+#### Task 1.3: Configure TypeScript Strict Mode
+**Deliverable:** TypeScript configuration with strict type checking
+- [ ] Update `tsconfig.json` with `"strict": true, "noUncheckedIndexedAccess": true`
+- [ ] Add `"exactOptionalPropertyTypes": true` and `"noImplicitReturns": true`
+- [ ] Create `types/` directory with `index.ts` for global type definitions
+- [ ] **Test:** Run `npx tsc --noEmit` to verify no type errors
+
+#### Task 1.4: Docker Development Environment
+**Deliverable:** Complete Docker setup for development
+- [ ] Create `Dockerfile` with Node.js 18 Alpine base image
+- [ ] Create `docker-compose.yml` with app service on port 3000
+- [ ] Add volume mounts for `src/`, `public/`, and `node_modules/`
+- [ ] Create `.dockerignore` file excluding `node_modules`, `.git`, `README.md`
+- [ ] **Test:** `docker-compose up` successfully serves app at localhost:3000
+
+#### Task 1.5: Code Quality Tools Setup
+**Deliverable:** Automated code quality enforcement
+- [ ] Install and configure ESLint with `@typescript-eslint/parser`
+- [ ] Install Prettier with `.prettierrc` config: `{"semi": true, "singleQuote": true, "tabWidth": 2}`
+- [ ] Install Husky with `npx husky-init` and configure pre-commit hook
+- [ ] Add pre-commit script: `lint-staged` running ESLint and Prettier
+- [ ] **Test:** Make intentional formatting error, commit should fail and auto-fix
+
+### Day 2: Testing Framework Setup
+
+#### Task 2.1: Jest Configuration
+**Deliverable:** Complete Jest testing setup with coverage
+- [ ] Install Jest, `@testing-library/react`, `@testing-library/jest-dom`
+- [ ] Create `jest.config.js` with coverage thresholds: 90% for all metrics
+- [ ] Create `setupTests.ts` importing `@testing-library/jest-dom`
+- [ ] Add test scripts to `package.json`: `"test"`, `"test:watch"`, `"test:coverage"`
+- [ ] **Test:** Run `npm test` and verify it executes without errors
+
+#### Task 2.2: Testing Utilities
+**Deliverable:** Reusable testing helpers and mocks
+- [ ] Create `__tests__/utils/renderWithProviders.tsx` for React Query + Router
+- [ ] Create `__tests__/mocks/api.ts` with MSW handlers for all API endpoints
+- [ ] Create `__tests__/fixtures/` directory with sample data objects
+- [ ] Add `testUtils.ts` with common assertions and helpers
+- [ ] **Test:** Create sample component test using renderWithProviders
+
+#### Task 2.3: Storybook Setup
+**Deliverable:** Component documentation and visual testing
+- [ ] Install Storybook with `npx storybook@latest init`
+- [ ] Configure Storybook for Tailwind CSS in `.storybook/main.ts`
+- [ ] Create sample Button component with `.stories.tsx` file
+- [ ] Configure Storybook to use project's TypeScript config
+- [ ] **Test:** `npm run storybook` opens on port 6006 with Button stories
+
+### Day 3: Next.js API Routes Setup
+
+#### Task 3.1: Next.js API Foundation
+**Deliverable:** Next.js API routes with middleware
+- [ ] Create `app/api/` directory structure for API routes
+- [ ] Create middleware for CORS, JSON parsing, and error handling in `middleware.ts`
+- [ ] Set up API route structure: `status/`, `config/`, `collections/`, `operations/`, `logs/`
+- [ ] Configure Next.js with custom server options for API handling
+- [ ] Add request logging and error boundary middleware
+- [ ] **Test:** API routes respond correctly, middleware functions properly
+
+#### Task 3.2: File Storage System Setup
+**Deliverable:** JSON-based settings and data storage
+- [ ] Create `storage/` directory structure: `configs/`, `settings/`, `history/`, `templates/`
+- [ ] Create `FileStorageService.ts` with read/write methods for JSON files
+- [ ] Implement atomic file writes using temp files and rename operations
+- [ ] Add file locking to prevent concurrent write conflicts
+- [ ] Create settings schema with default values for application configuration
+- [ ] **Test:** Files write atomically, concurrent access handled correctly
+
+#### Task 3.3: Settings Management System
+**Deliverable:** Application settings and preferences storage
+- [ ] Create settings schema for app preferences (theme, polling intervals, log levels)
+- [ ] Implement settings validation using Zod schemas
+- [ ] Create settings backup and restore functionality (keep last 5 versions)
+- [ ] Add settings migration system for schema updates
+- [ ] **Test:** Settings persist correctly, migration handles version changes
+
+### Day 4: API Key Management
+
+#### Task 4.1: API Key Storage System
+**Deliverable:** Secure API key file storage
+- [ ] Create `ApiKeyService.ts` for managing third-party service keys
+- [ ] Implement file-based key storage with encryption using built-in crypto module
+- [ ] Create key validation methods for TMDb, Trakt, IMDb APIs
+- [ ] Add key testing functionality making actual API calls to validate
+- [ ] **Test:** Keys stored encrypted, validation calls work correctly
+
+#### Task 4.2: API Key Management Endpoints
+**Deliverable:** RESTful API key management
+- [ ] Create `app/api/keys/route.ts` for GET/POST operations
+- [ ] Create `app/api/keys/[service]/route.ts` for PUT/DELETE operations
+- [ ] POST /api/keys - Add new API key with service validation
+- [ ] GET /api/keys - List configured services (without exposing actual keys)
+- [ ] PUT /api/keys/[service] - Update existing API key
+- [ ] DELETE /api/keys/[service] - Remove API key for service
+- [ ] **Test:** All CRUD operations work, keys never exposed in responses
+
+#### Task 4.3: Service Integration Testing
+**Deliverable:** API key validation system
+- [ ] Create test endpoints for each service (TMDb, Trakt, IMDb)
+- [ ] Implement connection testing with proper error handling
+- [ ] Add service status monitoring (online/offline/rate limited)
+- [ ] Create service feature detection based on API key permissions
+- [ ] **Test:** Connection tests work, feature detection accurate
+
+### Day 5: Core API Endpoints
+
+#### Task 5.1: System Status Endpoint
+**Deliverable:** GET /api/status health check
+- [ ] Create `app/api/status/route.ts` with system health checks
+- [ ] Verify file system access to config and storage directories
+- [ ] Return memory usage and uptime statistics
+- [ ] Check if Kometa executable is available in PATH or Docker
+- [ ] Check Plex server connectivity if configured
+- [ ] **Test:** Returns 200 with all status checks, handles file system errors
+
+#### Task 5.2: Configuration Management Endpoints
+**Deliverable:** CRUD operations for Kometa config
+- [ ] Create `app/api/config/route.ts` for GET/PUT operations
+- [ ] GET /api/config: Read `config.yml` file, parse YAML, return JSON
+- [ ] PUT /api/config: Validate JSON, convert to YAML, write atomically
+- [ ] Create `app/api/config/validate/route.ts` for POST validation
+- [ ] POST /api/config/validate: Parse YAML, check required fields (plex, libraries)
+- [ ] Implement file backup before writes (keep last 5 versions)
+- [ ] **Test:** File operations work correctly, atomic writes don't corrupt on failure
+
+#### Task 5.3: Operations API Endpoints
+**Deliverable:** Operation control and history tracking
+- [ ] Create `app/api/operations/route.ts` for GET operations (history)
+- [ ] Create `app/api/operations/start/route.ts` for POST start operations
+- [ ] Create `app/api/operations/stop/route.ts` for POST stop operations
+- [ ] Create `app/api/logs/route.ts` for GET filtered logs
+- [ ] Implement operation history storage in JSON files with rotation (keep last 100)
+- [ ] Add operation search and filtering by date range and status
+- [ ] **Test:** All operation endpoints work, history persists correctly
+
+### Day 6: Kometa Integration Layer
+
+#### Task 6.1: Subprocess Wrapper Service
+**Deliverable:** KometaService class for process management
+- [ ] Create `services/KometaService.ts` class with spawn/kill methods
+- [ ] Implement process monitoring with PID tracking and status checking
+- [ ] Add stdout/stderr capture with line buffering for real-time logs
+- [ ] Configure environment variables (config path, log level) for subprocess
+- [ ] **Test:** Can start/stop process, capture output, handle process crashes
+
+#### Task 6.2: Log Parsing and Streaming
+**Deliverable:** Real-time log processing system
+- [ ] Parse Kometa log format (timestamp, level, message extraction)
+- [ ] Implement log filtering by level (DEBUG, INFO, WARNING, ERROR)
+- [ ] Create circular buffer for recent logs (max 1000 lines in memory)
+- [ ] Add log search functionality with regex pattern matching
+- [ ] **Test:** Log parsing handles various formats, filtering works correctly
+
+#### Task 6.3: Configuration File Management
+**Deliverable:** YAML file operations with validation
+- [ ] Create `ConfigManager` class with read/write/backup methods
+- [ ] Implement atomic writes using temporary files and rename operations
+- [ ] Add YAML schema validation for required Kometa fields
+- [ ] Create configuration templates for common setups (Plex + TMDb basic)
+- [ ] **Test:** File operations are atomic, validation catches malformed YAML
+
+### Day 7: Real-time Updates Implementation
+
+#### Task 7.1: Real-time Updates Implementation
+**Deliverable:** Smart polling system for real-time updates
+- [ ] Create `lib/polling.ts` service with configurable intervals
+- [ ] Implement server-sent events (SSE) using Next.js API routes
+- [ ] Create `app/api/stream/route.ts` for real-time log streaming
+- [ ] Add connection management with automatic cleanup
+- [ ] Implement rate limiting and backoff strategies
+- [ ] **Test:** Polling works efficiently, SSE connections stable
+
+#### Task 7.2: Log Streaming System
+**Deliverable:** Real-time log delivery via SSE
+- [ ] Implement log file tailing with efficient file watching
+- [ ] Add log level filtering and search functionality
+- [ ] Create log history buffer (last 100 lines) for new connections
+- [ ] Implement log rotation handling and file change detection
+- [ ] **Test:** Log streaming works efficiently, filtering accurate
+
+#### Task 7.3: Progress Monitoring System  
+**Deliverable:** Operation progress tracking via polling
+- [ ] Create progress parser for Kometa output patterns
+- [ ] Implement progress state storage in JSON files
+- [ ] Add operation status tracking (queued, running, completed, failed)
+- [ ] Create progress API endpoint for client polling
+- [ ] Add operation cancellation with graceful subprocess termination
+- [ ] **Test:** Progress tracking accurate, cancellation works properly
+
+---
+
+## Week 2: Frontend Foundation (Days 8-14)
+
+### Day 8: React App Structure
+
+#### Task 8.1: Routing Setup
+**Deliverable:** Complete navigation system
+- [ ] Install `react-router-dom` and configure BrowserRouter in `app/layout.tsx`
+- [ ] Create route structure: `/`, `/dashboard`, `/config`, `/collections`, `/logs`
+- [ ] Create basic route components for each major section
+- [ ] Add navigation breadcrumbs component showing current page hierarchy
+- [ ] **Test:** All routes navigate correctly, breadcrumbs update properly
+
+#### Task 8.2: State Management Setup
+**Deliverable:** React Query and Zustand configuration
+- [ ] Install `@tanstack/react-query` and configure QueryClient with stale time 5 minutes
+- [ ] Create `stores/settingsStore.ts` with Zustand for application settings
+- [ ] Create `stores/configStore.ts` for current configuration state
+- [ ] Add React Query DevTools for development environment only
+- [ ] **Test:** Stores persist state, React Query caches API responses correctly
+
+#### Task 8.3: Application State Context
+**Deliverable:** Global state management setup
+- [ ] Create `AppProvider` component managing application settings and status
+- [ ] Implement settings persistence using localStorage
+- [ ] Add theme management (light/dark mode) with system preference detection
+- [ ] Create `useAppState` hook returning settings and update methods
+- [ ] **Test:** Settings persist across page refreshes, theme switching works
+
+### Day 9: Base Layout Components
+
+#### Task 9.1: Main Layout Component
+**Deliverable:** Responsive application layout
+- [ ] Create `components/Layout.tsx` with header, sidebar, main content areas
+- [ ] Implement responsive design: sidebar collapses on mobile (<768px)
+- [ ] Add Tailwind classes for proper spacing and colors matching design system
+- [ ] Include user menu dropdown with logout functionality
+- [ ] **Test:** Layout adapts to different screen sizes, user menu works
+
+#### Task 9.2: Navigation Sidebar
+**Deliverable:** Main navigation component
+- [ ] Create `components/Sidebar.tsx` with navigation links
+- [ ] Add active state highlighting for current page
+- [ ] Include icons for each navigation item using Lucide React
+- [ ] Implement collapsible sidebar with toggle button
+- [ ] **Test:** Navigation highlights active page, sidebar collapse works
+
+#### Task 9.3: Header Component
+**Deliverable:** Top navigation and user controls
+- [ ] Create `components/Header.tsx` with breadcrumbs and user info
+- [ ] Add system status indicator (green/yellow/red) from API status
+- [ ] Include notifications bell with count badge for system alerts
+- [ ] Add dark/light mode toggle button with system preference detection
+- [ ] **Test:** Status indicator updates correctly, theme toggle persists preference
+
+### Day 10: Form Infrastructure
+
+#### Task 10.1: React Hook Form Setup
+**Deliverable:** Form handling foundation
+- [ ] Install `react-hook-form` and `@hookform/resolvers` for Zod integration
+- [ ] Create `hooks/useForm.ts` wrapper with default validation behavior
+- [ ] Create Zod schemas in `schemas/` directory for all form types
+- [ ] Implement form state persistence using localStorage for drafts
+- [ ] **Test:** Forms validate on submit, persist drafts across page refreshes
+
+#### Task 10.2: Base Form Components
+**Deliverable:** Reusable form field components
+- [ ] Create `FormInput.tsx` with label, error message, and help text support
+- [ ] Create `FormSelect.tsx` with searchable dropdown functionality
+- [ ] Create `FormCheckbox.tsx` and `FormTextarea.tsx` with consistent styling
+- [ ] Add form validation error display with specific field highlighting
+- [ ] **Test:** All form components render correctly, validation errors display
+
+#### Task 10.3: Dynamic Form Generation
+**Deliverable:** Schema-driven form rendering
+- [ ] Create `DynamicForm.tsx` component accepting Zod schema as prop
+- [ ] Implement field type inference from schema (string → input, boolean → checkbox)
+- [ ] Add conditional field display based on other field values
+- [ ] Create form sections and grouping based on schema structure
+- [ ] **Test:** Forms render correctly from schema, conditional logic works
+
+### Day 11: Configuration Forms
+
+#### Task 11.1: Plex Connection Form
+**Deliverable:** Plex server configuration interface
+- [ ] Create Zod schema for Plex config: url (URL format), token (32 char string)
+- [ ] Add connection test button making real API call to Plex server
+- [ ] Display library list after successful connection with selection checkboxes  
+- [ ] Show connection status with clear error messages for failed connections
+- [ ] **Test:** Form validates URL format, connection test works, libraries load
+
+#### Task 11.2: API Keys Management Form
+**Deliverable:** Third-party service API key configuration
+- [ ] Create form fields for TMDb API key (32 char hex), Trakt credentials
+- [ ] Add test buttons for each API key making actual API calls
+- [ ] Implement secure display (show only last 4 characters of keys)
+- [ ] Add help links to API registration pages for each service
+- [ ] **Test:** API validation calls work, keys are masked in display
+
+#### Task 11.3: Library Settings Forms
+**Deliverable:** Per-library configuration interface
+- [ ] Create form for library-specific settings (scan interval, collection settings)
+- [ ] Add library type detection (Movies, TV Shows, Music) from Plex API
+- [ ] Implement batch operations for multiple library configuration
+- [ ] Create library status display showing last scan time and item counts
+- [ ] **Test:** Library detection works, batch operations apply to selected libraries
+
+### Day 12: Monaco Editor Integration
+
+#### Task 12.1: Monaco Editor Setup  
+**Deliverable:** YAML editor with syntax highlighting
+- [ ] Install `@monaco-editor/react` and configure for Next.js
+- [ ] Create `YamlEditor.tsx` component with YAML language support
+- [ ] Configure Monaco with YAML syntax highlighting and error markers
+- [ ] Add editor themes (VS Code Light/Dark) matching application theme
+- [ ] **Test:** Editor loads correctly, YAML syntax highlighting works
+
+#### Task 12.2: YAML Validation Integration
+**Deliverable:** Real-time YAML validation in editor
+- [ ] Create YAML validation service using `js-yaml` library
+- [ ] Add Kometa-specific validation rules (required fields, valid formats)
+- [ ] Implement error markers in Monaco showing line/column of errors
+- [ ] Create hover tooltips explaining validation errors
+- [ ] **Test:** Validation errors show in real-time, error messages are helpful
+
+#### Task 12.3: Editor Enhancement Features
+**Deliverable:** Advanced editor functionality
+- [ ] Add find/replace functionality with regex support
+- [ ] Implement code folding for YAML sections (collections, libraries)
+- [ ] Add auto-completion for common Kometa configuration keys
+- [ ] Create editor commands for formatting and validation (Ctrl+Shift+F)
+- [ ] **Test:** All editor features work, keyboard shortcuts function correctly
+
+### Day 13: Dual-Pane Interface
+
+#### Task 13.1: Split Pane Layout
+**Deliverable:** Resizable dual-pane interface
+- [ ] Install `react-split-pane` or implement custom resizable layout
+- [ ] Create left pane for form interface, right pane for YAML editor
+- [ ] Add resize handle with minimum/maximum pane widths (20%-80%)
+- [ ] Implement pane layout persistence in localStorage
+- [ ] **Test:** Panes resize correctly, layout preference persists
+
+#### Task 13.2: Form-YAML Synchronization
+**Deliverable:** Bidirectional form and YAML sync
+- [ ] Create `useFormYamlSync` hook managing state synchronization
+- [ ] Implement form-to-YAML conversion triggering on form changes
+- [ ] Add YAML-to-form parsing with form field population
+- [ ] Handle sync conflicts when both sides are modified simultaneously
+- [ ] **Test:** Changes in form update YAML immediately, YAML changes populate form
+
+#### Task 13.3: Import/Export Functionality
+**Deliverable:** Configuration file management
+- [ ] Add file upload component for importing existing YAML configurations
+- [ ] Create export functionality generating downloadable YAML files
+- [ ] Implement configuration validation on import with error reporting
+- [ ] Add import preview showing what will be changed
+- [ ] **Test:** Import handles various YAML formats, export generates valid files
+
+### Day 14: Advanced Editor Features
+
+#### Task 14.1: Conflict Resolution Interface
+**Deliverable:** Handle form/YAML editing conflicts
+- [ ] Create conflict detection comparing form state with YAML state
+- [ ] Build conflict resolution modal showing differences side-by-side
+- [ ] Add options to accept form changes, YAML changes, or merge both
+- [ ] Implement change highlighting in both form and YAML views
+- [ ] **Test:** Conflicts detected correctly, resolution options work properly
+
+#### Task 14.2: Configuration Templates
+**Deliverable:** Pre-built configuration loading
+- [ ] Create template storage system with JSON template definitions
+- [ ] Build template selection modal with preview and description
+- [ ] Implement template application with user customization options
+- [ ] Add custom template saving functionality for user-created configs
+- [ ] **Test:** Templates load correctly, customization preserves template structure
+
+#### Task 14.3: Version History
+**Deliverable:** Configuration change tracking
+- [ ] Implement configuration history storage (last 10 versions)
+- [ ] Create version comparison view showing diffs between versions
+- [ ] Add version restoration functionality with confirmation dialog
+- [ ] Build history timeline showing timestamps and change descriptions
+- [ ] **Test:** History tracks changes accurately, restoration works correctly
+
+---
+
+## Week 3: Core Features (Days 15-21)
+
+### Day 15: Configuration Wizard
+
+#### Task 15.1: Step-by-Step Wizard Interface
+**Deliverable:** Guided configuration setup
+- [ ] Create `ConfigWizard.tsx` with step navigation (4 steps: Plex, APIs, Libraries, Review)
+- [ ] Implement step validation preventing advancement with incomplete data
+- [ ] Add progress indicator showing current step and completion percentage
+- [ ] Create step-specific validation with clear error messaging
+- [ ] **Test:** Cannot advance with invalid data, progress accurately reflects completion
+
+#### Task 15.2: Plex Connection Wizard Step
+**Deliverable:** Guided Plex server setup
+- [ ] Create Plex URL input with format validation and example placeholder
+- [ ] Add Plex token input with instructions for obtaining token
+- [ ] Implement connection test with loading state and success/error feedback
+- [ ] Display detected Plex server info (name, version, platform) on success
+- [ ] **Test:** Connection validation works, server info displays correctly
+
+#### Task 15.3: Library Detection and Selection
+**Deliverable:** Automatic library discovery interface
+- [ ] Fetch and display all Plex libraries with type, item count, and last scan
+- [ ] Create library selection interface with select all/none functionality
+- [ ] Add library-specific settings for each selected library
+- [ ] Implement library filtering by type (Movies, TV Shows, Music)
+- [ ] **Test:** All libraries load correctly, selection state persists across steps
+
+### Day 16: Configuration Templates
+
+#### Task 16.1: Template System Architecture  
+**Deliverable:** Configurable template framework
+- [ ] Create template schema with fields: name, description, category, config
+- [ ] Build template storage system using local JSON files or database
+- [ ] Implement template categories (Basic, Advanced, Specialized)
+- [ ] Create template validation ensuring all required fields are present
+- [ ] **Test:** Templates load correctly, validation prevents malformed templates
+
+#### Task 16.2: Pre-built Templates
+**Deliverable:** Common configuration templates
+- [ ] Create "Basic Plex + TMDb" template with minimal configuration
+- [ ] Build "Complete Setup" template with all common APIs configured
+- [ ] Create specialized templates (Anime, Kids Content, Documentary collections)
+- [ ] Add template preview showing generated YAML structure
+- [ ] **Test:** All templates generate valid YAML, previews match actual output
+
+#### Task 16.3: Template Customization Interface
+**Deliverable:** Template modification before application
+- [ ] Create template customization modal with editable fields
+- [ ] Add template field descriptions and help text for each option
+- [ ] Implement template preview update as customization changes
+- [ ] Create template application with confirmation and backup
+- [ ] **Test:** Customization updates preview correctly, application works properly
+
+### Day 17: Collection Builder Foundation
+
+#### Task 17.1: Collection Builder Interface
+**Deliverable:** Visual collection creation form
+- [ ] Create `CollectionBuilder.tsx` with name, description, and poster fields
+- [ ] Add collection type selection (smart/manual) with appropriate form sections
+- [ ] Implement basic metadata fields (sort order, visibility, collection mode)
+- [ ] Create collection preview panel showing estimated item count
+- [ ] **Test:** Form validates required fields, preview updates with changes
+
+#### Task 17.2: Filter System Architecture
+**Deliverable:** Content filtering framework
+- [ ] Create filter schema supporting genre, year, rating, availability filters
+- [ ] Build filter UI components (multi-select, range sliders, checkboxes)
+- [ ] Implement filter combination logic (AND/OR operations between filters)
+- [ ] Add filter persistence and preset saving functionality
+- [ ] **Test:** Filters combine correctly, presets save and load properly
+
+#### Task 17.3: Smart Collection Logic
+**Deliverable:** Dynamic collection rule engine
+- [ ] Implement smart collection rule builder with drag-and-drop interface
+- [ ] Create rule types: include/exclude, metadata matching, date ranges
+- [ ] Add rule grouping with parentheses and logical operators
+- [ ] Build rule validation ensuring logical consistency
+- [ ] **Test:** Rules generate correct filter logic, validation prevents conflicts
+
+### Day 18: API Integrations
+
+#### Task 18.1: TMDb API Integration
+**Deliverable:** Movie/TV data retrieval service  
+- [ ] Create `TMDbService.ts` with search, details, and discovery methods
+- [ ] Implement genre fetching and caching for filter options
+- [ ] Add trending and popular content endpoints for suggestions
+- [ ] Create error handling for API limits and network failures
+- [ ] **Test:** All API calls work correctly, rate limiting respected
+
+#### Task 18.2: Trakt API Integration
+**Deliverable:** User list and recommendation service
+- [ ] Create `TraktService.ts` with API key authentication
+- [ ] Implement user list fetching (watchlist, favorites, custom lists)
+- [ ] Add recommendation endpoints based on user viewing history
+- [ ] Create list synchronization for collection building
+- [ ] **Test:** API authentication works, lists sync correctly with service
+
+#### Task 18.3: Collection Preview System
+**Deliverable:** Real-time collection content preview
+- [ ] Create preview service combining API data with Plex library content
+- [ ] Implement item matching between external APIs and local library
+- [ ] Add preview display showing posters, titles, and match confidence
+- [ ] Create preview filtering and sorting options
+- [ ] **Test:** Preview accurately shows items that will be in collection
+
+### Day 19: Monitoring Dashboard Foundation
+
+#### Task 19.1: Dashboard Layout
+**Deliverable:** Monitoring interface structure
+- [ ] Create `Dashboard.tsx` with grid layout for status cards and charts
+- [ ] Add system status overview card (Plex connection, API status, disk space)
+- [ ] Create recent operations list with status and timestamps
+- [ ] Implement auto-refresh for dashboard data (every 30 seconds)
+- [ ] **Test:** Dashboard loads correctly, auto-refresh updates data
+
+#### Task 19.2: Operation Status Display
+**Deliverable:** Current operation monitoring
+- [ ] Create operation status card showing current Kometa process state
+- [ ] Add progress bar for long-running operations with ETA calculation
+- [ ] Implement operation details expansion showing current collection being processed
+- [ ] Create operation cancellation button with confirmation dialog
+- [ ] **Test:** Status updates in real-time, cancellation stops operation properly
+
+#### Task 19.3: Quick Actions Panel
+**Deliverable:** Common operation shortcuts
+- [ ] Create quick action buttons (Run Now, Clear Cache, Reload Config)
+- [ ] Add operation parameter selection (specific libraries, collections only)
+- [ ] Implement action confirmation dialogs with impact warnings
+- [ ] Create action history log showing recent quick actions performed
+- [ ] **Test:** All quick actions execute correctly, confirmations prevent accidents
+
+### Day 20: Log Management System
+
+#### Task 20.1: Log Viewer Interface
+**Deliverable:** Real-time log display component
+- [ ] Create `LogViewer.tsx` with virtual scrolling for performance
+- [ ] Implement log level filtering (Debug, Info, Warning, Error)
+- [ ] Add timestamp formatting and log message syntax highlighting
+- [ ] Create auto-scroll toggle and scroll-to-bottom functionality
+- [ ] **Test:** Log viewer handles large volumes, filtering works correctly
+
+#### Task 20.2: Log Search and Filtering
+**Deliverable:** Advanced log analysis tools
+- [ ] Add search functionality with regex pattern support
+- [ ] Create date/time range filtering for historical log analysis
+- [ ] Implement log export functionality (filtered logs to file)
+- [ ] Add log statistics (error count, warning count, operation duration)
+- [ ] **Test:** Search finds correct entries, export generates proper files
+
+#### Task 20.3: Error Highlighting and Analysis
+**Deliverable:** Error detection and troubleshooting assistance
+- [ ] Create error pattern recognition for common Kometa issues
+- [ ] Add error highlighting with expandable details and solutions
+- [ ] Implement error grouping to reduce duplicate error display
+- [ ] Create troubleshooting suggestions based on error patterns
+- [ ] **Test:** Errors are correctly identified and grouped, suggestions are helpful
+
+### Day 21: Advanced Dashboard Features
+
+#### Task 21.1: Performance Monitoring
+**Deliverable:** System performance tracking
+- [ ] Create performance metrics collection (CPU, memory, disk I/O)
+- [ ] Build performance charts using Chart.js or similar library
+- [ ] Add performance alert thresholds with notification system
+- [ ] Implement historical performance data storage and display
+- [ ] **Test:** Metrics collect accurately, alerts trigger at correct thresholds
+
+#### Task 21.2: Operation History and Statistics
+**Deliverable:** Historical operation analysis
+- [ ] Create operation history table with pagination and sorting
+- [ ] Add operation statistics (success rate, average duration, error frequency)
+- [ ] Implement operation comparison showing performance trends
+- [ ] Create downloadable operation reports in CSV format
+- [ ] **Test:** History displays correctly, statistics calculate accurately
+
+#### Task 21.3: System Health Monitoring
+**Deliverable:** Comprehensive system status monitoring
+- [ ] Monitor Plex server connectivity with periodic health checks
+- [ ] Track API service availability and response times
+- [ ] Monitor disk space and file system health
+- [ ] Create health status dashboard with color-coded indicators
+- [ ] **Test:** Health checks work correctly, status indicators update properly
+
+---
+
+## Week 4: Integration, Testing & Polish (Days 22-28)
+
+### Day 22: Test Coverage Completion
+
+#### Task 22.1: Unit Test Coverage Analysis
+**Deliverable:** >90% unit test coverage
+- [ ] Run coverage report identifying untested functions and branches
+- [ ] Write unit tests for all utility functions in `utils/` directory
+- [ ] Create tests for all custom React hooks with various scenarios
+- [ ] Add tests for all Zustand store actions and state updates
+- [ ] **Test:** `npm run test:coverage` shows >90% coverage for all metrics
+
+#### Task 22.2: Component Testing Completion
+**Deliverable:** Comprehensive component test suite
+- [ ] Write tests for all form components with validation scenarios
+- [ ] Create interaction tests for complex components (ConfigWizard, CollectionBuilder)
+- [ ] Add accessibility tests using jest-axe for all major components
+- [ ] Test responsive behavior at different screen sizes
+- [ ] **Test:** All components render correctly, interactions work as expected
+
+#### Task 22.3: Integration Test Suite
+**Deliverable:** Complete API integration testing
+- [ ] Write integration tests for all API endpoints using Supertest
+- [ ] Create database integration tests with setup/teardown
+- [ ] Test WebSocket connections and message handling
+- [ ] Add file system operation tests (config read/write/backup)
+- [ ] **Test:** All API endpoints work correctly, database operations are atomic
+
+### Day 23: End-to-End Testing
+
+#### Task 23.1: User Flow Testing
+**Deliverable:** Complete user journey tests
+- [ ] Create E2E test for full setup flow (registration → Plex setup → first collection)
+- [ ] Test configuration wizard completion with various scenarios
+- [ ] Create collection creation and preview test scenarios
+- [ ] Test monitoring dashboard functionality during operation
+- [ ] **Test:** All critical user flows complete successfully
+
+#### Task 23.2: Error Scenario Testing
+**Deliverable:** Comprehensive error handling validation
+- [ ] Test network failure scenarios (API timeouts, connection drops)
+- [ ] Create invalid configuration handling tests
+- [ ] Test Kometa process crash recovery and error reporting
+- [ ] Add concurrent user operation testing
+- [ ] **Test:** Application handles all error scenarios gracefully
+
+#### Task 23.3: Performance Testing
+**Deliverable:** Performance benchmark validation
+- [ ] Create load tests for API endpoints (100 concurrent requests)
+- [ ] Test WebSocket performance with multiple connected clients
+- [ ] Benchmark large YAML file processing and preview generation
+- [ ] Test memory usage during extended operation monitoring
+- [ ] **Test:** All performance targets met, no memory leaks detected
+
+### Day 24: Docker Packaging
+
+#### Task 24.1: Production Docker Images  
+**Deliverable:** Optimized container images
+- [ ] Create multi-stage Dockerfile (build stage + production stage)
+- [ ] Optimize image size using Alpine base and .dockerignore
+- [ ] Configure proper user permissions (non-root user)
+- [ ] Add health check endpoint and container health monitoring
+- [ ] **Test:** Container builds successfully, runs with minimal resources
+
+#### Task 24.2: Docker Compose Configuration
+**Deliverable:** Complete deployment configuration
+- [ ] Create production docker-compose.yml with environment variables
+- [ ] Add volume mounts for persistent data (database, configs, logs)
+- [ ] Configure networking and port mapping for external access
+- [ ] Add backup and restore scripts for Docker volumes
+- [ ] **Test:** Docker Compose deployment works from scratch
+
+#### Task 24.3: Development Environment
+**Deliverable:** Developer-friendly Docker setup
+- [ ] Create development docker-compose with hot reload
+- [ ] Add development tools (debugger support, test runners)
+- [ ] Configure volume mounts for live code editing
+- [ ] Create setup scripts for initial development environment
+- [ ] **Test:** Development environment starts quickly, hot reload works
+
+### Day 25: Cross-Platform Testing
+
+#### Task 25.1: macOS Testing
+**Deliverable:** macOS compatibility validation
+- [ ] Test Docker deployment on macOS (Intel and Apple Silicon)
+- [ ] Validate file permissions and path handling on macOS
+- [ ] Test Kometa subprocess integration on macOS
+- [ ] Create macOS-specific documentation for setup
+- [ ] **Test:** Full functionality works on both Intel and M1/M2 Macs
+
+#### Task 25.2: Linux Testing
+**Deliverable:** Linux distribution compatibility
+- [ ] Test on Ubuntu 20.04 and 22.04 LTS versions
+- [ ] Validate on CentOS/RHEL environments
+- [ ] Test different Docker versions and configurations
+- [ ] Create Linux-specific installation documentation
+- [ ] **Test:** Works correctly on major Linux distributions
+
+#### Task 25.3: Windows Testing
+**Deliverable:** Windows environment support
+- [ ] Test Windows 10/11 with Docker Desktop
+- [ ] Validate Windows Subsystem for Linux (WSL) compatibility
+- [ ] Test file path handling and permissions on Windows
+- [ ] Create Windows-specific setup documentation
+- [ ] **Test:** Full functionality available on Windows platforms
+
+### Day 26: Security Implementation
+
+#### Task 26.1: Application Security Audit
+**Deliverable:** Secure application system
+- [ ] Implement input validation and sanitization for all endpoints
+- [ ] Add rate limiting for all API endpoints to prevent abuse
+- [ ] Create CSRF protection for all state-changing operations
+- [ ] Add file access validation to prevent directory traversal
+- [ ] **Test:** Security scan shows no vulnerabilities in application
+
+#### Task 26.2: API Key Security
+**Deliverable:** Secure API key management
+- [ ] Implement AES-256 encryption for stored API keys
+- [ ] Add key rotation functionality for enhanced security
+- [ ] Create secure key transmission (encrypted in transit)
+- [ ] Add API key access logging and monitoring
+- [ ] **Test:** Keys are never stored in plaintext, transmission is secure
+
+#### Task 26.3: Input Validation and Sanitization
+**Deliverable:** Comprehensive input security
+- [ ] Add input sanitization for all user-provided data
+- [ ] Implement YAML parsing security to prevent code injection
+- [ ] Create file upload validation and size limits
+- [ ] Add SQL injection protection (Prisma handles this)
+- [ ] **Test:** Security scanner finds no input validation vulnerabilities
+
+### Day 27: Performance Optimization
+
+#### Task 27.1: Frontend Performance
+**Deliverable:** Optimized client-side performance
+- [ ] Implement code splitting for major routes
+- [ ] Optimize bundle size using tree shaking and analysis
+- [ ] Add lazy loading for heavy components (Monaco Editor)
+- [ ] Implement service worker for caching static assets
+- [ ] **Test:** Bundle size <2MB, initial load time <3 seconds
+
+#### Task 27.2: Backend Performance
+**Deliverable:** Optimized server performance
+- [ ] Implement Redis caching for frequently accessed data
+- [ ] Optimize database queries with proper indexing
+- [ ] Add response compression and caching headers
+- [ ] Implement connection pooling and keep-alive
+- [ ] **Test:** API response times <500ms, handles 100 concurrent users
+
+#### Task 27.3: WebSocket Performance
+**Deliverable:** Efficient real-time communication
+- [ ] Optimize WebSocket message frequency and size
+- [ ] Implement message queuing for high-volume updates
+- [ ] Add connection management for idle connections
+- [ ] Create WebSocket message compression
+- [ ] **Test:** Supports 50+ concurrent WebSocket connections efficiently
+
+### Day 28: Documentation and Release
+
+#### Task 28.1: Installation Documentation
+**Deliverable:** Complete setup documentation
+- [ ] Write step-by-step installation guide for all platforms
+- [ ] Create troubleshooting guide for common issues
+- [ ] Add configuration examples and best practices
+- [ ] Create video walkthrough for initial setup
+- [ ] **Test:** New user can follow documentation to complete setup
+
+#### Task 28.2: API Documentation
+**Deliverable:** Complete API reference
+- [ ] Generate OpenAPI specification for all endpoints
+- [ ] Create Postman collection for API testing
+- [ ] Add code examples for common API operations
+- [ ] Document WebSocket event formats and usage
+- [ ] **Test:** API documentation is accurate and complete
+
+#### Task 28.3: Production Release Preparation
+**Deliverable:** Production-ready release
+- [ ] Create release checklist and deployment process
+- [ ] Set up monitoring and alerting for production deployment
+- [ ] Create backup and disaster recovery procedures
+- [ ] Prepare community beta release with feedback collection
+- [ ] **Test:** Production deployment process works end-to-end
+
+---
+
+## Acceptance Criteria for Each Task
+
+Each task must meet these criteria before marking complete:
+1. **Functionality:** Feature works as specified in all test scenarios
+2. **Testing:** Unit/integration tests written and passing (>90% coverage)
+3. **Documentation:** Code commented, README updated if applicable
+4. **Code Quality:** Passes ESLint, Prettier, and TypeScript strict mode
+5. **Performance:** Meets specified response time and resource usage targets
+6. **Security:** No security vulnerabilities in code or dependencies
+
+## Risk Mitigation Notes
+
+- **Daily Validation:** Deploy and test each completed task immediately
+- **Incremental Testing:** Run full test suite after completing each day's tasks
+- **Community Feedback:** Share progress regularly for early validation
+- **Rollback Plans:** Each task should be independently deployable and revertible
