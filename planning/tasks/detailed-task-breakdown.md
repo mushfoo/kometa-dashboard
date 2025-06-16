@@ -44,6 +44,13 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 4. `Complete Task 1.4: Docker Development Environment` (on foundations branch)
 5. `Complete Task 1.5: Code Quality Tools Setup` (on foundations branch)
 
+**Expected Day 3 Commit Sequence:**
+
+1. `Complete Task 3.1: Next.js API Foundation` (create feature branch from main)
+2. `Complete Task 3.2: GitHub Actions CI/CD Setup` (continue on feature branch)
+3. `Complete Task 3.3: File Storage System Setup` (continue on feature branch)
+4. `Complete Task 3.4: Settings Management System` (continue on feature branch)
+
 ---
 
 ## Relevant Files
@@ -86,10 +93,20 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `.storybook/main.ts` - Storybook configuration
 - `.storybook/preview.ts` - Storybook preview with Tailwind CSS import
 - `public/mockServiceWorker.js` - MSW service worker for API mocking
+- `src/middleware.ts` - Next.js middleware for CORS, security headers, and request logging
+- `src/lib/api-utils.ts` - API utilities for error handling, logging, and JSON validation
+- `src/app/api/status/route.ts` - System status API endpoint
+- `src/app/api/config/route.ts` - Configuration management API endpoint
+- `src/app/api/collections/route.ts` - Collections management API endpoint
+- `src/app/api/operations/route.ts` - Operations history API endpoint
+- `src/app/api/logs/route.ts` - Log retrieval API endpoint
+- `src/__tests__/lib/api-utils-simple.test.ts` - Unit tests for API utilities
 
 ### Modified Files
 
-_(Files will be listed here as they're modified during development)_
+- `next.config.js` - Updated with API headers configuration and server options
+- `jest.setup.js` - Enhanced with Web API polyfills for testing
+- `src/components/Button.stories.tsx` - Fixed Storybook story TypeScript issues
 
 ---
 
@@ -191,14 +208,25 @@ _(Files will be listed here as they're modified during development)_
 
 **Deliverable:** Next.js API routes with middleware
 
-- [ ] Create `app/api/` directory structure for API routes
-- [ ] Create middleware for CORS, JSON parsing, and error handling in `middleware.ts`
-- [ ] Set up API route structure: `status/`, `config/`, `collections/`, `operations/`, `logs/`
-- [ ] Configure Next.js with custom server options for API handling
-- [ ] Add request logging and error boundary middleware
-- [ ] **Test:** API routes respond correctly, middleware functions properly
+- [x] Create `app/api/` directory structure for API routes
+- [x] Create middleware for CORS, JSON parsing, and error handling in `middleware.ts`
+- [x] Set up API route structure: `status/`, `config/`, `collections/`, `operations/`, `logs/`
+- [x] Configure Next.js with custom server options for API handling
+- [x] Add request logging and error boundary middleware
+- [x] **Test:** API routes respond correctly, middleware functions properly
 
-#### Task 3.2: File Storage System Setup
+#### Task 3.2: GitHub Actions CI/CD Setup
+
+**Deliverable:** Automated CI/CD pipeline for pull request validation
+
+- [ ] Create `.github/workflows/` directory structure
+- [ ] Create `ci.yml` workflow for pull request checks (test, lint, build, typecheck)
+- [ ] Create `pr-title-check.yml` workflow to validate PR title format
+- [ ] Configure workflow to run on pull requests and pushes to main branch
+- [ ] Add workflow status badges to README and configure branch protection rules
+- [ ] **Test:** PR workflows run successfully, all checks pass before merge allowed
+
+#### Task 3.3: File Storage System Setup
 
 **Deliverable:** JSON-based settings and data storage
 
@@ -209,7 +237,7 @@ _(Files will be listed here as they're modified during development)_
 - [ ] Create settings schema with default values for application configuration
 - [ ] **Test:** Files write atomically, concurrent access handled correctly
 
-#### Task 3.3: Settings Management System
+#### Task 3.4: Settings Management System
 
 **Deliverable:** Application settings and preferences storage
 
