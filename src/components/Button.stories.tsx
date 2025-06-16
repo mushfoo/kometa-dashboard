@@ -104,14 +104,17 @@ export const LongText: Story = {
 
 // Interactive example
 export const ClickCounter: Story = {
-  render: () => {
+  args: {
+    children: 'Click me!',
+  },
+  render: (args) => {
     const [count, setCount] = React.useState(0);
 
     return (
       <div className="space-y-4 text-center">
         <p className="text-lg">Clicked {count} times</p>
         <div className="space-x-2">
-          <Button onClick={() => setCount(count + 1)}>Click me!</Button>
+          <Button onClick={() => setCount(count + 1)}>{args.children}</Button>
           <Button variant="secondary" onClick={() => setCount(0)}>
             Reset
           </Button>
