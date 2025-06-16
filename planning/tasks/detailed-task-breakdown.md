@@ -70,6 +70,22 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `.husky/pre-commit` - Git pre-commit hook for code quality
 - `jest.config.js` - Jest testing framework configuration with 90% coverage thresholds
 - `jest.setup.js` - Jest test environment setup and mocks
+- `src/setupTests.ts` - TypeScript Jest setup with extended matchers
+- `src/__tests__/utils/renderWithProviders.tsx` - Testing utility for React Query integration
+- `src/__tests__/utils/testUtils.ts` - Common testing helpers and assertions
+- `src/__tests__/mocks/api.ts` - MSW handlers for API endpoint mocking
+- `src/__tests__/mocks/server.ts` - MSW server setup for tests
+- `src/__tests__/mocks/browser.ts` - MSW browser setup for development
+- `src/__tests__/fixtures/config.ts` - Mock configuration data
+- `src/__tests__/fixtures/collections.ts` - Mock collections data
+- `src/__tests__/fixtures/operations.ts` - Mock operations and logs data
+- `src/components/Button.tsx` - Reusable Button component
+- `src/components/Button.test.tsx` - Button component unit tests
+- `src/components/Button.stories.tsx` - Storybook stories for Button component
+- `src/app/page.test.tsx` - Home page component tests
+- `.storybook/main.ts` - Storybook configuration
+- `.storybook/preview.ts` - Storybook preview with Tailwind CSS import
+- `public/mockServiceWorker.js` - MSW service worker for API mocking
 
 ### Modified Files
 
@@ -143,31 +159,31 @@ _(Files will be listed here as they're modified during development)_
 
 **Deliverable:** Complete Jest testing setup with coverage
 
-- [ ] Install Jest, `@testing-library/react`, `@testing-library/jest-dom`
-- [ ] Create `jest.config.js` with coverage thresholds: 90% for all metrics
-- [ ] Create `setupTests.ts` importing `@testing-library/jest-dom`
-- [ ] Add test scripts to `package.json`: `"test"`, `"test:watch"`, `"test:coverage"`
-- [ ] **Test:** Run `npm test` and verify it executes without errors
+- [x] Install Jest, `@testing-library/react`, `@testing-library/jest-dom`
+- [x] Create `jest.config.js` with coverage thresholds: 90% for all metrics
+- [x] Create `setupTests.ts` importing `@testing-library/jest-dom`
+- [x] Add test scripts to `package.json`: `"test"`, `"test:watch"`, `"test:coverage"`
+- [x] **Test:** Run `npm test` and verify it executes without errors
 
 #### Task 2.2: Testing Utilities
 
 **Deliverable:** Reusable testing helpers and mocks
 
-- [ ] Create `__tests__/utils/renderWithProviders.tsx` for React Query + Router
-- [ ] Create `__tests__/mocks/api.ts` with MSW handlers for all API endpoints
-- [ ] Create `__tests__/fixtures/` directory with sample data objects
-- [ ] Add `testUtils.ts` with common assertions and helpers
-- [ ] **Test:** Create sample component test using renderWithProviders
+- [x] Create `__tests__/utils/renderWithProviders.tsx` for React Query + Router
+- [x] Create `__tests__/mocks/api.ts` with MSW handlers for all API endpoints
+- [x] Create `__tests__/fixtures/` directory with sample data objects
+- [x] Add `testUtils.ts` with common assertions and helpers
+- [x] **Test:** Create sample component test using renderWithProviders
 
 #### Task 2.3: Storybook Setup
 
 **Deliverable:** Component documentation and visual testing
 
-- [ ] Install Storybook with `npx storybook@latest init`
-- [ ] Configure Storybook for Tailwind CSS in `.storybook/main.ts`
-- [ ] Create sample Button component with `.stories.tsx` file
-- [ ] Configure Storybook to use project's TypeScript config
-- [ ] **Test:** `npm run storybook` opens on port 6006 with Button stories
+- [x] Install Storybook with `npx storybook@latest init`
+- [x] Configure Storybook for Tailwind CSS in `.storybook/main.ts`
+- [x] Create sample Button component with `.stories.tsx` file
+- [x] Configure Storybook to use project's TypeScript config
+- [x] **Test:** `npm run storybook` opens on port 6006 with Button stories
 
 ### Day 3: Next.js API Routes Setup
 

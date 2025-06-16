@@ -9,12 +9,17 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    customExportConditions: [''],
+  },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{ts,tsx}',
     '!src/app/layout.tsx', // Layout files often don't need testing
+    '!src/__tests__/**/*', // Exclude test utilities from coverage
   ],
+  testMatch: ['**/__tests__/**/*.test.{ts,tsx}', '**/*.test.{ts,tsx}'],
   coverageThreshold: {
     global: {
       branches: 90,
@@ -23,7 +28,7 @@ const customJestConfig = {
       statements: 90,
     },
   },
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
 };

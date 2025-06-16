@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom';
 
+// TODO: Enable MSW after resolving module resolution issues
+// import { server } from './src/__tests__/mocks/server';
+// beforeAll(() => server.listen());
+// afterEach(() => server.resetHandlers());
+// afterAll(() => server.close());
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
