@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/status']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Production service (can be used with docker-compose -f docker-compose.yml -f docker-compose.prod.yml)
+  app-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./storage:/app/storage
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    profiles:
+      - production
