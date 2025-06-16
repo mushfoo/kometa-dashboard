@@ -6,7 +6,8 @@ on:
 
 jobs:
   pr-title-check:
-    runs-on: self-hosted
+    runs-on: 
+      group: self-hosted
 
     steps:
       - name: Check PR title format
