@@ -135,6 +135,7 @@ describe('KometaService', () => {
         verbosity: 'invalid' as any,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await expect(service.startProcess(invalidConfig)).rejects.toThrow();
@@ -146,6 +147,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       // Mock fs.access to fail
@@ -344,6 +346,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       // We'll test this indirectly by checking spawn was called with correct args
@@ -370,6 +373,7 @@ describe('KometaService', () => {
         verbosity: 'debug' as const,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await service.startProcess(debugConfig);
@@ -387,6 +391,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: true,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await service.startProcess(dryRunConfig);
@@ -404,6 +409,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: false,
         operationType: 'collections_only' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await service.startProcess(collectionsConfig);
@@ -430,6 +436,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await service.startProcess(config);
@@ -461,6 +468,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await expect(service.startProcess(config)).rejects.toThrow(
@@ -502,6 +510,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await service.startProcess(config);
@@ -518,6 +527,7 @@ describe('KometaService', () => {
         verbosity: 'info' as const,
         dryRun: false,
         operationType: 'full_run' as const,
+        timeouts: { gracefulShutdown: 1000, healthCheck: 1000 },
       };
 
       await service.startProcess(config);
