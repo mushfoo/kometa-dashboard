@@ -43,7 +43,10 @@ export function useAppState() {
     ];
     const currentIndex = themes.indexOf(settings.theme);
     const nextIndex = (currentIndex + 1) % themes.length;
-    settings.setTheme(themes[nextIndex]);
+    const nextTheme = themes[nextIndex];
+    if (nextTheme) {
+      settings.setTheme(nextTheme);
+    }
   };
 
   return {

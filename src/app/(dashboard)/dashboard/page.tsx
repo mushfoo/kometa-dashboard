@@ -1,6 +1,6 @@
 export default function DashboardPage() {
   return (
-    <div className="container mx-auto py-6">
+    <>
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
       <div className="grid gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -16,6 +16,6 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
-    </div>
+    </>
   );
 }
