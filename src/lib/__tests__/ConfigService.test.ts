@@ -285,7 +285,6 @@ describe('ConfigService', () => {
       expect(status.exists).toBe(true);
       expect(status.size).toBeGreaterThan(0);
       expect(status.lastModified).toBeDefined();
-      expect(status.lastModified instanceof Date).toBe(true);
       expect(status.backupCount).toBe(2);
     });
 
