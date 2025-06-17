@@ -66,6 +66,10 @@ describe('KometaService', () => {
       verbosity: 'info' as const,
       dryRun: false,
       operationType: 'full_run' as const,
+      timeouts: {
+        gracefulShutdown: 1000, // Use shorter timeout for tests
+        healthCheck: 1000,
+      },
     };
 
     test('should start a process successfully', async () => {
@@ -93,6 +97,9 @@ describe('KometaService', () => {
 
     test('should stop a running process gracefully', async () => {
       await service.startProcess(testConfig);
+
+      // Verify process is running before stopping
+      expect(service.isRunning()).toBe(true);
 
       const stopResult = await service.stopProcess();
       expect(stopResult).toBe(true);
@@ -158,6 +165,10 @@ describe('KometaService', () => {
       verbosity: 'info' as const,
       dryRun: false,
       operationType: 'full_run' as const,
+      timeouts: {
+        gracefulShutdown: 1000,
+        healthCheck: 1000,
+      },
     };
 
     test('should capture and parse stdout logs', async () => {
@@ -257,6 +268,10 @@ describe('KometaService', () => {
       verbosity: 'info' as const,
       dryRun: false,
       operationType: 'full_run' as const,
+      timeouts: {
+        gracefulShutdown: 1000,
+        healthCheck: 1000,
+      },
     };
 
     test('should emit processStarted event', async () => {

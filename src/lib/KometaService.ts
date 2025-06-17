@@ -14,6 +14,12 @@ const KometaConfig = z.object({
   operationType: z
     .enum(['full_run', 'collections_only', 'library_only', 'config_reload'])
     .default('full_run'),
+  timeouts: z
+    .object({
+      gracefulShutdown: z.number().default(10000), // 10 seconds
+      healthCheck: z.number().default(5000), // 5 seconds
+    })
+    .default({}),
 });
 
 type KometaConfig = z.infer<typeof KometaConfig>;
@@ -154,12 +160,12 @@ export class KometaService extends EventEmitter {
       } else {
         this.currentProcess.kill('SIGTERM');
 
-        // If graceful shutdown takes too long, force kill after 10 seconds
+        // If graceful shutdown takes too long, force kill after configured timeout
         setTimeout(() => {
           if (this.currentProcess && !this.currentProcess.killed) {
             this.currentProcess.kill('SIGKILL');
           }
-        }, 10000);
+        }, this.processInfo.config.timeouts.gracefulShutdown);
       }
 
       this.emit('processStopping', { operationId, force });
@@ -513,6 +519,6 @@ export class KometaService extends EventEmitter {
         clearInterval(healthCheckInterval);
         this.currentProcess = null;
       }
-    }, 5000); // Check every 5 seconds
+    }, this.processInfo?.config.timeouts.healthCheck || 5000); // Configurable health check interval
   }
 }

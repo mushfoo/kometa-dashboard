@@ -14,7 +14,6 @@ class SSEConnectionManager {
   private connections = new Map<
     string,
     {
-      response: Response;
       controller: ReadableStreamDefaultController;
       lastActivity: Date;
       filters: z.infer<typeof StreamQuerySchema>;
@@ -35,12 +34,10 @@ class SSEConnectionManager {
    */
   addConnection(
     connectionId: string,
-    response: Response,
     controller: ReadableStreamDefaultController,
     filters: z.infer<typeof StreamQuerySchema>
   ): void {
     this.connections.set(connectionId, {
-      response,
       controller,
       lastActivity: new Date(),
       filters,
@@ -276,12 +273,7 @@ export async function GET(request: NextRequest): Promise<Response> {
         }
 
         // Register connection
-        connectionManager.addConnection(
-          connectionId,
-          response,
-          controller,
-          filters
-        );
+        connectionManager.addConnection(connectionId, controller, filters);
 
         // Send periodic keepalive messages
         const keepAliveInterval = setInterval(() => {
@@ -348,7 +340,8 @@ export async function GET(request: NextRequest): Promise<Response> {
  */
 export async function POST(request: NextRequest): Promise<Response> {
   try {
-    // Verify this is an internal request (in production, use proper authentication)
+    // Verify this is an internal request
+    // TODO: Replace with proper JWT/token-based authentication for production
     const authHeader = request.headers.get('authorization');
     if (authHeader !== 'Bearer internal-service') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

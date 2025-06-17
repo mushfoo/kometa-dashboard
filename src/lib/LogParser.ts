@@ -55,13 +55,16 @@ const KOMETA_LOG_PATTERNS = [
  * circular buffering, filtering, and real-time streaming capabilities.
  */
 export class LogParser extends EventEmitter {
-  private logBuffer: ParsedLogEntry[] = [];
+  private logBuffer: ParsedLogEntry[];
   private readonly maxBufferSize: number;
+  private bufferIndex = 0;
+  private bufferCount = 0;
   private logCounter = 0;
 
   constructor(maxBufferSize: number = 1000) {
     super();
     this.maxBufferSize = maxBufferSize;
+    this.logBuffer = new Array(maxBufferSize);
     this.setMaxListeners(50); // Support many real-time listeners
   }
 
@@ -100,11 +103,10 @@ export class LogParser extends EventEmitter {
    * Add a parsed log entry to the buffer
    */
   addLogEntry(entry: ParsedLogEntry): void {
-    // Add to circular buffer
-    this.logBuffer.push(entry);
-    if (this.logBuffer.length > this.maxBufferSize) {
-      this.logBuffer.shift();
-    }
+    // Add to circular buffer (O(1) operation)
+    this.logBuffer[this.bufferIndex] = entry;
+    this.bufferIndex = (this.bufferIndex + 1) % this.maxBufferSize;
+    this.bufferCount = Math.min(this.bufferCount + 1, this.maxBufferSize);
 
     // Emit events for real-time processing
     this.emit('logEntry', entry);
@@ -134,7 +136,7 @@ export class LogParser extends EventEmitter {
    * Get filtered logs from the buffer
    */
   getFilteredLogs(filter: LogFilter = {}): ParsedLogEntry[] {
-    let filtered = [...this.logBuffer];
+    let filtered = this.getAllLogs();
 
     // Filter by log level(s)
     if (filter.level) {
@@ -195,21 +197,36 @@ export class LogParser extends EventEmitter {
    * Get recent logs (last N entries)
    */
   getRecentLogs(count: number = 100): ParsedLogEntry[] {
-    return this.logBuffer.slice(-count);
+    const allLogs = this.getAllLogs();
+    return allLogs.slice(-count);
   }
 
   /**
    * Get all logs from buffer
    */
   getAllLogs(): ParsedLogEntry[] {
-    return [...this.logBuffer];
+    if (this.bufferCount === 0) {
+      return [];
+    }
+
+    if (this.bufferCount < this.maxBufferSize) {
+      // Buffer not yet full, return from start to current position
+      return this.logBuffer.slice(0, this.bufferCount);
+    } else {
+      // Buffer is full, return from current position to end, then start to current position
+      const fromCurrent = this.logBuffer.slice(this.bufferIndex);
+      const fromStart = this.logBuffer.slice(0, this.bufferIndex);
+      return [...fromCurrent, ...fromStart];
+    }
   }
 
   /**
    * Clear the log buffer
    */
   clearBuffer(): void {
-    this.logBuffer = [];
+    this.logBuffer = new Array(this.maxBufferSize);
+    this.bufferIndex = 0;
+    this.bufferCount = 0;
     this.emit('bufferCleared');
   }
 
@@ -235,7 +252,7 @@ export class LogParser extends EventEmitter {
     let oldestEntry: Date | undefined;
     let newestEntry: Date | undefined;
 
-    this.logBuffer.forEach((entry) => {
+    this.getAllLogs().forEach((entry) => {
       // Count by level
       byLevel[entry.level] = (byLevel[entry.level] || 0) + 1;
 
@@ -254,7 +271,7 @@ export class LogParser extends EventEmitter {
     });
 
     return {
-      totalEntries: this.logBuffer.length,
+      totalEntries: this.bufferCount,
       byLevel,
       byComponent,
       oldestEntry: oldestEntry ?? undefined,
@@ -292,8 +309,9 @@ export class LogParser extends EventEmitter {
     }
 
     const results: ParsedLogEntry[] = [];
+    const allLogs = this.getAllLogs();
 
-    for (const entry of this.logBuffer) {
+    for (const entry of allLogs) {
       if (results.length >= maxResults) break;
 
       let found = false;
@@ -329,7 +347,7 @@ export class LogParser extends EventEmitter {
    */
   getComponents(): string[] {
     const components = new Set<string>();
-    this.logBuffer.forEach((entry) => {
+    this.getAllLogs().forEach((entry) => {
       if (entry.component) {
         components.add(entry.component);
       }
@@ -342,7 +360,7 @@ export class LogParser extends EventEmitter {
    */
   getOperationIds(): string[] {
     const operationIds = new Set<string>();
-    this.logBuffer.forEach((entry) => {
+    this.getAllLogs().forEach((entry) => {
       if (entry.operationId) {
         operationIds.add(entry.operationId);
       }
