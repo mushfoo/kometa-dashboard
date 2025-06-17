@@ -246,7 +246,11 @@ describe('ConfigService', () => {
       expect(backups.length).toBe(3);
       // Verify they're sorted in reverse chronological order
       for (let i = 1; i < backups.length; i++) {
-        expect(backups[i - 1] > backups[i]).toBe(true);
+        const current = backups[i];
+        const previous = backups[i - 1];
+        expect(previous).toBeDefined();
+        expect(current).toBeDefined();
+        expect(previous! > current!).toBe(true);
       }
     });
 
