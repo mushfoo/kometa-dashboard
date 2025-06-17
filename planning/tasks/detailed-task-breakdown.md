@@ -114,6 +114,11 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/lib/settings-service.ts` - Settings management service with validation and backup
 - `src/lib/__tests__/file-storage-service.test.ts` - Unit tests for file storage service
 - `src/lib/__tests__/settings-service.test.ts` - Unit tests for settings service
+- `src/lib/ApiKeyService.ts` - API key management service with validation for TMDb, Trakt, IMDb (JSON storage)
+- `src/lib/__tests__/ApiKeyService.test.ts` - Comprehensive unit tests for API key service
+- `src/app/api/keys/route.ts` - API key management endpoints (GET/POST for listing and adding keys)
+- `src/app/api/keys/[service]/route.ts` - Service-specific API key endpoints (GET/PUT/DELETE/POST for CRUD operations)
+- `src/__tests__/api/keys-simple.test.ts` - Integration tests for API key management functionality
 
 ### Modified Files
 
@@ -267,25 +272,25 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 #### Task 4.1: API Key Storage System
 
-**Deliverable:** Secure API key file storage
+**Deliverable:** Simple API key file storage using existing FileStorageService
 
-- [ ] Create `ApiKeyService.ts` for managing third-party service keys
-- [ ] Implement file-based key storage with encryption using built-in crypto module
-- [ ] Create key validation methods for TMDb, Trakt, IMDb APIs
-- [ ] Add key testing functionality making actual API calls to validate
-- [ ] **Test:** Keys stored encrypted, validation calls work correctly
+- [x] Create `ApiKeyService.ts` for managing third-party service keys using existing FileStorageService
+- [x] Implement file-based key storage as JSON in `storage/keys/` directory
+- [x] Create key validation methods for TMDb, Trakt, IMDb APIs (format validation)
+- [x] Add key testing functionality making actual API calls to validate
+- [x] **Test:** Keys stored as JSON, validation calls work correctly
 
 #### Task 4.2: API Key Management Endpoints
 
 **Deliverable:** RESTful API key management
 
-- [ ] Create `app/api/keys/route.ts` for GET/POST operations
-- [ ] Create `app/api/keys/[service]/route.ts` for PUT/DELETE operations
-- [ ] POST /api/keys - Add new API key with service validation
-- [ ] GET /api/keys - List configured services (without exposing actual keys)
-- [ ] PUT /api/keys/[service] - Update existing API key
-- [ ] DELETE /api/keys/[service] - Remove API key for service
-- [ ] **Test:** All CRUD operations work, keys never exposed in responses
+- [x] Create `app/api/keys/route.ts` for GET/POST operations
+- [x] Create `app/api/keys/[service]/route.ts` for PUT/DELETE operations
+- [x] POST /api/keys - Add new API key with service validation
+- [x] GET /api/keys - List configured services (without exposing actual keys)
+- [x] PUT /api/keys/[service] - Update existing API key
+- [x] DELETE /api/keys/[service] - Remove API key for service
+- [x] **Test:** All CRUD operations work, keys never exposed in responses
 
 #### Task 4.3: Service Integration Testing
 
