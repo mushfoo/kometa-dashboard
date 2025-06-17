@@ -1,0 +1,7 @@
+# Collection Templates Directory
+# 
+# This directory stores reusable collection templates.
+# Templates can be created from existing collections or imported.
+# Used to quickly set up new collections with predefined configurations.
+#
+# Contents of this directory are ignored by git.

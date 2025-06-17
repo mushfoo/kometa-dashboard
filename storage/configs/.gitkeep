@@ -1,0 +1,7 @@
+# Configuration Backups Directory
+# 
+# This directory stores timestamped backups of Kometa configuration files.
+# Files are automatically created when configurations are modified.
+# Naming convention: config-YYYY-MM-DD-HH-mm-ss.yml
+#
+# Contents of this directory are ignored by git.

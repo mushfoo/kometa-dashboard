@@ -38,8 +38,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Storage
-/storage
+# Storage - ignore contents but keep directory structure
+/storage/*
+!/storage/.gitkeep
+!/storage/*/
+!/storage/*/.gitkeep
 
 # IDE
 .vscode/
