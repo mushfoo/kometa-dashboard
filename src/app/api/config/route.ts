@@ -7,7 +7,9 @@ import {
 import { createConfigService } from '@/lib/ConfigService';
 import path from 'path';
 
-const configService = createConfigService(path.join(process.cwd(), 'storage'));
+const configService = createConfigService(
+  process.env.STORAGE_PATH || path.join(process.cwd(), 'storage')
+);
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
