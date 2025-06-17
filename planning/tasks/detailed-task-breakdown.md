@@ -374,31 +374,31 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** KometaService class for process management
 
-- [ ] Create `services/KometaService.ts` class with spawn/kill methods
-- [ ] Implement process monitoring with PID tracking and status checking
-- [ ] Add stdout/stderr capture with line buffering for real-time logs
-- [ ] Configure environment variables (config path, log level) for subprocess
-- [ ] **Test:** Can start/stop process, capture output, handle process crashes
+- [x] Create `services/KometaService.ts` class with spawn/kill methods
+- [x] Implement process monitoring with PID tracking and status checking
+- [x] Add stdout/stderr capture with line buffering for real-time logs
+- [x] Configure environment variables (config path, log level) for subprocess
+- [x] **Test:** Can start/stop process, capture output, handle process crashes
 
 #### Task 6.2: Log Parsing and Streaming
 
 **Deliverable:** Real-time log processing system
 
-- [ ] Parse Kometa log format (timestamp, level, message extraction)
-- [ ] Implement log filtering by level (DEBUG, INFO, WARNING, ERROR)
-- [ ] Create circular buffer for recent logs (max 1000 lines in memory)
-- [ ] Add log search functionality with regex pattern matching
-- [ ] **Test:** Log parsing handles various formats, filtering works correctly
+- [x] Parse Kometa log format (timestamp, level, message extraction)
+- [x] Implement log filtering by level (DEBUG, INFO, WARNING, ERROR)
+- [x] Create circular buffer for recent logs (max 1000 lines in memory)
+- [x] Add log search functionality with regex pattern matching
+- [x] **Test:** Log parsing handles various formats, filtering works correctly
 
 #### Task 6.3: Configuration File Management
 
 **Deliverable:** YAML file operations with validation
 
-- [ ] Create `ConfigManager` class with read/write/backup methods
-- [ ] Implement atomic writes using temporary files and rename operations
-- [ ] Add YAML schema validation for required Kometa fields
-- [ ] Create configuration templates for common setups (Plex + TMDb basic)
-- [ ] **Test:** File operations are atomic, validation catches malformed YAML
+- [x] Create `ConfigManager` class with read/write/backup methods
+- [x] Implement atomic writes using temporary files and rename operations
+- [x] Add YAML schema validation for required Kometa fields
+- [x] Create configuration templates for common setups (Plex + TMDb basic)
+- [x] **Test:** File operations are atomic, validation catches malformed YAML
 
 ### Day 7: Real-time Updates Implementation
 
@@ -406,33 +406,33 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Smart polling system for real-time updates
 
-- [ ] Create `lib/polling.ts` service with configurable intervals
-- [ ] Implement server-sent events (SSE) using Next.js API routes
-- [ ] Create `app/api/stream/route.ts` for real-time log streaming
-- [ ] Add connection management with automatic cleanup
-- [ ] Implement rate limiting and backoff strategies
-- [ ] **Test:** Polling works efficiently, SSE connections stable
+- [x] Create `lib/polling.ts` service with configurable intervals
+- [x] Implement server-sent events (SSE) using Next.js API routes
+- [x] Create `app/api/stream/route.ts` for real-time log streaming
+- [x] Add connection management with automatic cleanup
+- [x] Implement rate limiting and backoff strategies
+- [x] **Test:** Polling works efficiently, SSE connections stable
 
 #### Task 7.2: Log Streaming System
 
 **Deliverable:** Real-time log delivery via SSE
 
-- [ ] Implement log file tailing with efficient file watching
-- [ ] Add log level filtering and search functionality
-- [ ] Create log history buffer (last 100 lines) for new connections
-- [ ] Implement log rotation handling and file change detection
-- [ ] **Test:** Log streaming works efficiently, filtering accurate
+- [x] Implement log file tailing with efficient file watching
+- [x] Add log level filtering and search functionality
+- [x] Create log history buffer (last 100 lines) for new connections
+- [x] Implement log rotation handling and file change detection
+- [x] **Test:** Log streaming works efficiently, filtering accurate
 
 #### Task 7.3: Progress Monitoring System
 
 **Deliverable:** Operation progress tracking via polling
 
-- [ ] Create progress parser for Kometa output patterns
-- [ ] Implement progress state storage in JSON files
-- [ ] Add operation status tracking (queued, running, completed, failed)
-- [ ] Create progress API endpoint for client polling
-- [ ] Add operation cancellation with graceful subprocess termination
-- [ ] **Test:** Progress tracking accurate, cancellation works properly
+- [x] Create progress parser for Kometa output patterns
+- [x] Implement progress state storage in JSON files
+- [x] Add operation status tracking (queued, running, completed, failed)
+- [x] Create progress API endpoint for client polling
+- [x] Add operation cancellation with graceful subprocess termination
+- [x] **Test:** Progress tracking accurate, cancellation works properly
 
 ---
 
