@@ -1,4 +1,5 @@
-import { PollingService, AdaptivePollingService, createPollingService, PollingConfig } from '../polling';
+import { PollingService, AdaptivePollingService, createPollingService } from '../polling';
+// import { PollingConfig } from '../polling';
 
 // Mock timers for testing
 jest.useFakeTimers();

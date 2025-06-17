@@ -71,7 +71,7 @@ class SSEConnectionManager {
     operationId?: string;
     level?: string;
   }): void {
-    const message = `data: ${JSON.stringify(data)}\n\n`;
+    // const message = `data: ${JSON.stringify(data)}\n\n`;
     
     for (const [connectionId, connection] of this.connections.entries()) {
       try {

@@ -1,5 +1,6 @@
 import { KometaService, ProcessStatus } from '../KometaService';
-import { spawn, ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
+// import { ChildProcess } from 'child_process';
 import { promises as fs } from 'fs';
 import { EventEmitter } from 'events';
 
@@ -88,7 +89,7 @@ describe('KometaService', () => {
     });
 
     test('should stop a running process gracefully', async () => {
-      const operationId = await service.startProcess(testConfig);
+      await service.startProcess(testConfig);
       
       const stopResult = await service.stopProcess();
       expect(stopResult).toBe(true);

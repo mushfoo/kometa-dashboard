@@ -1,7 +1,7 @@
 import { ConfigManager, ConfigTemplate, TemplateVariables } from '../ConfigManager';
 import { KometaConfig } from '../ConfigService';
 import { promises as fs } from 'fs';
-import path from 'path';
+// import path from 'path';
 
 // Mock fs module
 jest.mock('fs', () => ({

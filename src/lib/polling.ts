@@ -8,6 +8,7 @@ export interface PollingConfig {
   retryDelay?: number; // milliseconds
   backoffMultiplier?: number;
   maxBackoffDelay?: number; // milliseconds
+  // eslint-disable-next-line no-unused-vars
   onError?: (error: Error, retryCount: number) => void;
 }
 
@@ -28,7 +29,9 @@ const DEFAULT_CONFIG: Required<PollingConfig> = {
   retryDelay: 1000, // 1 second
   backoffMultiplier: 2,
   maxBackoffDelay: 30000, // 30 seconds
-  onError: () => {}, // noop
+  onError: (error: Error, retryCount: number) => {
+    console.warn(`Polling error (retry ${retryCount}):`, error.message);
+  }
 };
 
 /**

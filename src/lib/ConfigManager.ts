@@ -1,8 +1,8 @@
 import { ConfigService, KometaConfig } from './ConfigService';
 import { promises as fs } from 'fs';
 import path from 'path';
-import * as yaml from 'js-yaml';
-import { z } from 'zod';
+// import * as yaml from 'js-yaml';
+// import { z } from 'zod';
 
 // Configuration template interface
 export interface ConfigTemplate {
@@ -239,9 +239,9 @@ export class ConfigManager extends ConfigService {
   /**
    * Migrate configuration to newer format/version
    */
-  async migrateConfig(config: unknown, targetVersion?: string): Promise<KometaConfig> {
+  async migrateConfig(config: unknown): Promise<KometaConfig> {
     // Basic migration logic - can be expanded as needed
-    let migratedConfig = { ...config } as any;
+    const migratedConfig = { ...config } as any;
 
     // Example migration: rename old field names
     if (migratedConfig.plex?.server_url) {

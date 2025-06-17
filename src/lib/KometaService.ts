@@ -17,6 +17,7 @@ const KometaConfig = z.object({
 type KometaConfig = z.infer<typeof KometaConfig>;
 
 // Process status enumeration
+/* eslint-disable no-unused-vars */
 export enum ProcessStatus {
   IDLE = 'idle',
   STARTING = 'starting', 
@@ -26,6 +27,7 @@ export enum ProcessStatus {
   CRASHED = 'crashed',
   FAILED = 'failed'
 }
+/* eslint-enable no-unused-vars */
 
 // Log output interface
 export interface LogOutput {

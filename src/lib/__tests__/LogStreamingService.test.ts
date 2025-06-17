@@ -1,6 +1,6 @@
 import { LogStreamingService } from '../LogStreamingService';
 import { promises as fs } from 'fs';
-import path from 'path';
+// import path from 'path';
 
 // Mock fs module
 jest.mock('fs', () => ({
@@ -125,7 +125,7 @@ describe('LogStreamingService', () => {
 
     test('should generate correct log file path', () => {
       const stats = service.getStreamingStats();
-      const expectedMonth = new Date().toISOString().slice(0, 7);
+      // const expectedMonth = new Date().toISOString().slice(0, 7);
       
       expect(stats.currentLogFile).toBeNull(); // Not started yet
       
@@ -313,7 +313,7 @@ describe('LogStreamingService', () => {
     });
 
     test('should recreate parser when buffer size changes', () => {
-      const originalStats = service.getStreamingStats();
+      // const originalStats = service.getStreamingStats();
       
       service.updateConfig({ historyBufferSize: 150 });
       
