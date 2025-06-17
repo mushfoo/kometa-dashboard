@@ -120,11 +120,15 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/app/api/keys/[service]/route.ts` - Service-specific API key endpoints (GET/PUT/DELETE/POST for CRUD operations)
 - `src/__tests__/api/keys-simple.test.ts` - Integration tests for API key management functionality
 - `src/__tests__/api/status-integration.test.ts` - Integration tests for system status endpoint functionality
+- `src/app/api/operations/start/route.ts` - Operation start endpoint with Kometa subprocess management and process monitoring
+- `src/app/api/operations/stop/route.ts` - Operation stop endpoint with graceful termination and status checking
+- `src/__tests__/api/operations-api.test.ts` - Comprehensive tests for all operations and logs API endpoints
 
 ### Modified Files
 
 - `src/app/api/status/route.ts` - Enhanced with comprehensive system health checks, file system verification, Kometa availability detection, and Plex configuration checking
-
+- `src/app/api/operations/route.ts` - Enhanced with complete operation history management, filtering, pagination, and JSON storage
+- `src/app/api/logs/route.ts` - Enhanced with comprehensive log management, filtering, search, statistics, and monthly rotation
 - `next.config.js` - Updated with API headers configuration and server options
 - `jest.setup.js` - Enhanced with Web API polyfills for testing
 - `src/components/Button.stories.tsx` - Fixed Storybook story TypeScript issues
@@ -322,25 +326,25 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** CRUD operations for Kometa config
 
-- [ ] Create `app/api/config/route.ts` for GET/PUT operations
-- [ ] GET /api/config: Read `config.yml` file, parse YAML, return JSON
-- [ ] PUT /api/config: Validate JSON, convert to YAML, write atomically
-- [ ] Create `app/api/config/validate/route.ts` for POST validation
-- [ ] POST /api/config/validate: Parse YAML, check required fields (plex, libraries)
-- [ ] Implement file backup before writes (keep last 5 versions)
-- [ ] **Test:** File operations work correctly, atomic writes don't corrupt on failure
+- [x] Create `app/api/config/route.ts` for GET/PUT operations
+- [x] GET /api/config: Read `config.yml` file, parse YAML, return JSON
+- [x] PUT /api/config: Validate JSON, convert to YAML, write atomically
+- [x] Create `app/api/config/validate/route.ts` for POST validation
+- [x] POST /api/config/validate: Parse YAML, check required fields (plex, libraries)
+- [x] Implement file backup before writes (keep last 5 versions)
+- [x] **Test:** File operations work correctly, atomic writes don't corrupt on failure
 
 #### Task 5.3: Operations API Endpoints
 
 **Deliverable:** Operation control and history tracking
 
-- [ ] Create `app/api/operations/route.ts` for GET operations (history)
-- [ ] Create `app/api/operations/start/route.ts` for POST start operations
-- [ ] Create `app/api/operations/stop/route.ts` for POST stop operations
-- [ ] Create `app/api/logs/route.ts` for GET filtered logs
-- [ ] Implement operation history storage in JSON files with rotation (keep last 100)
-- [ ] Add operation search and filtering by date range and status
-- [ ] **Test:** All operation endpoints work, history persists correctly
+- [x] Create `app/api/operations/route.ts` for GET operations (history)
+- [x] Create `app/api/operations/start/route.ts` for POST start operations
+- [x] Create `app/api/operations/stop/route.ts` for POST stop operations
+- [x] Create `app/api/logs/route.ts` for GET filtered logs
+- [x] Implement operation history storage in JSON files with rotation (keep last 100)
+- [x] Add operation search and filtering by date range and status
+- [x] **Test:** All operation endpoints work, history persists correctly
 
 ### Day 6: Kometa Integration Layer
 
