@@ -237,7 +237,7 @@ describe('SettingsManager', () => {
 
       expect(backups.length).toBeGreaterThanOrEqual(2);
       // Should be sorted with most recent first
-      expect(backups[0] > backups[1]).toBe(true);
+      expect(backups[0]! > backups[1]!).toBe(true);
     });
 
     it('should restore settings from backup', async () => {

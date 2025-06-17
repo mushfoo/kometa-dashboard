@@ -77,12 +77,19 @@ export class SettingsManager {
     return false;
   }
 
-  async updateSettings(partialSettings: Partial<Settings>): Promise<boolean> {
+  async updateSettings(partialSettings: {
+    app?: Partial<Settings['app']>;
+    user?: Partial<Settings['user']>;
+    system?: Partial<Settings['system']>;
+    version?: string;
+    lastUpdated?: string;
+  }): Promise<boolean> {
     const currentSettings = await this.loadSettings();
 
     const updatedSettings: Settings = {
       ...currentSettings,
-      ...partialSettings,
+      version: partialSettings.version ?? currentSettings.version,
+      lastUpdated: partialSettings.lastUpdated ?? currentSettings.lastUpdated,
       app: partialSettings.app
         ? { ...currentSettings.app, ...partialSettings.app }
         : currentSettings.app,

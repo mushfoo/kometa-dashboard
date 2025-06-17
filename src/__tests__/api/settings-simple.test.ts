@@ -31,7 +31,7 @@ describe('Settings Integration', () => {
 
     // Update settings
     const updated = await manager.updateSettings({
-      app: { theme: 'dark' },
+      app: { theme: 'dark' as const },
     });
     expect(updated).toBe(true);
 

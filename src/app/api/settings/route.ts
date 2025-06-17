@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { settingsManager } from '../../../lib/SettingsManager';
-import { handleApiError, validateRequestMethod } from '../../../lib/api-utils';
+import { createErrorResponse } from '../../../lib/api-utils';
 
 export async function GET(): Promise<NextResponse> {
   try {
     const settings = await settingsManager.loadSettings();
     return NextResponse.json({ data: settings });
   } catch (error) {
-    return handleApiError(error, 'Failed to load settings');
+    return createErrorResponse(error, 'Failed to load settings');
   }
 }
 
 export async function PUT(request: NextRequest): Promise<NextResponse> {
   try {
-    validateRequestMethod(request, 'PUT');
-
     const body = await request.json();
 
     // Validate the entire settings object
@@ -45,14 +43,12 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       message: 'Settings saved successfully',
     });
   } catch (error) {
-    return handleApiError(error, 'Failed to update settings');
+    return createErrorResponse(error, 'Failed to update settings');
   }
 }
 
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
-    validateRequestMethod(request, 'PATCH');
-
     const body = await request.json();
 
     const success = await settingsManager.updateSettings(body);
@@ -70,6 +66,6 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       message: 'Settings updated successfully',
     });
   } catch (error) {
-    return handleApiError(error, 'Failed to update settings');
+    return createErrorResponse(error, 'Failed to update settings');
   }
 }

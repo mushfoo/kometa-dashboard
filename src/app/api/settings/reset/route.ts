@@ -1,14 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { settingsManager } from '../../../../lib/SettingsManager';
-import {
-  handleApiError,
-  validateRequestMethod,
-} from '../../../../lib/api-utils';
+import { createErrorResponse } from '../../../../lib/api-utils';
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(): Promise<NextResponse> {
   try {
-    validateRequestMethod(request, 'POST');
-
     const success = await settingsManager.resetToDefaults();
 
     if (!success) {
@@ -24,6 +19,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       message: 'Settings reset to defaults successfully',
     });
   } catch (error) {
-    return handleApiError(error, 'Failed to reset settings');
+    return createErrorResponse(error, 'Failed to reset settings');
   }
 }

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { settingsManager } from '../../../../../lib/SettingsManager';
-import {
-  handleApiError,
-  validateRequestMethod,
-} from '../../../../../lib/api-utils';
+import { createErrorResponse } from '../../../../../lib/api-utils';
 
 interface RouteParams {
   params: {
@@ -16,8 +13,6 @@ export async function POST(
   { params }: RouteParams
 ): Promise<NextResponse> {
   try {
-    validateRequestMethod(request, 'POST');
-
     const { filename } = params;
 
     if (!filename) {
@@ -42,6 +37,6 @@ export async function POST(
       message: `Settings restored from backup: ${filename}`,
     });
   } catch (error) {
-    return handleApiError(error, 'Failed to restore settings from backup');
+    return createErrorResponse(error, 'Failed to restore settings from backup');
   }
 }
