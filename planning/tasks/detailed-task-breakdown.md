@@ -104,6 +104,16 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `.github/workflows/ci.yml` - GitHub Actions CI workflow for test, lint, build, and typecheck
 - `.github/workflows/pr-title-check.yml` - GitHub Actions workflow for PR title validation
 - `README.md` - Project documentation with CI status badges and setup instructions
+- `storage/configs/.gitkeep` - Git placeholder for configs directory
+- `storage/settings/.gitkeep` - Git placeholder for settings directory
+- `storage/history/.gitkeep` - Git placeholder for history directory
+- `storage/templates/.gitkeep` - Git placeholder for templates directory
+- `storage/keys/.gitkeep` - Git placeholder for keys directory
+- `src/lib/file-storage-service.ts` - File storage service with atomic operations and file locking
+- `src/types/settings.ts` - TypeScript types for application settings
+- `src/lib/settings-service.ts` - Settings management service with validation and backup
+- `src/lib/__tests__/file-storage-service.test.ts` - Unit tests for file storage service
+- `src/lib/__tests__/settings-service.test.ts` - Unit tests for settings service
 
 ### Modified Files
 
@@ -112,6 +122,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/components/Button.stories.tsx` - Fixed Storybook story TypeScript issues
 - `src/__tests__/mocks/api.ts` - Fixed TypeScript strict mode issues with request body parsing
 - `src/__tests__/utils/testUtils.ts` - Fixed TypeScript strict mode issues with type assertions
+- `.gitignore` - Updated to exclude storage directory from version control
 
 ---
 
@@ -235,22 +246,22 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** JSON-based settings and data storage
 
-- [ ] Create `storage/` directory structure: `configs/`, `settings/`, `history/`, `templates/`
-- [ ] Create `FileStorageService.ts` with read/write methods for JSON files
-- [ ] Implement atomic file writes using temp files and rename operations
-- [ ] Add file locking to prevent concurrent write conflicts
-- [ ] Create settings schema with default values for application configuration
-- [ ] **Test:** Files write atomically, concurrent access handled correctly
+- [x] Create `storage/` directory structure: `configs/`, `settings/`, `history/`, `templates/`
+- [x] Create `FileStorageService.ts` with read/write methods for JSON files
+- [x] Implement atomic file writes using temp files and rename operations
+- [x] Add file locking to prevent concurrent write conflicts
+- [x] Create settings schema with default values for application configuration
+- [x] **Test:** Files write atomically, concurrent access handled correctly
 
 #### Task 3.4: Settings Management System
 
 **Deliverable:** Application settings and preferences storage
 
-- [ ] Create settings schema for app preferences (theme, polling intervals, log levels)
-- [ ] Implement settings validation using Zod schemas
-- [ ] Create settings backup and restore functionality (keep last 5 versions)
-- [ ] Add settings migration system for schema updates
-- [ ] **Test:** Settings persist correctly, migration handles version changes
+- [x] Create settings schema for app preferences (theme, polling intervals, log levels)
+- [x] Implement settings validation using Zod schemas
+- [x] Create settings backup and restore functionality (keep last 5 versions)
+- [x] Add settings migration system for schema updates
+- [x] **Test:** Settings persist correctly, migration handles version changes
 
 ### Day 4: API Key Management
 

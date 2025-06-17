@@ -1,0 +1,7 @@
+# Application Settings Directory
+# 
+# This directory stores application settings and user preferences.
+# Files include: settings.json, user-preferences.json
+# Settings are persisted in JSON format for easy access and modification.
+#
+# Contents of this directory are ignored by git.
