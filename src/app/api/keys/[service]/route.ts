@@ -35,11 +35,13 @@ function validateService(service: string): SupportedService {
 interface ServiceOperationResponse {
   message: string;
   service: SupportedService;
-  isValid?: boolean;
-  serviceInfo?: {
-    name?: string;
-    features?: string[];
-  };
+  isValid?: boolean | undefined;
+  serviceInfo?:
+    | {
+        name?: string;
+        features?: string[];
+      }
+    | undefined;
 }
 
 /**
@@ -48,10 +50,11 @@ interface ServiceOperationResponse {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { service: string } }
+  { params }: { params: Promise<{ service: string }> }
 ): Promise<NextResponse> {
+  const { service: serviceParam } = await params;
   try {
-    const service = validateService(params.service);
+    const service = validateService(serviceParam);
 
     const hasKey = await apiKeyService.hasKey(service);
 
@@ -89,10 +92,11 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { service: string } }
+  { params }: { params: Promise<{ service: string }> }
 ): Promise<NextResponse> {
+  const { service: serviceParam } = await params;
   try {
-    const service = validateService(params.service);
+    const service = validateService(serviceParam);
     const body = await validateJsonBody(request, (data) =>
       updateKeyRequestSchema.parse(data)
     );
@@ -142,10 +146,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { service: string } }
+  { params }: { params: Promise<{ service: string }> }
 ): Promise<NextResponse> {
+  const { service: serviceParam } = await params;
   try {
-    const service = validateService(params.service);
+    const service = validateService(serviceParam);
 
     const hasKey = await apiKeyService.hasKey(service);
 
@@ -177,10 +182,11 @@ export async function DELETE(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { service: string } }
+  { params }: { params: Promise<{ service: string }> }
 ): Promise<NextResponse> {
+  const { service: serviceParam } = await params;
   try {
-    const service = validateService(params.service);
+    const service = validateService(serviceParam);
 
     const hasKey = await apiKeyService.hasKey(service);
 

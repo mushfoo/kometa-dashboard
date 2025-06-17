@@ -119,9 +119,8 @@ describe('API Key Management - Unit Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle unsupported services', async () => {
-      // @ts-expect-error Testing unsupported service
       await expect(
-        apiKeyService.storeKey('unsupported', 'test')
+        apiKeyService.storeKey('unsupported' as any, 'test')
       ).rejects.toThrow('Unsupported service');
     });
 
@@ -175,7 +174,6 @@ describe('API Key Management - Unit Tests', () => {
         clientId: 'short',
         clientSecret: 'short',
       };
-      // @ts-expect-error Testing invalid format
       await expect(
         apiKeyService.storeKey('trakt', invalidCreds)
       ).rejects.toThrow();

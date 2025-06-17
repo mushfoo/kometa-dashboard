@@ -25,22 +25,26 @@ const addKeyRequestSchema = z.object({
 interface ConfiguredService {
   service: SupportedService;
   hasKey: boolean;
-  lastTested?: string;
-  isValid?: boolean;
-  serviceInfo?: {
-    name?: string;
-    features?: string[];
-  };
+  lastTested?: string | undefined;
+  isValid?: boolean | undefined;
+  serviceInfo?:
+    | {
+        name?: string;
+        features?: string[];
+      }
+    | undefined;
 }
 
 interface AddKeyResponse {
   message: string;
   service: SupportedService;
-  isValid?: boolean;
-  serviceInfo?: {
-    name?: string;
-    features?: string[];
-  };
+  isValid?: boolean | undefined;
+  serviceInfo?:
+    | {
+        name?: string;
+        features?: string[];
+      }
+    | undefined;
 }
 
 /**

@@ -279,9 +279,8 @@ describe('ApiKeyService', () => {
 
   describe('Edge Cases', () => {
     it('should handle unsupported services gracefully', async () => {
-      // @ts-expect-error Testing unsupported service
       await expect(
-        apiKeyService.storeKey('unsupported', 'test')
+        apiKeyService.storeKey('unsupported' as any, 'test')
       ).rejects.toThrow('Unsupported service');
     });
 
