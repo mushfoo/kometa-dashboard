@@ -119,8 +119,11 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/app/api/keys/route.ts` - API key management endpoints (GET/POST for listing and adding keys)
 - `src/app/api/keys/[service]/route.ts` - Service-specific API key endpoints (GET/PUT/DELETE/POST for CRUD operations)
 - `src/__tests__/api/keys-simple.test.ts` - Integration tests for API key management functionality
+- `src/__tests__/api/status-integration.test.ts` - Integration tests for system status endpoint functionality
 
 ### Modified Files
+
+- `src/app/api/status/route.ts` - Enhanced with comprehensive system health checks, file system verification, Kometa availability detection, and Plex configuration checking
 
 - `next.config.js` - Updated with API headers configuration and server options
 - `jest.setup.js` - Enhanced with Web API polyfills for testing
@@ -308,12 +311,12 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** GET /api/status health check
 
-- [ ] Create `app/api/status/route.ts` with system health checks
-- [ ] Verify file system access to config and storage directories
-- [ ] Return memory usage and uptime statistics
-- [ ] Check if Kometa executable is available in PATH or Docker
-- [ ] Check Plex server connectivity if configured
-- [ ] **Test:** Returns 200 with all status checks, handles file system errors
+- [x] Create `app/api/status/route.ts` with system health checks
+- [x] Verify file system access to config and storage directories
+- [x] Return memory usage and uptime statistics
+- [x] Check if Kometa executable is available in PATH or Docker
+- [x] Check Plex server connectivity if configured
+- [x] **Test:** Returns 200 with all status checks, handles file system errors
 
 #### Task 5.2: Configuration Management Endpoints
 
