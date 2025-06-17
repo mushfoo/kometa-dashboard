@@ -296,11 +296,11 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** API key validation system
 
-- [ ] Create test endpoints for each service (TMDb, Trakt, IMDb)
-- [ ] Implement connection testing with proper error handling
-- [ ] Add service status monitoring (online/offline/rate limited)
-- [ ] Create service feature detection based on API key permissions
-- [ ] **Test:** Connection tests work, feature detection accurate
+- [x] Create test endpoints for each service (TMDb, Trakt, IMDb)
+- [x] Implement connection testing with proper error handling
+- [x] Add service status monitoring (online/offline/rate limited)
+- [x] Create service feature detection based on API key permissions
+- [x] **Test:** Connection tests work, feature detection accurate
 
 ### Day 5: Core API Endpoints
 
