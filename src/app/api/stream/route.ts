@@ -422,9 +422,9 @@ async function sendBufferedData(
 }
 
 /**
- * Export connection manager for use by other services
+ * Connection manager instance is only used internally within this route
+ * If external access is needed, create a separate service module
  */
-export { connectionManager };
 
 /**
  * Graceful shutdown handler
