@@ -2,17 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { settingsManager } from '../../../../../lib/SettingsManager';
 import { createErrorResponse } from '../../../../../lib/api-utils';
 
-interface RouteParams {
-  params: {
-    filename: string;
-  };
-}
-
 export async function POST(
   request: NextRequest,
-  { params }: RouteParams
+  context: { params: Promise<{ filename: string }> }
 ): Promise<NextResponse> {
   try {
+    const params = await context.params;
     const { filename } = params;
 
     if (!filename) {
