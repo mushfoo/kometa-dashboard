@@ -221,12 +221,22 @@ describe('FileStorageService', () => {
       const originalData = { version: 1 };
       const newData = { version: 2 };
 
+      // Write original data and create backup
       await storage.write(filePath, originalData);
       const backupName = await storage.createBackup(filePath);
-      await storage.write(filePath, newData);
+      expect(backupName).toBeTruthy();
 
+      // Overwrite with new data
+      await storage.write(filePath, newData);
+      
+      // Verify file has new data before restoration
+      const beforeRestore = await storage.read(filePath);
+      expect(beforeRestore).toEqual(newData);
+
+      // Restore from backup
       await storage.restoreBackup(backupName!, filePath);
 
+      // Check that file was restored to original data
       const restored = await storage.read(filePath);
       expect(restored).toEqual(originalData);
     });
