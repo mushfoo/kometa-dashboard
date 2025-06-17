@@ -1,23 +1,37 @@
-import { apiKeyService } from '@/lib/ApiKeyService';
+import { ApiKeyService } from '@/lib/ApiKeyService';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 // Mock fetch for API testing
 global.fetch = jest.fn();
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
 describe('API Key Management - Unit Tests', () => {
+  let apiKeyService: ApiKeyService;
+  let testStoragePath: string;
+
   beforeEach(async () => {
-    // Clear any existing keys
-    try {
-      const services = await apiKeyService.getConfiguredServices();
-      await Promise.all(
-        services.map((service) => apiKeyService.deleteKey(service))
-      );
-    } catch {
-      // Ignore errors during cleanup
-    }
+    // Create a unique temporary test storage directory for each test
+    testStoragePath = path.join(
+      __dirname,
+      `../../temp/keys-simple-${Date.now()}-${Math.random().toString(36).substring(7)}`
+    );
+    await fs.mkdir(testStoragePath, { recursive: true });
+
+    // Create service instance with test storage path
+    apiKeyService = new ApiKeyService(testStoragePath);
 
     // Reset fetch mock
     mockFetch.mockReset();
+  });
+
+  afterEach(async () => {
+    // Clean up test directory completely
+    try {
+      await fs.rm(testStoragePath, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
   });
 
   describe('Core API Key Service Integration', () => {
