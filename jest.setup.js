@@ -48,6 +48,16 @@ global.Response = class MockResponse {
       ? this.body
       : JSON.stringify(this.body);
   }
+
+  static json(body, init = {}) {
+    return new MockResponse(body, {
+      ...init,
+      headers: {
+        'content-type': 'application/json',
+        ...init.headers,
+      },
+    });
+  }
 };
 
 // Mock Headers
