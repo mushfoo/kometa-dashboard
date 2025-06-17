@@ -11,8 +11,11 @@
 ### Technology Stack
 
 - **Frontend:** React 18 + TypeScript + Next.js 15 (App Router)
-- **Styling:** Tailwind CSS + Shadcn/UI components
+- **Styling:** Tailwind CSS + Lucide React icons
 - **State Management:** React Query (server state) + Zustand (client state)
+- **UI Components:** Custom components with responsive design
+- **Layout:** Mobile-first responsive layout with sidebar navigation
+- **Theming:** Dark/light/system theme support with localStorage persistence
 - **API:** Next.js API routes (`/app/api/`)
 - **Storage:** File-based JSON storage (no database for MVP)
 - **Real-time:** Smart polling + Server-Sent Events (SSE)
@@ -54,14 +57,24 @@ src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API routes
 │   ├── (dashboard)/       # Dashboard route group
-│   └── globals.css        # Global styles
+│   │   ├── dashboard/     # Dashboard page
+│   │   ├── config/        # Configuration page
+│   │   ├── collections/   # Collections page
+│   │   ├── logs/         # Logs page
+│   │   ├── operations/   # Operations page
+│   │   └── layout.tsx    # Dashboard layout
+│   ├── layout.tsx        # Root layout with providers
+│   ├── page.tsx          # Home page
+│   └── globals.css       # Global styles
 ├── components/            # Reusable UI components
-│   ├── ui/               # Base UI components (Shadcn/UI)
-│   ├── forms/            # Form components
-│   └── layout/           # Layout components
+│   ├── layout/           # Layout components (Header, Sidebar, Layout)
+│   ├── navigation/       # Navigation components (Breadcrumbs)
+│   ├── providers/        # React Query and app providers
+│   ├── ui/               # Base UI components
+│   └── forms/            # Form components (future)
 ├── lib/                  # Utility functions and services
-├── hooks/                # Custom React hooks
-├── stores/               # Zustand stores
+├── hooks/                # Custom React hooks (useAppState)
+├── stores/               # Zustand stores (settings, config)
 ├── types/                # TypeScript type definitions
 └── __tests__/            # Test files
 ```
@@ -144,13 +157,14 @@ Update `planning/tasks/detailed-task-breakdown.md` after each sub-task:
 ### Development Commands
 
 ```bash
-npm run dev          # Start development server
+npm run dev          # Start development server on http://localhost:3000
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
 npm run test         # Run Jest tests
 npm run test:watch   # Run tests in watch mode
 npm run test:coverage # Run tests with coverage report
+npm run storybook    # Start Storybook component library on http://localhost:6006
 ```
 
 ### Project-Specific Commands

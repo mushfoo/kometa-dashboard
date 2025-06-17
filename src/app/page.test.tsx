@@ -11,10 +11,32 @@ describe('Home Page', () => {
 
   it('renders the configuration section', () => {
     render(<Page />);
-    const configText = screen.getByText(
-      /Manage your Kometa configuration with visual tools/i
-    );
+    const configLink = screen.getByRole('link', { name: /Configuration/ });
+    expect(configLink).toBeInTheDocument();
+    expect(configLink).toHaveAttribute('href', '/config');
+
+    const configText = screen.getByText(/Manage your Kometa configuration/i);
     expect(configText).toBeInTheDocument();
+  });
+
+  it('renders all navigation links', () => {
+    render(<Page />);
+
+    const dashboardLink = screen.getByRole('link', { name: /Dashboard/ });
+    expect(dashboardLink).toHaveAttribute('href', '/dashboard');
+
+    const collectionsLink = screen.getByRole('link', { name: /Collections/ });
+    expect(collectionsLink).toHaveAttribute('href', '/collections');
+
+    const logsLink = screen.getByRole('link', { name: /Logs/ });
+    expect(logsLink).toHaveAttribute('href', '/logs');
+  });
+
+  it('renders the get started button', () => {
+    render(<Page />);
+    const getStartedButton = screen.getByRole('link', { name: /Get Started/i });
+    expect(getStartedButton).toBeInTheDocument();
+    expect(getStartedButton).toHaveAttribute('href', '/dashboard');
   });
 
   it('renders with correct styles', () => {
