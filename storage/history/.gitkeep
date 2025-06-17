@@ -1,7 +1,0 @@
-# Operation History Directory
-# 
-# This directory stores historical records of Kometa operations.
-# Operation logs are organized by month: operations-YYYY-MM.json
-# Used for tracking past runs, debugging, and generating statistics.
-#
-# Contents of this directory are ignored by git.
