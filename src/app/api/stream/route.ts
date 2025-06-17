@@ -11,12 +11,15 @@ const StreamQuerySchema = z.object({
 
 // Global connection manager to track active SSE connections
 class SSEConnectionManager {
-  private connections = new Map<string, {
-    response: Response;
-    controller: ReadableStreamDefaultController;
-    lastActivity: Date;
-    filters: z.infer<typeof StreamQuerySchema>;
-  }>();
+  private connections = new Map<
+    string,
+    {
+      response: Response;
+      controller: ReadableStreamDefaultController;
+      lastActivity: Date;
+      filters: z.infer<typeof StreamQuerySchema>;
+    }
+  >();
 
   private cleanupInterval: NodeJS.Timeout;
 
@@ -43,7 +46,9 @@ class SSEConnectionManager {
       filters,
     });
 
-    console.log(`SSE connection added: ${connectionId}, total: ${this.connections.size}`);
+    console.log(
+      `SSE connection added: ${connectionId}, total: ${this.connections.size}`
+    );
   }
 
   /**
@@ -58,7 +63,9 @@ class SSEConnectionManager {
         // Ignore errors when closing
       }
       this.connections.delete(connectionId);
-      console.log(`SSE connection removed: ${connectionId}, total: ${this.connections.size}`);
+      console.log(
+        `SSE connection removed: ${connectionId}, total: ${this.connections.size}`
+      );
     }
   }
 
@@ -68,11 +75,11 @@ class SSEConnectionManager {
   broadcast(data: {
     type: 'logs' | 'operations' | 'status';
     payload: unknown;
-    operationId?: string;
-    level?: string;
+    operationId?: string | undefined;
+    level?: string | undefined;
   }): void {
     // const message = `data: ${JSON.stringify(data)}\n\n`;
-    
+
     for (const [connectionId, connection] of this.connections.entries()) {
       try {
         // Check if this connection should receive this data
@@ -95,7 +102,7 @@ class SSEConnectionManager {
   getStats(): {
     totalConnections: number;
     connectionsByType: Record<string, number>;
-    oldestConnection?: Date;
+    oldestConnection?: Date | undefined;
   } {
     const connectionsByType: Record<string, number> = {};
     let oldestConnection: Date | undefined;
@@ -112,7 +119,7 @@ class SSEConnectionManager {
     return {
       totalConnections: this.connections.size,
       connectionsByType,
-      oldestConnection,
+      oldestConnection: oldestConnection ?? undefined,
     };
   }
 
@@ -121,7 +128,7 @@ class SSEConnectionManager {
    */
   private cleanupStaleConnections(): void {
     const staleThreshold = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
-    
+
     for (const [connectionId, connection] of this.connections.entries()) {
       if (connection.lastActivity < staleThreshold) {
         console.log(`Removing stale SSE connection: ${connectionId}`);
@@ -138,8 +145,8 @@ class SSEConnectionManager {
     data: {
       type: 'logs' | 'operations' | 'status';
       payload: unknown;
-      operationId?: string;
-      level?: string;
+      operationId?: string | undefined;
+      level?: string | undefined;
     }
   ): boolean {
     // Type filter
@@ -153,7 +160,11 @@ class SSEConnectionManager {
     }
 
     // Log level filter (for logs type)
-    if (filters.type === 'logs' && filters.level && data.level !== filters.level) {
+    if (
+      filters.type === 'logs' &&
+      filters.level &&
+      data.level !== filters.level
+    ) {
       return false;
     }
 
@@ -178,10 +189,13 @@ class SSEConnectionManager {
 const connectionManager = new SSEConnectionManager();
 
 // Rate limiting for SSE connections
-const connectionRateLimit = new Map<string, {
-  count: number;
-  lastReset: Date;
-}>();
+const connectionRateLimit = new Map<
+  string,
+  {
+    count: number;
+    lastReset: Date;
+  }
+>();
 
 const MAX_CONNECTIONS_PER_IP = 5;
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
@@ -225,9 +239,10 @@ export async function GET(request: NextRequest): Promise<Response> {
     const filters = StreamQuerySchema.parse(queryParams);
 
     // Get client IP for rate limiting
-    const ip = request.headers.get('x-forwarded-for') || 
-               request.headers.get('x-real-ip') || 
-               'unknown';
+    const ip =
+      request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
 
     // Check rate limits
     if (!checkRateLimit(ip)) {
@@ -244,14 +259,16 @@ export async function GET(request: NextRequest): Promise<Response> {
     const stream = new ReadableStream({
       start(controller) {
         // Send initial connection message
-        controller.enqueue(`data: ${JSON.stringify({
-          type: 'connection',
-          payload: {
-            connectionId,
-            filters,
-            timestamp: new Date().toISOString(),
-          }
-        })}\n\n`);
+        controller.enqueue(
+          `data: ${JSON.stringify({
+            type: 'connection',
+            payload: {
+              connectionId,
+              filters,
+              timestamp: new Date().toISOString(),
+            },
+          })}\n\n`
+        );
 
         // Send buffered data if requested
         if (filters.buffer > 0) {
@@ -259,15 +276,22 @@ export async function GET(request: NextRequest): Promise<Response> {
         }
 
         // Register connection
-        connectionManager.addConnection(connectionId, response, controller, filters);
+        connectionManager.addConnection(
+          connectionId,
+          response,
+          controller,
+          filters
+        );
 
         // Send periodic keepalive messages
         const keepAliveInterval = setInterval(() => {
           try {
-            controller.enqueue(`data: ${JSON.stringify({
-              type: 'keepalive',
-              payload: { timestamp: new Date().toISOString() }
-            })}\n\n`);
+            controller.enqueue(
+              `data: ${JSON.stringify({
+                type: 'keepalive',
+                payload: { timestamp: new Date().toISOString() },
+              })}\n\n`
+            );
           } catch {
             clearInterval(keepAliveInterval);
             connectionManager.removeConnection(connectionId);
@@ -283,7 +307,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
       cancel() {
         connectionManager.removeConnection(connectionId);
-      }
+      },
     });
 
     // Create response with SSE headers
@@ -291,22 +315,21 @@ export async function GET(request: NextRequest): Promise<Response> {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Cache-Control',
       },
     });
 
     return response;
-
   } catch (error) {
     console.error('SSE stream error:', error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid query parameters',
-          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+          details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`),
         },
         { status: 400 }
       );
@@ -328,14 +351,11 @@ export async function POST(request: NextRequest): Promise<Response> {
     // Verify this is an internal request (in production, use proper authentication)
     const authHeader = request.headers.get('authorization');
     if (authHeader !== 'Bearer internal-service') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    
+
     // Validate broadcast data
     const BroadcastSchema = z.object({
       type: z.enum(['logs', 'operations', 'status']),
@@ -347,21 +367,25 @@ export async function POST(request: NextRequest): Promise<Response> {
     const data = BroadcastSchema.parse(body);
 
     // Broadcast to all matching connections
-    connectionManager.broadcast(data);
+    connectionManager.broadcast({
+      type: data.type,
+      payload: data.payload,
+      operationId: data.operationId ?? undefined,
+      level: data.level ?? undefined,
+    });
 
     return NextResponse.json({
       success: true,
       broadcastTo: connectionManager.getStats().totalConnections,
     });
-
   } catch (error) {
     console.error('SSE broadcast error:', error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid broadcast data',
-          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+          details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`),
         },
         { status: 400 }
       );
@@ -384,20 +408,21 @@ async function sendBufferedData(
   try {
     // This would typically fetch from your data services
     // For now, send a placeholder message
-    controller.enqueue(`data: ${JSON.stringify({
-      type: 'buffer',
-      payload: {
-        message: `Buffered data for ${filters.type} (last ${filters.buffer} items)`,
-        filters,
-        timestamp: new Date().toISOString(),
-      }
-    })}\n\n`);
+    controller.enqueue(
+      `data: ${JSON.stringify({
+        type: 'buffer',
+        payload: {
+          message: `Buffered data for ${filters.type} (last ${filters.buffer} items)`,
+          filters,
+          timestamp: new Date().toISOString(),
+        },
+      })}\n\n`
+    );
 
     // TODO: Implement actual buffered data retrieval based on filters.type
     // - For logs: get recent log entries from LogService
     // - For operations: get recent operation status from OperationService
     // - For status: get current system status
-    
   } catch (error) {
     console.error('Error sending buffered data:', error);
   }

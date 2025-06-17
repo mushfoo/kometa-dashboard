@@ -17,12 +17,12 @@ jest.mock('fs', () => ({
 jest.mock('../LogParser', () => ({
   LogParser: class MockLogParser {
     private entries: any[] = [];
-    
+
     addLogEntry(entry: any) {
       this.entries.push(entry);
       this.emit('logEntry', entry);
     }
-    
+
     processLine(line: string, source: string) {
       const entry = {
         id: `log_${Date.now()}_${Math.random()}`,
@@ -35,26 +35,28 @@ jest.mock('../LogParser', () => ({
       this.addLogEntry(entry);
       return entry;
     }
-    
+
     getFilteredLogs(filter: any) {
-      return this.entries.filter(entry => {
+      return this.entries.filter((entry) => {
         if (filter.level && entry.level !== filter.level) return false;
-        if (filter.search && !entry.message.includes(filter.search)) return false;
+        if (filter.search && !entry.message.includes(filter.search))
+          return false;
         return true;
       });
     }
-    
+
     searchLogs(pattern: string, options: any = {}) {
-      const regex = typeof pattern === 'string' ? new RegExp(pattern, 'i') : pattern;
-      const results = this.entries.filter(entry => regex.test(entry.message));
-      
+      const regex =
+        typeof pattern === 'string' ? new RegExp(pattern, 'i') : pattern;
+      const results = this.entries.filter((entry) => regex.test(entry.message));
+
       if (options.maxResults && results.length > options.maxResults) {
         return results.slice(0, options.maxResults);
       }
-      
+
       return results;
     }
-    
+
     getBufferStats() {
       return {
         totalEntries: this.entries.length,
@@ -64,7 +66,7 @@ jest.mock('../LogParser', () => ({
         newestEntry: new Date(),
       };
     }
-    
+
     // Mock EventEmitter methods
     on = jest.fn();
     emit = jest.fn();
@@ -82,7 +84,7 @@ describe('LogStreamingService', () => {
       pollInterval: 100,
       enableFileWatching: false, // Disable for easier testing
     });
-    
+
     jest.clearAllMocks();
   });
 
@@ -95,7 +97,7 @@ describe('LogStreamingService', () => {
     test('should start and stop streaming', async () => {
       const startedSpy = jest.fn();
       const stoppedSpy = jest.fn();
-      
+
       service.on('streamingStarted', startedSpy);
       service.on('streamingStopped', stoppedSpy);
 
@@ -116,19 +118,19 @@ describe('LogStreamingService', () => {
       mockFs.readFile.mockRejectedValue(new Error('File not found'));
 
       await service.startStreaming();
-      
+
       // Second call should be ignored
       await service.startStreaming();
-      
+
       expect(service.getStreamingStats().isStreaming).toBe(true);
     });
 
     test('should generate correct log file path', () => {
       const stats = service.getStreamingStats();
       // const expectedMonth = new Date().toISOString().slice(0, 7);
-      
+
       expect(stats.currentLogFile).toBeNull(); // Not started yet
-      
+
       // After starting, it should set the current file
       // This is tested indirectly through other tests
     });
@@ -164,8 +166,8 @@ describe('LogStreamingService', () => {
 
       const recentLogs = service.getRecentLogs();
       expect(recentLogs).toHaveLength(2);
-      expect(recentLogs[0].message).toBe('Test log 1');
-      expect(recentLogs[1].message).toBe('Test log 2');
+      expect(recentLogs[0]?.message).toBe('Test log 1');
+      expect(recentLogs[1]?.message).toBe('Test log 2');
     });
 
     test('should handle empty or non-existent log files', async () => {
@@ -202,7 +204,7 @@ describe('LogStreamingService', () => {
 
       const recentLogs = smallBufferService.getRecentLogs();
       expect(recentLogs.length).toBeLessThanOrEqual(3);
-      
+
       await smallBufferService.stopStreaming();
     });
   });
@@ -240,24 +242,26 @@ describe('LogStreamingService', () => {
 
       mockFs.mkdir.mockResolvedValue(undefined);
       mockFs.readFile.mockResolvedValue(JSON.stringify(mockLogs));
-      
+
       await service.startStreaming();
     });
 
     test('should filter logs by level', () => {
       const errorLogs = service.getFilteredLogs({ level: 'ERROR' });
       expect(errorLogs).toHaveLength(1);
-      expect(errorLogs[0].level).toBe('ERROR');
+      expect(errorLogs[0]?.level).toBe('ERROR');
 
       const infoLogs = service.getFilteredLogs({ level: 'INFO' });
       expect(infoLogs).toHaveLength(2);
-      expect(infoLogs.every(log => log.level === 'INFO')).toBe(true);
+      expect(infoLogs.every((log) => log.level === 'INFO')).toBe(true);
     });
 
     test('should search logs by text pattern', () => {
-      const searchResults = service.searchLogs('error', { caseSensitive: false });
+      const searchResults = service.searchLogs('error', {
+        caseSensitive: false,
+      });
       expect(searchResults).toHaveLength(1);
-      expect(searchResults[0].message).toContain('Error');
+      expect(searchResults[0]?.message).toContain('Error');
     });
 
     test('should search logs with regex pattern', () => {
@@ -314,9 +318,9 @@ describe('LogStreamingService', () => {
 
     test('should recreate parser when buffer size changes', () => {
       // const originalStats = service.getStreamingStats();
-      
+
       service.updateConfig({ historyBufferSize: 150 });
-      
+
       // Parser should be recreated (this is tested indirectly)
       const newStats = service.getStreamingStats();
       expect(newStats).toBeDefined();
@@ -333,7 +337,7 @@ describe('LogStreamingService', () => {
 
       // Should not throw, but handle gracefully
       await service.startStreaming();
-      
+
       expect(service.getStreamingStats().isStreaming).toBe(true);
       expect(service.getRecentLogs()).toHaveLength(0);
     });
@@ -347,10 +351,10 @@ describe('LogStreamingService', () => {
       mockFs.stat.mockRejectedValue(new Error('Stat failed'));
 
       await service.startStreaming();
-      
+
       // Trigger a refresh that will fail
       await service.refreshLogs();
-      
+
       expect(errorSpy).toHaveBeenCalled();
     });
 
@@ -379,7 +383,7 @@ describe('LogStreamingService', () => {
       // The actual new log processing would happen via file watching
       // or polling, which is harder to test directly. This test serves
       // as a placeholder for the expected behavior.
-      
+
       expect(newLogSpy).not.toHaveBeenCalled(); // No new logs yet
     });
 
@@ -390,7 +394,7 @@ describe('LogStreamingService', () => {
 
       // Mock the private method for testing
       const processMethod = (streamingService as any).processNewLogContent;
-      
+
       // Should handle invalid JSON gracefully
       await expect(
         processMethod.call(streamingService, 'invalid json content')

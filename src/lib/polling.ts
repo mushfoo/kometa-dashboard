@@ -31,7 +31,7 @@ const DEFAULT_CONFIG: Required<PollingConfig> = {
   maxBackoffDelay: 30000, // 30 seconds
   onError: (error: Error, retryCount: number) => {
     console.warn(`Polling error (retry ${retryCount}):`, error.message);
-  }
+  },
 };
 
 /**
@@ -39,7 +39,7 @@ const DEFAULT_CONFIG: Required<PollingConfig> = {
  * and automatic backoff strategies for efficient real-time updates.
  */
 export class PollingService<T = unknown> extends EventEmitter {
-  private config: Required<PollingConfig>;
+  protected config: Required<PollingConfig>;
   private pollCallback: () => Promise<T>;
   private isPolling = false;
   private timeoutId: NodeJS.Timeout | null = null;
@@ -49,7 +49,10 @@ export class PollingService<T = unknown> extends EventEmitter {
   private pollHistory: PollResult<T>[] = [];
   private readonly maxHistorySize = 100;
 
-  constructor(pollCallback: () => Promise<T>, config: Partial<PollingConfig> = {}) {
+  constructor(
+    pollCallback: () => Promise<T>,
+    config: Partial<PollingConfig> = {}
+  ) {
     super();
     this.pollCallback = pollCallback;
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -73,7 +76,7 @@ export class PollingService<T = unknown> extends EventEmitter {
     this.isPolling = true;
     this.retryCount = 0;
     this.currentBackoffDelay = this.config.retryDelay;
-    
+
     this.emit('started');
     this.schedulePoll();
   }
@@ -87,7 +90,7 @@ export class PollingService<T = unknown> extends EventEmitter {
     }
 
     this.isPolling = false;
-    
+
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
@@ -135,7 +138,7 @@ export class PollingService<T = unknown> extends EventEmitter {
    */
   updateConfig(newConfig: Partial<PollingConfig>): void {
     const wasPolling = this.isPolling;
-    
+
     if (wasPolling) {
       this.stop();
     }
@@ -162,9 +165,15 @@ export class PollingService<T = unknown> extends EventEmitter {
     lastPollTime: Date | null;
     nextPollTime: Date | null;
   } {
-    const nextPollTime = this.isPolling && this.timeoutId
-      ? new Date(Date.now() + (this.retryCount > 0 ? this.currentBackoffDelay : this.config.interval))
-      : null;
+    const nextPollTime =
+      this.isPolling && this.timeoutId
+        ? new Date(
+            Date.now() +
+              (this.retryCount > 0
+                ? this.currentBackoffDelay
+                : this.config.interval)
+          )
+        : null;
 
     return {
       isPolling: this.isPolling,
@@ -189,13 +198,15 @@ export class PollingService<T = unknown> extends EventEmitter {
     recentResults: PollResult<T>[];
   } {
     const totalPolls = this.pollHistory.length;
-    const successfulPolls = this.pollHistory.filter(r => r.success).length;
+    const successfulPolls = this.pollHistory.filter((r) => r.success).length;
     const failedPolls = totalPolls - successfulPolls;
-    const successRate = totalPolls > 0 ? (successfulPolls / totalPolls) * 100 : 0;
-    
-    const averageDuration = totalPolls > 0
-      ? this.pollHistory.reduce((sum, r) => sum + r.duration, 0) / totalPolls
-      : 0;
+    const successRate =
+      totalPolls > 0 ? (successfulPolls / totalPolls) * 100 : 0;
+
+    const averageDuration =
+      totalPolls > 0
+        ? this.pollHistory.reduce((sum, r) => sum + r.duration, 0) / totalPolls
+        : 0;
 
     return {
       totalPolls,
@@ -222,9 +233,9 @@ export class PollingService<T = unknown> extends EventEmitter {
     const recentResults = this.pollHistory.slice(-10);
     if (recentResults.length === 0) return true;
 
-    const recentSuccesses = recentResults.filter(r => r.success).length;
+    const recentSuccesses = recentResults.filter((r) => r.success).length;
     const recentSuccessRate = (recentSuccesses / recentResults.length) * 100;
-    
+
     return recentSuccessRate >= successRateThreshold;
   }
 
@@ -236,7 +247,8 @@ export class PollingService<T = unknown> extends EventEmitter {
       return;
     }
 
-    const delay = this.retryCount > 0 ? this.currentBackoffDelay : this.config.interval;
+    const delay =
+      this.retryCount > 0 ? this.currentBackoffDelay : this.config.interval;
 
     this.timeoutId = setTimeout(async () => {
       if (this.isPolling) {
@@ -253,7 +265,7 @@ export class PollingService<T = unknown> extends EventEmitter {
     this.lastPollTime = result.timestamp;
     this.retryCount = 0;
     this.currentBackoffDelay = this.config.retryDelay;
-    
+
     this.addToHistory(result);
     this.emit('poll', result);
     this.emit('success', result);
@@ -265,7 +277,7 @@ export class PollingService<T = unknown> extends EventEmitter {
   private handlePollError(result: PollResult<T>): void {
     this.lastPollTime = result.timestamp;
     this.retryCount++;
-    
+
     this.addToHistory(result);
     this.emit('poll', result);
     this.emit('error', result);
@@ -294,7 +306,7 @@ export class PollingService<T = unknown> extends EventEmitter {
    */
   private addToHistory(result: PollResult<T>): void {
     this.pollHistory.push(result);
-    
+
     if (this.pollHistory.length > this.maxHistorySize) {
       this.pollHistory.shift();
     }
@@ -365,17 +377,24 @@ export class AdaptivePollingService<T> extends PollingService<T> {
       adaptiveThreshold?: number;
     } = {}
   ) {
-    const { minInterval = 1000, maxInterval = 60000, adaptiveThreshold = 5, ...baseConfig } = config;
-    
+    const {
+      minInterval = 1000,
+      maxInterval = 60000,
+      adaptiveThreshold = 5,
+      ...baseConfig
+    } = config;
+
     super(pollCallback, baseConfig);
-    
+
     this.baseInterval = baseConfig.interval || DEFAULT_CONFIG.interval;
     this.minInterval = minInterval;
     this.maxInterval = maxInterval;
 
     // Listen to our own poll events to adapt interval
     this.on('success', (result: PollResult<T>) => {
-      this.adaptInterval(result.data, adaptiveThreshold);
+      if (result.data !== undefined) {
+        this.adaptInterval(result.data, adaptiveThreshold);
+      }
     });
   }
 
@@ -384,7 +403,7 @@ export class AdaptivePollingService<T> extends PollingService<T> {
    */
   private adaptInterval(data: T, threshold: number): void {
     const currentHash = this.hashData(data);
-    
+
     if (this.lastDataHash === currentHash) {
       this.unchangedCount++;
     } else {
@@ -394,7 +413,7 @@ export class AdaptivePollingService<T> extends PollingService<T> {
 
     // Adjust interval based on data change frequency
     let newInterval: number;
-    
+
     if (this.unchangedCount === 0) {
       // Data changed - use base interval
       newInterval = this.baseInterval;
@@ -403,7 +422,7 @@ export class AdaptivePollingService<T> extends PollingService<T> {
       newInterval = Math.min(this.baseInterval * 2, this.maxInterval);
     } else {
       // Gradual slowdown
-      const multiplier = 1 + (this.unchangedCount / threshold);
+      const multiplier = 1 + this.unchangedCount / threshold;
       newInterval = Math.min(this.baseInterval * multiplier, this.maxInterval);
     }
 

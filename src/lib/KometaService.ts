@@ -11,7 +11,9 @@ const KometaConfig = z.object({
   dryRun: z.boolean().default(false),
   libraries: z.array(z.string()).optional(),
   collections: z.array(z.string()).optional(),
-  operationType: z.enum(['full_run', 'collections_only', 'library_only', 'config_reload']).default('full_run'),
+  operationType: z
+    .enum(['full_run', 'collections_only', 'library_only', 'config_reload'])
+    .default('full_run'),
 });
 
 type KometaConfig = z.infer<typeof KometaConfig>;
@@ -20,12 +22,12 @@ type KometaConfig = z.infer<typeof KometaConfig>;
 /* eslint-disable no-unused-vars */
 export enum ProcessStatus {
   IDLE = 'idle',
-  STARTING = 'starting', 
+  STARTING = 'starting',
   RUNNING = 'running',
   STOPPING = 'stopping',
   STOPPED = 'stopped',
   CRASHED = 'crashed',
-  FAILED = 'failed'
+  FAILED = 'failed',
 }
 /* eslint-enable no-unused-vars */
 
@@ -44,8 +46,8 @@ export interface ProcessInfo {
   status: ProcessStatus;
   startTime?: Date;
   endTime?: Date;
-  exitCode?: number;
-  signal?: string;
+  exitCode?: number | undefined;
+  signal?: string | undefined;
   operationId: string;
   config: KometaConfig;
 }
@@ -71,10 +73,12 @@ export class KometaService extends EventEmitter {
   async startProcess(config: KometaConfig): Promise<string> {
     // Validate configuration
     const validatedConfig = KometaConfig.parse(config);
-    
+
     // Ensure no process is currently running
     if (this.isRunning()) {
-      throw new Error('A Kometa process is already running. Stop it before starting a new one.');
+      throw new Error(
+        'A Kometa process is already running. Stop it before starting a new one.'
+      );
     }
 
     // Generate unique operation ID
@@ -93,8 +97,11 @@ export class KometaService extends EventEmitter {
       await this.validateConfigFile(validatedConfig.configPath);
 
       // Spawn the Kometa process
-      this.currentProcess = await this.spawnKometaProcess(validatedConfig, operationId);
-      
+      this.currentProcess = await this.spawnKometaProcess(
+        validatedConfig,
+        operationId
+      );
+
       // Update process info with PID
       if (this.processInfo && this.currentProcess.pid) {
         this.processInfo.pid = this.currentProcess.pid;
@@ -137,16 +144,16 @@ export class KometaService extends EventEmitter {
     }
 
     const { operationId } = this.processInfo;
-    
+
     try {
       this.processInfo.status = ProcessStatus.STOPPING;
-      
+
       // Send termination signal
       if (force) {
         this.currentProcess.kill('SIGKILL');
       } else {
         this.currentProcess.kill('SIGTERM');
-        
+
         // If graceful shutdown takes too long, force kill after 10 seconds
         setTimeout(() => {
           if (this.currentProcess && !this.currentProcess.killed) {
@@ -160,7 +167,8 @@ export class KometaService extends EventEmitter {
     } catch (error) {
       this.emit('processError', {
         operationId,
-        error: error instanceof Error ? error.message : 'Failed to stop process',
+        error:
+          error instanceof Error ? error.message : 'Failed to stop process',
       });
       return false;
     }
@@ -202,14 +210,19 @@ export class KometaService extends EventEmitter {
     try {
       await fs.access(configPath, fs.constants.R_OK);
     } catch {
-      throw new Error(`Configuration file not found or not readable: ${configPath}`);
+      throw new Error(
+        `Configuration file not found or not readable: ${configPath}`
+      );
     }
   }
 
   /**
    * Spawn the actual Kometa process with proper error handling
    */
-  private async spawnKometaProcess(config: KometaConfig, operationId: string): Promise<ChildProcess> {
+  private async spawnKometaProcess(
+    config: KometaConfig,
+    operationId: string
+  ): Promise<ChildProcess> {
     const args = this.buildKometaArgs(config);
 
     // Try different execution methods in order of preference
@@ -219,7 +232,12 @@ export class KometaService extends EventEmitter {
       // Local Kometa installation
       () => this.tryLocalExecution('kometa', args, operationId),
       // Python module execution
-      () => this.tryLocalExecution('python', ['-m', 'kometa', ...args], operationId),
+      () =>
+        this.tryLocalExecution(
+          'python',
+          ['-m', 'kometa', ...args],
+          operationId
+        ),
     ];
 
     let lastError: Error | null = null;
@@ -231,21 +249,29 @@ export class KometaService extends EventEmitter {
           return process;
         }
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error('Unknown execution error');
+        lastError =
+          error instanceof Error ? error : new Error('Unknown execution error');
       }
     }
 
-    throw new Error(`Failed to start Kometa process. Last error: ${lastError?.message || 'Unknown error'}`);
+    throw new Error(
+      `Failed to start Kometa process. Last error: ${lastError?.message || 'Unknown error'}`
+    );
   }
 
   /**
    * Try Docker execution method
    */
-  private async tryDockerExecution(args: string[], configPath: string, operationId: string): Promise<ChildProcess> {
+  private async tryDockerExecution(
+    args: string[],
+    configPath: string,
+    operationId: string
+  ): Promise<ChildProcess> {
     const dockerArgs = [
       'run',
       '--rm',
-      '-v', `${path.dirname(configPath)}:/config`,
+      '-v',
+      `${path.dirname(configPath)}:/config`,
       'kometateam/kometa',
       ...args,
     ];
@@ -262,7 +288,11 @@ export class KometaService extends EventEmitter {
   /**
    * Try local execution method
    */
-  private async tryLocalExecution(command: string, args: string[], operationId: string): Promise<ChildProcess> {
+  private async tryLocalExecution(
+    command: string,
+    args: string[],
+    operationId: string
+  ): Promise<ChildProcess> {
     return spawn(command, args, {
       stdio: ['ignore', 'pipe', 'pipe'],
       env: {
@@ -337,7 +367,7 @@ export class KometaService extends EventEmitter {
       const lines = stdoutBuffer.split('\n');
       stdoutBuffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-      lines.forEach(line => {
+      lines.forEach((line) => {
         if (line.trim()) {
           const logEntry = this.parseLogLine(line, 'stdout', operationId);
           this.addToLogBuffer(logEntry);
@@ -355,7 +385,7 @@ export class KometaService extends EventEmitter {
       const lines = stderrBuffer.split('\n');
       stderrBuffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-      lines.forEach(line => {
+      lines.forEach((line) => {
         if (line.trim()) {
           const logEntry = this.parseLogLine(line, 'stderr', operationId);
           this.addToLogBuffer(logEntry);
@@ -369,8 +399,8 @@ export class KometaService extends EventEmitter {
       if (!this.processInfo) return;
 
       this.processInfo.endTime = new Date();
-      this.processInfo.exitCode = code || undefined;
-      this.processInfo.signal = signal || undefined;
+      this.processInfo.exitCode = code ?? undefined;
+      this.processInfo.signal = signal ?? undefined;
 
       if (signal) {
         this.processInfo.status = ProcessStatus.STOPPED;
@@ -413,10 +443,14 @@ export class KometaService extends EventEmitter {
   /**
    * Parse log line and extract level information
    */
-  private parseLogLine(line: string, source: 'stdout' | 'stderr', operationId: string): LogOutput {
+  private parseLogLine(
+    line: string,
+    source: 'stdout' | 'stderr',
+    operationId: string
+  ): LogOutput {
     // Simple log level detection - can be enhanced based on Kometa's actual log format
     let level: LogOutput['level'] = 'INFO';
-    
+
     if (line.includes('ERROR') || line.includes('Error')) {
       level = 'ERROR';
     } else if (line.includes('WARNING') || line.includes('Warning')) {
@@ -444,7 +478,7 @@ export class KometaService extends EventEmitter {
    */
   private addToLogBuffer(logEntry: LogOutput): void {
     this.logBuffer.push(logEntry);
-    
+
     // Maintain circular buffer size
     if (this.logBuffer.length > this.maxLogBuffer) {
       this.logBuffer.shift();
@@ -469,13 +503,13 @@ export class KometaService extends EventEmitter {
         if (this.processInfo.status === ProcessStatus.RUNNING) {
           this.processInfo.status = ProcessStatus.CRASHED;
           this.processInfo.endTime = new Date();
-          
+
           this.emit('processError', {
             operationId,
             error: 'Process appears to have crashed unexpectedly',
           });
         }
-        
+
         clearInterval(healthCheckInterval);
         this.currentProcess = null;
       }

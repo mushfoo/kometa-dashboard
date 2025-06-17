@@ -43,10 +43,12 @@ describe('KometaService', () => {
     service = new KometaService();
     mockProcess = new MockChildProcess();
     jest.clearAllMocks();
-    
+
     // Mock fs.access to always succeed
-    (fs.access as jest.MockedFunction<typeof fs.access>).mockResolvedValue(undefined);
-    
+    (fs.access as jest.MockedFunction<typeof fs.access>).mockResolvedValue(
+      undefined
+    );
+
     // Mock spawn to return our mock process
     mockSpawn.mockReturnValue(mockProcess as any);
   });
@@ -62,15 +64,16 @@ describe('KometaService', () => {
     const testConfig = {
       configPath: '/test/config.yml',
       verbosity: 'info' as const,
+      dryRun: false,
       operationType: 'full_run' as const,
     };
 
     test('should start a process successfully', async () => {
       const operationId = await service.startProcess(testConfig);
-      
+
       expect(operationId).toMatch(/^kometa_\d+_[a-z0-9]+$/);
       expect(service.isRunning()).toBe(true);
-      
+
       const processInfo = service.getProcessInfo();
       expect(processInfo).toMatchObject({
         status: ProcessStatus.RUNNING,
@@ -82,7 +85,7 @@ describe('KometaService', () => {
 
     test('should reject starting a process when one is already running', async () => {
       await service.startProcess(testConfig);
-      
+
       await expect(service.startProcess(testConfig)).rejects.toThrow(
         'A Kometa process is already running'
       );
@@ -90,25 +93,25 @@ describe('KometaService', () => {
 
     test('should stop a running process gracefully', async () => {
       await service.startProcess(testConfig);
-      
+
       const stopResult = await service.stopProcess();
       expect(stopResult).toBe(true);
-      
+
       // Wait for process to exit
-      await new Promise(resolve => service.once('processExited', resolve));
-      
+      await new Promise((resolve) => service.once('processExited', resolve));
+
       expect(service.isRunning()).toBe(false);
     });
 
     test('should force stop a running process', async () => {
       await service.startProcess(testConfig);
-      
+
       const stopResult = await service.stopProcess(true);
       expect(stopResult).toBe(true);
-      
+
       // Wait for process to exit
-      await new Promise(resolve => service.once('processExited', resolve));
-      
+      await new Promise((resolve) => service.once('processExited', resolve));
+
       expect(service.isRunning()).toBe(false);
     });
 
@@ -123,6 +126,8 @@ describe('KometaService', () => {
       const invalidConfig = {
         configPath: '/test/config.yml',
         verbosity: 'invalid' as any,
+        dryRun: false,
+        operationType: 'full_run' as const,
       };
 
       await expect(service.startProcess(invalidConfig)).rejects.toThrow();
@@ -132,6 +137,7 @@ describe('KometaService', () => {
       const config = {
         configPath: '/nonexistent/config.yml',
         verbosity: 'info' as const,
+        dryRun: false,
         operationType: 'full_run' as const,
       };
 
@@ -150,6 +156,7 @@ describe('KometaService', () => {
     const testConfig = {
       configPath: '/test/config.yml',
       verbosity: 'info' as const,
+      dryRun: false,
       operationType: 'full_run' as const,
     };
 
@@ -164,7 +171,7 @@ describe('KometaService', () => {
       mockProcess.stdout.emit('data', Buffer.from('DEBUG: Debug message\n'));
 
       // Wait a bit for events to process
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(logOutputs).toHaveLength(2);
       expect(logOutputs[0]).toMatchObject({
@@ -186,10 +193,13 @@ describe('KometaService', () => {
       await service.startProcess(testConfig);
 
       // Simulate stderr output
-      mockProcess.stderr.emit('data', Buffer.from('ERROR: Something went wrong\n'));
+      mockProcess.stderr.emit(
+        'data',
+        Buffer.from('ERROR: Something went wrong\n')
+      );
 
       // Wait a bit for events to process
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(logOutputs).toHaveLength(1);
       expect(logOutputs[0]).toMatchObject({
@@ -207,13 +217,18 @@ describe('KometaService', () => {
 
       // Simulate partial data chunks
       mockProcess.stdout.emit('data', Buffer.from('This is a partial '));
-      mockProcess.stdout.emit('data', Buffer.from('line that gets completed\n'));
+      mockProcess.stdout.emit(
+        'data',
+        Buffer.from('line that gets completed\n')
+      );
 
       // Wait a bit for events to process
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(logOutputs).toHaveLength(1);
-      expect(logOutputs[0].message).toBe('This is a partial line that gets completed');
+      expect(logOutputs[0].message).toBe(
+        'This is a partial line that gets completed'
+      );
     });
 
     test('should maintain circular log buffer', async () => {
@@ -225,11 +240,11 @@ describe('KometaService', () => {
       }
 
       // Wait for processing
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const recentLogs = service.getRecentLogs();
       expect(recentLogs.length).toBeLessThanOrEqual(1000);
-      
+
       // Should contain the most recent logs
       const lastLog = recentLogs[recentLogs.length - 1];
       expect(lastLog?.message).toBe('Log message 1099');
@@ -240,6 +255,7 @@ describe('KometaService', () => {
     const testConfig = {
       configPath: '/test/config.yml',
       verbosity: 'info' as const,
+      dryRun: false,
       operationType: 'full_run' as const,
     };
 
@@ -262,12 +278,12 @@ describe('KometaService', () => {
       service.on('processExited', (event) => exitedEvents.push(event));
 
       const operationId = await service.startProcess(testConfig);
-      
+
       // Simulate normal process exit
       setTimeout(() => mockProcess.emit('exit', 0, null), 10);
 
       // Wait for event
-      await new Promise(resolve => service.once('processExited', resolve));
+      await new Promise((resolve) => service.once('processExited', resolve));
 
       expect(exitedEvents).toHaveLength(1);
       expect(exitedEvents[0]).toMatchObject({
@@ -283,12 +299,15 @@ describe('KometaService', () => {
       service.on('processError', (event) => errorEvents.push(event));
 
       const operationId = await service.startProcess(testConfig);
-      
+
       // Simulate process error
-      setTimeout(() => mockProcess.emit('error', new Error('Process crashed')), 10);
+      setTimeout(
+        () => mockProcess.emit('error', new Error('Process crashed')),
+        10
+      );
 
       // Wait for event
-      await new Promise(resolve => service.once('processError', resolve));
+      await new Promise((resolve) => service.once('processError', resolve));
 
       expect(errorEvents).toHaveLength(1);
       expect(errorEvents[0]).toMatchObject({
@@ -308,6 +327,7 @@ describe('KometaService', () => {
       const config = {
         configPath: '/test/config.yml',
         verbosity: 'info' as const,
+        dryRun: false,
         operationType: 'full_run' as const,
       };
 
@@ -317,8 +337,13 @@ describe('KometaService', () => {
       expect(mockSpawn).toHaveBeenCalledWith(
         'docker',
         expect.arrayContaining([
-          'run', '--rm', '-v', '/test:/config', 'kometateam/kometa',
-          '--config', '/test/config.yml'
+          'run',
+          '--rm',
+          '-v',
+          '/test:/config',
+          'kometateam/kometa',
+          '--config',
+          '/test/config.yml',
         ]),
         expect.any(Object)
       );
@@ -328,6 +353,7 @@ describe('KometaService', () => {
       const debugConfig = {
         configPath: '/test/config.yml',
         verbosity: 'debug' as const,
+        dryRun: false,
         operationType: 'full_run' as const,
       };
 
@@ -344,8 +370,8 @@ describe('KometaService', () => {
       const dryRunConfig = {
         configPath: '/test/config.yml',
         verbosity: 'info' as const,
-        operationType: 'full_run' as const,
         dryRun: true,
+        operationType: 'full_run' as const,
       };
 
       await service.startProcess(dryRunConfig);
@@ -361,6 +387,7 @@ describe('KometaService', () => {
       const collectionsConfig = {
         configPath: '/test/config.yml',
         verbosity: 'info' as const,
+        dryRun: false,
         operationType: 'collections_only' as const,
       };
 
@@ -386,6 +413,7 @@ describe('KometaService', () => {
       const config = {
         configPath: '/test/config.yml',
         verbosity: 'info' as const,
+        dryRun: false,
         operationType: 'full_run' as const,
       };
 
@@ -393,8 +421,18 @@ describe('KometaService', () => {
 
       // Should have tried Docker first, then local kometa
       expect(mockSpawn).toHaveBeenCalledTimes(2);
-      expect(mockSpawn).toHaveBeenNthCalledWith(1, 'docker', expect.any(Array), expect.any(Object));
-      expect(mockSpawn).toHaveBeenNthCalledWith(2, 'kometa', expect.any(Array), expect.any(Object));
+      expect(mockSpawn).toHaveBeenNthCalledWith(
+        1,
+        'docker',
+        expect.any(Array),
+        expect.any(Object)
+      );
+      expect(mockSpawn).toHaveBeenNthCalledWith(
+        2,
+        'kometa',
+        expect.any(Array),
+        expect.any(Object)
+      );
     });
 
     test('should try all execution methods before failing', async () => {
@@ -406,16 +444,34 @@ describe('KometaService', () => {
       const config = {
         configPath: '/test/config.yml',
         verbosity: 'info' as const,
+        dryRun: false,
         operationType: 'full_run' as const,
       };
 
-      await expect(service.startProcess(config)).rejects.toThrow('Failed to start Kometa process');
+      await expect(service.startProcess(config)).rejects.toThrow(
+        'Failed to start Kometa process'
+      );
 
       // Should have tried all three methods
       expect(mockSpawn).toHaveBeenCalledTimes(3);
-      expect(mockSpawn).toHaveBeenNthCalledWith(1, 'docker', expect.any(Array), expect.any(Object));
-      expect(mockSpawn).toHaveBeenNthCalledWith(2, 'kometa', expect.any(Array), expect.any(Object));
-      expect(mockSpawn).toHaveBeenNthCalledWith(3, 'python', expect.any(Array), expect.any(Object));
+      expect(mockSpawn).toHaveBeenNthCalledWith(
+        1,
+        'docker',
+        expect.any(Array),
+        expect.any(Object)
+      );
+      expect(mockSpawn).toHaveBeenNthCalledWith(
+        2,
+        'kometa',
+        expect.any(Array),
+        expect.any(Object)
+      );
+      expect(mockSpawn).toHaveBeenNthCalledWith(
+        3,
+        'python',
+        expect.any(Array),
+        expect.any(Object)
+      );
     });
   });
 
@@ -429,6 +485,7 @@ describe('KometaService', () => {
       const config = {
         configPath: '/test/config.yml',
         verbosity: 'info' as const,
+        dryRun: false,
         operationType: 'full_run' as const,
       };
 
@@ -444,17 +501,18 @@ describe('KometaService', () => {
       const config = {
         configPath: '/test/config.yml',
         verbosity: 'info' as const,
+        dryRun: false,
         operationType: 'full_run' as const,
       };
 
       await service.startProcess(config);
-      
+
       // Add some logs
       mockProcess.stdout.emit('data', Buffer.from('Test log\n'));
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(service.getRecentLogs()).toHaveLength(1);
-      
+
       service.clearLogBuffer();
       expect(service.getRecentLogs()).toHaveLength(0);
     });

@@ -1,4 +1,8 @@
-import { ConfigManager, ConfigTemplate, TemplateVariables } from '../ConfigManager';
+import {
+  ConfigManager,
+  ConfigTemplate,
+  TemplateVariables,
+} from '../ConfigManager';
 import { KometaConfig } from '../ConfigService';
 import { promises as fs } from 'fs';
 // import path from 'path';
@@ -58,30 +62,32 @@ describe('ConfigManager', () => {
       mockFs.readdir.mockResolvedValue([]);
 
       const templates = await manager.getTemplates();
-      
+
       expect(templates.length).toBeGreaterThan(0);
-      expect(templates).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          id: 'basic-plex-tmdb',
-          name: 'Basic Plex + TMDb Setup',
-          category: 'basic',
-        }),
-        expect.objectContaining({
-          id: 'advanced-multi-provider',
-          category: 'advanced',
-        }),
-        expect.objectContaining({
-          id: 'anime-specialized',
-          category: 'specialized',
-        }),
-      ]));
+      expect(templates).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'basic-plex-tmdb',
+            name: 'Basic Plex + TMDb Setup',
+            category: 'basic',
+          }),
+          expect.objectContaining({
+            id: 'advanced-multi-provider',
+            category: 'advanced',
+          }),
+          expect.objectContaining({
+            id: 'anime-specialized',
+            category: 'specialized',
+          }),
+        ])
+      );
     });
 
     test('should get specific template by ID', async () => {
       mockFs.readdir.mockResolvedValue([]);
 
       const template = await manager.getTemplate('basic-plex-tmdb');
-      
+
       expect(template).toMatchObject({
         id: 'basic-plex-tmdb',
         name: 'Basic Plex + TMDb Setup',
@@ -119,17 +125,19 @@ describe('ConfigManager', () => {
         },
       };
 
-      mockFs.readdir.mockResolvedValue(['custom-test.json']);
+      mockFs.readdir.mockResolvedValue(['custom-test.json'] as any);
       mockFs.readFile.mockResolvedValue(JSON.stringify(customTemplate));
 
       const templates = await manager.getTemplates();
-      
-      expect(templates).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          id: 'custom-test',
-          name: 'Custom Test Template',
-        }),
-      ]));
+
+      expect(templates).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'custom-test',
+            name: 'Custom Test Template',
+          }),
+        ])
+      );
     });
 
     test('should save custom template', async () => {
@@ -175,7 +183,7 @@ describe('ConfigManager', () => {
       mockFs.unlink.mockResolvedValue(undefined);
 
       const result = await manager.deleteTemplate('custom-template');
-      
+
       expect(result).toBe(true);
       expect(mockFs.unlink).toHaveBeenCalledWith(
         expect.stringContaining('custom-template.json')
@@ -186,7 +194,7 @@ describe('ConfigManager', () => {
       mockFs.unlink.mockRejectedValue(new Error('File not found'));
 
       const result = await manager.deleteTemplate('non-existent');
-      
+
       expect(result).toBe(false);
     });
   });
@@ -201,7 +209,10 @@ describe('ConfigManager', () => {
         TMDB_API_KEY: 'my-tmdb-key',
       };
 
-      const config = await manager.createFromTemplate('basic-plex-tmdb', variables);
+      const config = await manager.createFromTemplate(
+        'basic-plex-tmdb',
+        variables
+      );
 
       expect(config).toMatchObject({
         plex: {
@@ -240,18 +251,24 @@ describe('ConfigManager', () => {
           plex: {
             url: '${PLEX_URL}',
             token: '${PLEX_TOKEN}',
-            timeout: '${TIMEOUT}', // Keep as string for substitution
+            timeout: 30 as any, // Will be substituted
           },
         },
         variables: {
           PLEX_URL: { description: 'Plex URL', type: 'string', required: true },
-          PLEX_TOKEN: { description: 'Plex token', type: 'string', required: true },
+          PLEX_TOKEN: {
+            description: 'Plex token',
+            type: 'string',
+            required: true,
+          },
           TIMEOUT: { description: 'Timeout', type: 'number', default: 30 },
         },
       };
 
       // Mock the template loading to return our test template
-      jest.spyOn(manager, 'getTemplate').mockResolvedValue(templateWithDefaults);
+      jest
+        .spyOn(manager, 'getTemplate')
+        .mockResolvedValue(templateWithDefaults);
 
       const variables: TemplateVariables = {
         PLEX_URL: 'http://localhost:32400',
@@ -259,7 +276,10 @@ describe('ConfigManager', () => {
         // TIMEOUT not provided, should use default
       };
 
-      const config = await manager.createFromTemplate('test-defaults', variables);
+      const config = await manager.createFromTemplate(
+        'test-defaults',
+        variables
+      );
 
       expect(config.plex?.timeout).toBe(30);
     });
@@ -293,13 +313,15 @@ describe('ConfigManager', () => {
       const result = await manager.validateConfigAdvanced(config);
 
       expect(result.valid).toBe(true);
-      expect(result.suggestions).toEqual(expect.arrayContaining([
-        expect.stringContaining('run_again_delay'),
-      ]));
-      expect(result.warnings).toEqual(expect.arrayContaining([
-        expect.stringContaining('sync mode'),
-        expect.stringContaining('HTTPS'),
-      ]));
+      expect(result.suggestions).toEqual(
+        expect.arrayContaining([expect.stringContaining('run_again_delay')])
+      );
+      expect(result.warnings).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('sync mode'),
+          expect.stringContaining('HTTPS'),
+        ])
+      );
     });
 
     test('should suggest asset directory configuration', async () => {
@@ -310,9 +332,9 @@ describe('ConfigManager', () => {
 
       const result = await manager.validateConfigAdvanced(config);
 
-      expect(result.suggestions).toEqual(expect.arrayContaining([
-        expect.stringContaining('asset_directory'),
-      ]));
+      expect(result.suggestions).toEqual(
+        expect.arrayContaining([expect.stringContaining('asset_directory')])
+      );
     });
 
     test('should warn about webhook token exposure', async () => {
@@ -326,9 +348,11 @@ describe('ConfigManager', () => {
 
       const result = await manager.validateConfigAdvanced(config);
 
-      expect(result.suggestions).toEqual(expect.arrayContaining([
-        expect.stringContaining('environment variables'),
-      ]));
+      expect(result.suggestions).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('environment variables'),
+        ])
+      );
     });
   });
 
@@ -338,15 +362,17 @@ describe('ConfigManager', () => {
 
       const suggestions = await manager.generateSuggestions();
 
-      expect(suggestions.templates).toEqual(expect.arrayContaining([
-        expect.objectContaining({ category: 'basic' }),
-      ]));
-      expect(suggestions.missingFeatures).toEqual(expect.arrayContaining([
-        'Plex server connection',
-        'Metadata provider (TMDb/Trakt)',
-        'Library configuration',
-        'Collection definitions',
-      ]));
+      expect(suggestions.templates).toEqual(
+        expect.arrayContaining([expect.objectContaining({ category: 'basic' })])
+      );
+      expect(suggestions.missingFeatures).toEqual(
+        expect.arrayContaining([
+          'Plex server connection',
+          'Metadata provider (TMDb/Trakt)',
+          'Library configuration',
+          'Collection definitions',
+        ])
+      );
     });
 
     test('should suggest improvements for existing configuration', async () => {
@@ -359,9 +385,9 @@ describe('ConfigManager', () => {
 
       const suggestions = await manager.generateSuggestions(currentConfig);
 
-      expect(suggestions.improvements).toEqual(expect.arrayContaining([
-        expect.stringContaining('metadata provider'),
-      ]));
+      expect(suggestions.improvements).toEqual(
+        expect.arrayContaining([expect.stringContaining('metadata provider')])
+      );
     });
 
     test('should suggest library configuration when missing', async () => {
@@ -375,9 +401,11 @@ describe('ConfigManager', () => {
 
       const suggestions = await manager.generateSuggestions(currentConfig);
 
-      expect(suggestions.improvements).toEqual(expect.arrayContaining([
-        expect.stringContaining('library-specific settings'),
-      ]));
+      expect(suggestions.improvements).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('library-specific settings'),
+        ])
+      );
     });
   });
 
@@ -413,15 +441,15 @@ describe('ConfigManager', () => {
 
   describe('Error Handling', () => {
     test('should handle template loading errors gracefully', async () => {
-      mockFs.readdir.mockResolvedValue(['corrupted.json']);
+      mockFs.readdir.mockResolvedValue(['corrupted.json'] as any);
       mockFs.readFile.mockResolvedValue('invalid json content');
 
       // Should not throw, just log warning and continue
       const templates = await manager.getTemplates();
-      
+
       // Should still return built-in templates
       expect(templates.length).toBeGreaterThan(0);
-      expect(templates.some(t => t.id === 'basic-plex-tmdb')).toBe(true);
+      expect(templates.some((t) => t.id === 'basic-plex-tmdb')).toBe(true);
     });
 
     test('should handle template save errors', async () => {
@@ -435,8 +463,10 @@ describe('ConfigManager', () => {
         config: { plex: { url: 'test', token: 'test' } },
       };
 
-      await expect(manager.saveTemplate(template)).rejects.toThrow('Write failed');
-      
+      await expect(manager.saveTemplate(template)).rejects.toThrow(
+        'Write failed'
+      );
+
       // Should attempt cleanup
       expect(mockFs.unlink).toHaveBeenCalled();
     });
@@ -446,7 +476,7 @@ describe('ConfigManager', () => {
 
       // Should not throw, just return empty array for custom templates
       const templates = await manager.getTemplates();
-      
+
       // Should still have built-in templates
       expect(templates.length).toBeGreaterThan(0);
     });

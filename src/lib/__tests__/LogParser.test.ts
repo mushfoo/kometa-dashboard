@@ -17,7 +17,8 @@ describe('LogParser', () => {
 
   describe('Log Parsing', () => {
     test('should parse standard Kometa log format', () => {
-      const logLine = '[2024-06-17 14:30:25] INFO: Collections: Processing Movie Collection';
+      const logLine =
+        '[2024-06-17 14:30:25] INFO: Collections: Processing Movie Collection';
       const entry = parser.parseLine(logLine);
 
       expect(entry).toMatchObject({
@@ -44,7 +45,8 @@ describe('LogParser', () => {
     });
 
     test('should parse Docker/Python log format', () => {
-      const logLine = '2024-06-17 14:30:25,123 WARNING Processing collection failed';
+      const logLine =
+        '2024-06-17 14:30:25,123 WARNING Processing collection failed';
       const entry = parser.parseLine(logLine);
 
       expect(entry).toMatchObject({
@@ -82,8 +84,14 @@ describe('LogParser', () => {
     test('should infer log level from content keywords', () => {
       const testCases = [
         { line: 'Something failed with an error', expectedLevel: 'ERROR' },
-        { line: 'Warning: this might be problematic', expectedLevel: 'WARNING' },
-        { line: 'DEBUG information for troubleshooting', expectedLevel: 'DEBUG' },
+        {
+          line: 'Warning: this might be problematic',
+          expectedLevel: 'WARNING',
+        },
+        {
+          line: 'DEBUG information for troubleshooting',
+          expectedLevel: 'DEBUG',
+        },
         { line: 'Regular info message', expectedLevel: 'INFO' },
       ];
 
@@ -117,7 +125,7 @@ describe('LogParser', () => {
         parser.parseLine('\t'),
       ];
 
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         expect(entry.level).toBe('INFO');
         expect(entry.rawLine).toBeDefined(); // Should have the original line
       });
@@ -131,8 +139,8 @@ describe('LogParser', () => {
 
       const logs = parser.getAllLogs();
       expect(logs).toHaveLength(2);
-      expect(logs[0].message).toBe('Test message 1');
-      expect(logs[1].message).toBe('Test message 2');
+      expect(logs[0]?.message).toBe('Test message 1');
+      expect(logs[1]?.message).toBe('Test message 2');
     });
 
     test('should maintain circular buffer size', () => {
@@ -145,19 +153,19 @@ describe('LogParser', () => {
 
       const logs = smallParser.getAllLogs();
       expect(logs).toHaveLength(3);
-      expect(logs[0].message).toBe('Message 3');
-      expect(logs[2].message).toBe('Message 5');
+      expect(logs[0]?.message).toBe('Message 3');
+      expect(logs[2]?.message).toBe('Message 5');
     });
 
     test('should emit events when adding entries', (done) => {
       const events: ParsedLogEntry[] = [];
-      
+
       parser.on('logEntry', (entry) => {
         events.push(entry);
         if (events.length === 2) {
           expect(events).toHaveLength(2);
-          expect(events[0].message).toBe('First message');
-          expect(events[1].message).toBe('Second message');
+          expect(events[0]?.message).toBe('First message');
+          expect(events[1]?.message).toBe('Second message');
           done();
         }
       });
@@ -214,50 +222,76 @@ describe('LogParser', () => {
   describe('Log Filtering', () => {
     beforeEach(() => {
       // Add test data
-      parser.processLine('[2024-06-17 10:00:00] INFO: Collections: Starting collection processing', 'stdout', 'op1');
-      parser.processLine('[2024-06-17 10:01:00] ERROR: Database: Connection failed', 'stderr', 'op1');
-      parser.processLine('[2024-06-17 10:02:00] WARNING: API: Rate limit approaching', 'stdout', 'op2');
-      parser.processLine('[2024-06-17 10:03:00] DEBUG: Parser: Parsing metadata', 'stdout', 'op2');
-      parser.processLine('[2024-06-17 10:04:00] INFO: Collections: Collection completed', 'stdout', 'op1');
+      parser.processLine(
+        '[2024-06-17 10:00:00] INFO: Collections: Starting collection processing',
+        'stdout',
+        'op1'
+      );
+      parser.processLine(
+        '[2024-06-17 10:01:00] ERROR: Database: Connection failed',
+        'stderr',
+        'op1'
+      );
+      parser.processLine(
+        '[2024-06-17 10:02:00] WARNING: API: Rate limit approaching',
+        'stdout',
+        'op2'
+      );
+      parser.processLine(
+        '[2024-06-17 10:03:00] DEBUG: Parser: Parsing metadata',
+        'stdout',
+        'op2'
+      );
+      parser.processLine(
+        '[2024-06-17 10:04:00] INFO: Collections: Collection completed',
+        'stdout',
+        'op1'
+      );
     });
 
     test('should filter by log level', () => {
       const errorLogs = parser.getFilteredLogs({ level: 'ERROR' });
       expect(errorLogs).toHaveLength(1);
-      expect(errorLogs[0].level).toBe('ERROR');
+      expect(errorLogs[0]?.level).toBe('ERROR');
 
       const infoLogs = parser.getFilteredLogs({ level: 'INFO' });
       expect(infoLogs).toHaveLength(2);
-      expect(infoLogs.every(log => log.level === 'INFO')).toBe(true);
+      expect(infoLogs.every((log) => log.level === 'INFO')).toBe(true);
     });
 
     test('should filter by multiple log levels', () => {
-      const warningAndError = parser.getFilteredLogs({ 
-        levels: ['WARNING', 'ERROR'] 
+      const warningAndError = parser.getFilteredLogs({
+        levels: ['WARNING', 'ERROR'],
       });
-      
+
       expect(warningAndError).toHaveLength(2);
-      expect(warningAndError.every(log => 
-        log.level === 'WARNING' || log.level === 'ERROR'
-      )).toBe(true);
+      expect(
+        warningAndError.every(
+          (log) => log.level === 'WARNING' || log.level === 'ERROR'
+        )
+      ).toBe(true);
     });
 
     test('should filter by component', () => {
-      const collectionLogs = parser.getFilteredLogs({ component: 'Collections' });
+      const collectionLogs = parser.getFilteredLogs({
+        component: 'Collections',
+      });
       expect(collectionLogs).toHaveLength(2);
-      expect(collectionLogs.every(log => log.component === 'Collections')).toBe(true);
+      expect(
+        collectionLogs.every((log) => log.component === 'Collections')
+      ).toBe(true);
     });
 
     test('should filter by operation ID', () => {
       const op1Logs = parser.getFilteredLogs({ operationId: 'op1' });
       expect(op1Logs).toHaveLength(3);
-      expect(op1Logs.every(log => log.operationId === 'op1')).toBe(true);
+      expect(op1Logs.every((log) => log.operationId === 'op1')).toBe(true);
     });
 
     test('should filter by text search', () => {
       const connectionLogs = parser.getFilteredLogs({ search: 'connection' });
       expect(connectionLogs).toHaveLength(1);
-      expect(connectionLogs[0].message).toContain('Connection failed');
+      expect(connectionLogs[0]?.message).toContain('Connection failed');
 
       const collectionSearch = parser.getFilteredLogs({ search: 'collection' });
       expect(collectionSearch).toHaveLength(2); // Both collection-related logs
@@ -274,21 +308,27 @@ describe('LogParser', () => {
       // Let's check what timestamps we actually have
       const allLogs = parser.getAllLogs();
       if (allLogs.length === 0) return; // Skip if no logs
-      
+
       // Use the actual timestamp range from our test data
-      const timestamps = allLogs.map(log => log.timestamp);
-      const earliestTime = new Date(Math.min(...timestamps.map(t => t.getTime())));
-      const latestTime = new Date(Math.max(...timestamps.map(t => t.getTime())));
-      
+      const timestamps = allLogs.map((log) => log.timestamp);
+      const earliestTime = new Date(
+        Math.min(...timestamps.map((t) => t.getTime()))
+      );
+      const latestTime = new Date(
+        Math.max(...timestamps.map((t) => t.getTime()))
+      );
+
       // Expand the range slightly to ensure we capture all logs
       const startTime = new Date(earliestTime.getTime() - 1000);
       const endTime = new Date(latestTime.getTime() + 1000);
-      
+
       const timeLogs = parser.getFilteredLogs({ startTime, endTime });
       expect(timeLogs.length).toBeGreaterThan(0);
-      
-      timeLogs.forEach(log => {
-        expect(log.timestamp >= startTime && log.timestamp <= endTime).toBe(true);
+
+      timeLogs.forEach((log) => {
+        expect(log.timestamp >= startTime && log.timestamp <= endTime).toBe(
+          true
+        );
       });
     });
 
@@ -296,11 +336,11 @@ describe('LogParser', () => {
       const filtered = parser.getFilteredLogs({
         level: 'INFO',
         operationId: 'op1',
-        search: 'collection'
+        search: 'collection',
       });
 
       expect(filtered).toHaveLength(2);
-      filtered.forEach(log => {
+      filtered.forEach((log) => {
         expect(log.level).toBe('INFO');
         expect(log.operationId).toBe('op1');
         expect(log.message.toLowerCase()).toContain('collection');
@@ -319,23 +359,23 @@ describe('LogParser', () => {
     test('should search with string pattern', () => {
       const results = parser.searchLogs('database');
       expect(results).toHaveLength(1);
-      expect(results[0].message.toLowerCase()).toContain('database');
+      expect(results[0]?.message.toLowerCase()).toContain('database');
     });
 
     test('should search with regex pattern', () => {
       const results = parser.searchLogs(/\w+\s+connection/);
       expect(results).toHaveLength(1);
-      expect(results[0].message).toContain('Database connection');
+      expect(results[0]?.message).toContain('Database connection');
     });
 
     test('should respect case sensitivity option', () => {
-      const caseSensitiveResults = parser.searchLogs('DATABASE', { 
-        caseSensitive: true 
+      const caseSensitiveResults = parser.searchLogs('DATABASE', {
+        caseSensitive: true,
       });
       expect(caseSensitiveResults).toHaveLength(0);
 
-      const caseInsensitiveResults = parser.searchLogs('DATABASE', { 
-        caseSensitive: false 
+      const caseInsensitiveResults = parser.searchLogs('DATABASE', {
+        caseSensitive: false,
       });
       expect(caseInsensitiveResults).toHaveLength(1);
     });
@@ -353,7 +393,7 @@ describe('LogParser', () => {
     test('should search in metadata when enabled', () => {
       // Clear any existing entries first
       parser.clearBuffer();
-      
+
       const entry: ParsedLogEntry = {
         id: 'test',
         timestamp: new Date(),
@@ -361,34 +401,46 @@ describe('LogParser', () => {
         message: 'Test message',
         source: 'stdout',
         rawLine: 'Test message',
-        metadata: { userId: 123, action: 'login' }
+        metadata: { userId: 123, action: 'login' },
       };
 
       parser.addLogEntry(entry);
 
       const results = parser.searchLogs('userId', { includeMetadata: true });
       expect(results).toHaveLength(1);
-      expect(results[0].metadata).toMatchObject({ userId: 123 });
+      expect(results[0]?.metadata).toMatchObject({ userId: 123 });
     });
   });
 
   describe('Utility Methods', () => {
     beforeEach(() => {
-      parser.processLine('[2024-06-17 10:00:00] INFO: Collections: Message 1', 'stdout', 'op1');
-      parser.processLine('[2024-06-17 10:01:00] ERROR: Database: Message 2', 'stderr', 'op2');
-      parser.processLine('[2024-06-17 10:02:00] WARNING: API: Message 3', 'stdout', 'op1');
+      parser.processLine(
+        '[2024-06-17 10:00:00] INFO: Collections: Message 1',
+        'stdout',
+        'op1'
+      );
+      parser.processLine(
+        '[2024-06-17 10:01:00] ERROR: Database: Message 2',
+        'stderr',
+        'op2'
+      );
+      parser.processLine(
+        '[2024-06-17 10:02:00] WARNING: API: Message 3',
+        'stdout',
+        'op1'
+      );
     });
 
     test('should get recent logs', () => {
       const recent = parser.getRecentLogs(2);
       expect(recent).toHaveLength(2);
-      expect(recent[0].message).toBe('Message 2');
-      expect(recent[1].message).toBe('Message 3');
+      expect(recent[0]?.message).toBe('Message 2');
+      expect(recent[1]?.message).toBe('Message 3');
     });
 
     test('should get buffer statistics', () => {
       const stats = parser.getBufferStats();
-      
+
       expect(stats.totalEntries).toBe(3);
       expect(stats.byLevel).toMatchObject({
         INFO: 1,
@@ -407,7 +459,9 @@ describe('LogParser', () => {
 
     test('should get unique components', () => {
       const components = parser.getComponents();
-      expect(components).toEqual(expect.arrayContaining(['API', 'Collections', 'Database']));
+      expect(components).toEqual(
+        expect.arrayContaining(['API', 'Collections', 'Database'])
+      );
       expect(components).toHaveLength(3);
     });
 
@@ -426,14 +480,14 @@ describe('LogParser', () => {
           shouldParse: true,
           expectedYear: 2024,
           expectedMonth: 5, // Note: JavaScript months are 0-indexed (June = 5)
-          expectedDay: 17
-        }
+          expectedDay: 17,
+        },
       ];
 
       testCases.forEach(({ line, shouldParse }) => {
         const entry = parser.parseLine(line);
         expect(entry.timestamp).toBeInstanceOf(Date);
-        
+
         if (shouldParse) {
           // For this test, let's just check that we get a valid timestamp
           // The actual parsing might use current time as fallback

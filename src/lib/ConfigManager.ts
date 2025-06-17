@@ -11,12 +11,15 @@ export interface ConfigTemplate {
   description: string;
   category: 'basic' | 'advanced' | 'specialized';
   config: Partial<KometaConfig>;
-  variables?: Record<string, {
-    description: string;
-    type: 'string' | 'number' | 'boolean';
-    default?: unknown;
-    required?: boolean;
-  }>;
+  variables?: Record<
+    string,
+    {
+      description: string;
+      type: 'string' | 'number' | 'boolean';
+      default?: unknown;
+      required?: boolean;
+    }
+  >;
 }
 
 // Template variables for substitution
@@ -50,7 +53,7 @@ export class ConfigManager extends ConfigService {
    */
   async validateConfigAdvanced(config: unknown): Promise<ValidationResult> {
     const baseResult = await this.validateConfig(config);
-    
+
     const result: ValidationResult = {
       valid: baseResult.valid,
       errors: baseResult.errors || [],
@@ -76,7 +79,7 @@ export class ConfigManager extends ConfigService {
    * Create configuration from template with variable substitution
    */
   async createFromTemplate(
-    templateId: string, 
+    templateId: string,
     variables: TemplateVariables = {}
   ): Promise<KometaConfig> {
     const template = await this.getTemplate(templateId);
@@ -95,15 +98,17 @@ export class ConfigManager extends ConfigService {
 
     // Perform variable substitution
     const configWithVariables = this.substituteVariables(
-      template.config, 
-      variables, 
+      template.config,
+      variables,
       template.variables || {}
     );
 
     // Validate the resulting configuration
     const validation = await this.validateConfigAdvanced(configWithVariables);
     if (!validation.valid) {
-      throw new Error(`Template configuration is invalid: ${validation.errors?.join(', ')}`);
+      throw new Error(
+        `Template configuration is invalid: ${validation.errors?.join(', ')}`
+      );
     }
 
     return configWithVariables as KometaConfig;
@@ -115,7 +120,7 @@ export class ConfigManager extends ConfigService {
   async getTemplates(): Promise<ConfigTemplate[]> {
     // Load built-in templates
     const builtInTemplates = await this.loadBuiltInTemplates();
-    
+
     // Load custom templates from storage
     const customTemplates = await this.loadCustomTemplates();
 
@@ -131,8 +136,8 @@ export class ConfigManager extends ConfigService {
     }
 
     const templates = await this.getTemplates();
-    const template = templates.find(t => t.id === templateId);
-    
+    const template = templates.find((t) => t.id === templateId);
+
     if (template) {
       this.templatesCache.set(templateId, template);
     }
@@ -148,7 +153,7 @@ export class ConfigManager extends ConfigService {
     await fs.mkdir(this.templatesPath, { recursive: true });
 
     const templatePath = path.join(this.templatesPath, `${template.id}.json`);
-    
+
     // Validate template structure
     this.validateTemplateStructure(template);
 
@@ -157,7 +162,7 @@ export class ConfigManager extends ConfigService {
     try {
       await fs.writeFile(tempPath, JSON.stringify(template, null, 2), 'utf-8');
       await fs.rename(tempPath, templatePath);
-      
+
       // Update cache
       this.templatesCache.set(template.id, template);
     } catch (error) {
@@ -176,7 +181,7 @@ export class ConfigManager extends ConfigService {
    */
   async deleteTemplate(templateId: string): Promise<boolean> {
     const templatePath = path.join(this.templatesPath, `${templateId}.json`);
-    
+
     try {
       await fs.unlink(templatePath);
       this.templatesCache.delete(templateId);
@@ -203,7 +208,7 @@ export class ConfigManager extends ConfigService {
 
     if (!currentConfig) {
       // Suggest basic templates for new users
-      suggestions.templates = templates.filter(t => t.category === 'basic');
+      suggestions.templates = templates.filter((t) => t.category === 'basic');
       suggestions.missingFeatures = [
         'Plex server connection',
         'Metadata provider (TMDb/Trakt)',
@@ -215,22 +220,37 @@ export class ConfigManager extends ConfigService {
 
     // Analyze current configuration and suggest improvements
     if (!currentConfig.tmdb && !currentConfig.trakt) {
-      suggestions.improvements.push('Add a metadata provider (TMDb or Trakt) for enhanced collection features');
-      suggestions.templates.push(...templates.filter(t => 
-        t.name.toLowerCase().includes('tmdb') || t.name.toLowerCase().includes('trakt')
-      ));
+      suggestions.improvements.push(
+        'Add a metadata provider (TMDb or Trakt) for enhanced collection features'
+      );
+      suggestions.templates.push(
+        ...templates.filter(
+          (t) =>
+            t.name.toLowerCase().includes('tmdb') ||
+            t.name.toLowerCase().includes('trakt')
+        )
+      );
     }
 
-    if (!currentConfig.libraries || Object.keys(currentConfig.libraries).length === 0) {
-      suggestions.improvements.push('Configure library-specific settings for better organization');
+    if (
+      !currentConfig.libraries ||
+      Object.keys(currentConfig.libraries).length === 0
+    ) {
+      suggestions.improvements.push(
+        'Configure library-specific settings for better organization'
+      );
     }
 
     if (!currentConfig.settings?.asset_directory) {
-      suggestions.improvements.push('Configure asset directories for custom posters and artwork');
+      suggestions.improvements.push(
+        'Configure asset directories for custom posters and artwork'
+      );
     }
 
     if (!currentConfig.webhooks) {
-      suggestions.missingFeatures.push('Webhook notifications for operation status');
+      suggestions.missingFeatures.push(
+        'Webhook notifications for operation status'
+      );
     }
 
     return suggestions;
@@ -241,7 +261,7 @@ export class ConfigManager extends ConfigService {
    */
   async migrateConfig(config: unknown): Promise<KometaConfig> {
     // Basic migration logic - can be expanded as needed
-    const migratedConfig = { ...config } as any;
+    const migratedConfig = { ...(config as Record<string, any>) };
 
     // Example migration: rename old field names
     if (migratedConfig.plex?.server_url) {
@@ -266,7 +286,8 @@ export class ConfigManager extends ConfigService {
       {
         id: 'basic-plex-tmdb',
         name: 'Basic Plex + TMDb Setup',
-        description: 'Simple configuration with Plex server and TMDb metadata provider',
+        description:
+          'Simple configuration with Plex server and TMDb metadata provider',
         category: 'basic',
         config: {
           plex: {
@@ -306,7 +327,8 @@ export class ConfigManager extends ConfigService {
       {
         id: 'advanced-multi-provider',
         name: 'Advanced Multi-Provider Setup',
-        description: 'Comprehensive configuration with multiple metadata providers and advanced features',
+        description:
+          'Comprehensive configuration with multiple metadata providers and advanced features',
         category: 'advanced',
         config: {
           plex: {
@@ -371,7 +393,8 @@ export class ConfigManager extends ConfigService {
       {
         id: 'anime-specialized',
         name: 'Anime Collection Setup',
-        description: 'Specialized configuration for anime libraries with AniDB integration',
+        description:
+          'Specialized configuration for anime libraries with AniDB integration',
         category: 'specialized',
         config: {
           plex: {
@@ -424,23 +447,23 @@ export class ConfigManager extends ConfigService {
   private async loadCustomTemplates(): Promise<ConfigTemplate[]> {
     try {
       const files = await fs.readdir(this.templatesPath);
-      const templateFiles = files.filter(file => file.endsWith('.json'));
-      
+      const templateFiles = files.filter((file) => file.endsWith('.json'));
+
       const templates: ConfigTemplate[] = [];
-      
+
       for (const file of templateFiles) {
         try {
           const filePath = path.join(this.templatesPath, file);
           const content = await fs.readFile(filePath, 'utf-8');
           const template = JSON.parse(content) as ConfigTemplate;
-          
+
           this.validateTemplateStructure(template);
           templates.push(template);
         } catch (error) {
           console.warn(`Failed to load template ${file}:`, error);
         }
       }
-      
+
       return templates;
     } catch {
       return [];
@@ -456,14 +479,14 @@ export class ConfigManager extends ConfigService {
     templateVariables: ConfigTemplate['variables'] = {}
   ): Partial<KometaConfig> {
     const configStr = JSON.stringify(config);
-    
+
     // Substitute variables with format ${VARIABLE_NAME}
     let substitutedStr = configStr;
-    
+
     for (const [key, value] of Object.entries(variables)) {
       const pattern = new RegExp(`"\\$\\{${key}\\}"`, 'g');
       const quotedPattern = new RegExp(`\\$\\{${key}\\}`, 'g');
-      
+
       // Handle both quoted and unquoted substitutions
       if (typeof value === 'string') {
         substitutedStr = substitutedStr.replace(pattern, JSON.stringify(value));
@@ -480,14 +503,26 @@ export class ConfigManager extends ConfigService {
       if (!(key in variables) && variable.default !== undefined) {
         const pattern = new RegExp(`"\\$\\{${key}\\}"`, 'g');
         const quotedPattern = new RegExp(`\\$\\{${key}\\}`, 'g');
-        
+
         if (typeof variable.default === 'string') {
-          substitutedStr = substitutedStr.replace(pattern, JSON.stringify(variable.default));
-          substitutedStr = substitutedStr.replace(quotedPattern, String(variable.default));
+          substitutedStr = substitutedStr.replace(
+            pattern,
+            JSON.stringify(variable.default)
+          );
+          substitutedStr = substitutedStr.replace(
+            quotedPattern,
+            String(variable.default)
+          );
         } else {
           // For numbers and booleans, replace without quotes
-          substitutedStr = substitutedStr.replace(pattern, String(variable.default));
-          substitutedStr = substitutedStr.replace(quotedPattern, String(variable.default));
+          substitutedStr = substitutedStr.replace(
+            pattern,
+            String(variable.default)
+          );
+          substitutedStr = substitutedStr.replace(
+            quotedPattern,
+            String(variable.default)
+          );
         }
       }
     }
@@ -515,15 +550,25 @@ export class ConfigManager extends ConfigService {
    * Add performance-related suggestions
    */
   private async addPerformanceSuggestions(
-    config: KometaConfig, 
+    config: KometaConfig,
     result: ValidationResult
   ): Promise<void> {
-    if (config.settings?.run_again_delay && config.settings.run_again_delay < 6) {
-      result.suggestions?.push('Consider increasing run_again_delay to 6+ hours to reduce server load');
+    if (
+      config.settings?.run_again_delay &&
+      config.settings.run_again_delay < 6
+    ) {
+      result.suggestions?.push(
+        'Consider increasing run_again_delay to 6+ hours to reduce server load'
+      );
     }
 
-    if (config.settings?.sync_mode === 'sync' && !config.settings?.delete_below_minimum) {
-      result.warnings?.push('Using sync mode without delete_below_minimum can remove items unexpectedly');
+    if (
+      config.settings?.sync_mode === 'sync' &&
+      !config.settings?.delete_below_minimum
+    ) {
+      result.warnings?.push(
+        'Using sync mode without delete_below_minimum can remove items unexpectedly'
+      );
     }
   }
 
@@ -531,18 +576,25 @@ export class ConfigManager extends ConfigService {
    * Add security-related suggestions
    */
   private async addSecuritySuggestions(
-    config: KometaConfig, 
+    config: KometaConfig,
     result: ValidationResult
   ): Promise<void> {
-    if (config.plex?.url?.startsWith('http://') && !config.plex.url.includes('localhost')) {
-      result.warnings?.push('Consider using HTTPS for Plex connections over networks');
+    if (
+      config.plex?.url?.startsWith('http://') &&
+      !config.plex.url.includes('localhost')
+    ) {
+      result.warnings?.push(
+        'Consider using HTTPS for Plex connections over networks'
+      );
     }
 
     // Check for exposed tokens in webhook URLs
     if (config.webhooks) {
       for (const [service, url] of Object.entries(config.webhooks)) {
         if (typeof url === 'string' && url.includes('token=')) {
-          result.suggestions?.push(`Consider using environment variables for ${service} webhook tokens`);
+          result.suggestions?.push(
+            `Consider using environment variables for ${service} webhook tokens`
+          );
         }
       }
     }
@@ -552,19 +604,25 @@ export class ConfigManager extends ConfigService {
    * Add best practice suggestions
    */
   private async addBestPracticeSuggestions(
-    config: KometaConfig, 
+    config: KometaConfig,
     result: ValidationResult
   ): Promise<void> {
     if (!config.settings?.asset_directory) {
-      result.suggestions?.push('Configure asset_directory to enable custom posters and artwork');
+      result.suggestions?.push(
+        'Configure asset_directory to enable custom posters and artwork'
+      );
     }
 
     if (!config.libraries || Object.keys(config.libraries).length === 0) {
-      result.suggestions?.push('Configure library-specific settings for better organization');
+      result.suggestions?.push(
+        'Configure library-specific settings for better organization'
+      );
     }
 
     if (!config.collection_files && !config.metadata_files) {
-      result.suggestions?.push('Add collection or metadata files to enhance your libraries');
+      result.suggestions?.push(
+        'Add collection or metadata files to enhance your libraries'
+      );
     }
   }
 }

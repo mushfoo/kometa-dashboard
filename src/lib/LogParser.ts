@@ -7,8 +7,8 @@ export interface ParsedLogEntry {
   level: 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR';
   message: string;
   source: 'stdout' | 'stderr' | 'system';
-  operationId?: string;
-  component?: string; // Kometa component that generated the log
+  operationId?: string | undefined;
+  component?: string | undefined; // Kometa component that generated the log
   metadata?: Record<string, unknown>;
   rawLine: string;
 }
@@ -29,24 +29,25 @@ export interface LogFilter {
 const KOMETA_LOG_PATTERNS = [
   // Standard Kometa format: [YYYY-MM-DD HH:MM:SS] LEVEL: Component: Message
   {
-    regex: /^\[(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\]\s+(DEBUG|INFO|WARNING|ERROR):\s*([^:]+):\s*(.+)$/,
-    groups: { timestamp: 1, level: 2, component: 3, message: 4 }
+    regex:
+      /^\[(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\]\s+(DEBUG|INFO|WARNING|ERROR):\s*([^:]+):\s*(.+)$/,
+    groups: { timestamp: 1, level: 2, component: 3, message: 4 },
   },
   // Simplified format: LEVEL: Message
   {
     regex: /^(DEBUG|INFO|WARNING|ERROR):\s*(.+)$/,
-    groups: { level: 1, message: 2 }
+    groups: { level: 1, message: 2 },
   },
   // Docker/Python format with timestamp prefix
   {
     regex: /^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2},\d{3})\s+(\w+)\s+(.+)$/,
-    groups: { timestamp: 1, level: 2, message: 3 }
+    groups: { timestamp: 1, level: 2, message: 3 },
   },
   // Generic timestamped log
   {
     regex: /^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s+(.+)$/,
-    groups: { timestamp: 1, message: 2 }
-  }
+    groups: { timestamp: 1, message: 2 },
+  },
 ];
 
 /**
@@ -68,7 +69,7 @@ export class LogParser extends EventEmitter {
    * Parse a raw log line into a structured log entry
    */
   parseLine(
-    rawLine: string, 
+    rawLine: string,
     source: 'stdout' | 'stderr' | 'system' = 'stdout',
     operationId?: string
   ): ParsedLogEntry {
@@ -81,7 +82,13 @@ export class LogParser extends EventEmitter {
     for (const pattern of KOMETA_LOG_PATTERNS) {
       const match = trimmedLine.match(pattern.regex);
       if (match) {
-        return this.createParsedEntry(match, pattern, rawLine, source, operationId);
+        return this.createParsedEntry(
+          match,
+          pattern,
+          rawLine,
+          source,
+          operationId
+        );
       }
     }
 
@@ -101,7 +108,7 @@ export class LogParser extends EventEmitter {
 
     // Emit events for real-time processing
     this.emit('logEntry', entry);
-    
+
     // Emit specific events for different log levels
     if (entry.level === 'ERROR') {
       this.emit('error', entry);
@@ -131,43 +138,53 @@ export class LogParser extends EventEmitter {
 
     // Filter by log level(s)
     if (filter.level) {
-      filtered = filtered.filter(entry => entry.level === filter.level);
+      filtered = filtered.filter((entry) => entry.level === filter.level);
     } else if (filter.levels && filter.levels.length > 0) {
-      filtered = filtered.filter(entry => filter.levels!.includes(entry.level));
+      filtered = filtered.filter((entry) =>
+        filter.levels!.includes(entry.level)
+      );
     }
 
     // Filter by component
     if (filter.component) {
-      filtered = filtered.filter(entry => entry.component === filter.component);
+      filtered = filtered.filter(
+        (entry) => entry.component === filter.component
+      );
     }
 
     // Filter by operation ID
     if (filter.operationId) {
-      filtered = filtered.filter(entry => entry.operationId === filter.operationId);
+      filtered = filtered.filter(
+        (entry) => entry.operationId === filter.operationId
+      );
     }
 
     // Filter by time range
     if (filter.startTime) {
-      filtered = filtered.filter(entry => entry.timestamp >= filter.startTime!);
+      filtered = filtered.filter(
+        (entry) => entry.timestamp >= filter.startTime!
+      );
     }
     if (filter.endTime) {
-      filtered = filtered.filter(entry => entry.timestamp <= filter.endTime!);
+      filtered = filtered.filter((entry) => entry.timestamp <= filter.endTime!);
     }
 
     // Text search in message
     if (filter.search) {
       const searchTerm = filter.search.toLowerCase();
-      filtered = filtered.filter(entry => 
-        entry.message.toLowerCase().includes(searchTerm) ||
-        entry.component?.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(
+        (entry) =>
+          entry.message.toLowerCase().includes(searchTerm) ||
+          entry.component?.toLowerCase().includes(searchTerm)
       );
     }
 
     // Regex pattern search
     if (filter.regex) {
-      filtered = filtered.filter(entry => 
-        filter.regex!.test(entry.message) ||
-        (entry.component && filter.regex!.test(entry.component))
+      filtered = filtered.filter(
+        (entry) =>
+          filter.regex!.test(entry.message) ||
+          (entry.component && filter.regex!.test(entry.component))
       );
     }
 
@@ -203,8 +220,8 @@ export class LogParser extends EventEmitter {
     totalEntries: number;
     byLevel: Record<string, number>;
     byComponent: Record<string, number>;
-    oldestEntry?: Date;
-    newestEntry?: Date;
+    oldestEntry?: Date | undefined;
+    newestEntry?: Date | undefined;
   } {
     const byLevel: Record<string, number> = {
       DEBUG: 0,
@@ -218,7 +235,7 @@ export class LogParser extends EventEmitter {
     let oldestEntry: Date | undefined;
     let newestEntry: Date | undefined;
 
-    this.logBuffer.forEach(entry => {
+    this.logBuffer.forEach((entry) => {
       // Count by level
       byLevel[entry.level] = (byLevel[entry.level] || 0) + 1;
 
@@ -240,8 +257,8 @@ export class LogParser extends EventEmitter {
       totalEntries: this.logBuffer.length,
       byLevel,
       byComponent,
-      oldestEntry,
-      newestEntry,
+      oldestEntry: oldestEntry ?? undefined,
+      newestEntry: newestEntry ?? undefined,
     };
   }
 
@@ -256,13 +273,20 @@ export class LogParser extends EventEmitter {
       maxResults?: number;
     } = {}
   ): ParsedLogEntry[] {
-    const { caseSensitive = false, includeMetadata = false, maxResults = 100 } = options;
+    const {
+      caseSensitive = false,
+      includeMetadata = false,
+      maxResults = 100,
+    } = options;
 
     let searchRegex: RegExp;
-    
+
     if (typeof pattern === 'string') {
       const flags = caseSensitive ? 'g' : 'gi';
-      searchRegex = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
+      searchRegex = new RegExp(
+        pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        flags
+      );
     } else {
       searchRegex = pattern;
     }
@@ -305,7 +329,7 @@ export class LogParser extends EventEmitter {
    */
   getComponents(): string[] {
     const components = new Set<string>();
-    this.logBuffer.forEach(entry => {
+    this.logBuffer.forEach((entry) => {
       if (entry.component) {
         components.add(entry.component);
       }
@@ -318,7 +342,7 @@ export class LogParser extends EventEmitter {
    */
   getOperationIds(): string[] {
     const operationIds = new Set<string>();
-    this.logBuffer.forEach(entry => {
+    this.logBuffer.forEach((entry) => {
       if (entry.operationId) {
         operationIds.add(entry.operationId);
       }
@@ -337,7 +361,7 @@ export class LogParser extends EventEmitter {
     operationId?: string
   ): ParsedLogEntry {
     const groups = pattern.groups;
-    
+
     // Extract timestamp
     let timestamp = new Date();
     if (groups.timestamp) {
@@ -354,7 +378,10 @@ export class LogParser extends EventEmitter {
     let level: ParsedLogEntry['level'] = 'INFO';
     if (groups.level) {
       const levelStr = match[groups.level]?.toUpperCase();
-      if (levelStr && ['DEBUG', 'INFO', 'WARNING', 'ERROR'].includes(levelStr)) {
+      if (
+        levelStr &&
+        ['DEBUG', 'INFO', 'WARNING', 'ERROR'].includes(levelStr)
+      ) {
         level = levelStr as ParsedLogEntry['level'];
       }
     }
@@ -365,10 +392,14 @@ export class LogParser extends EventEmitter {
     }
 
     // Extract component
-    const component = groups.component ? match[groups.component]?.trim() : undefined;
+    const component = groups.component
+      ? match[groups.component]?.trim()
+      : undefined;
 
     // Extract message
-    const message = groups.message ? match[groups.message]?.trim() || rawLine : rawLine;
+    const message = groups.message
+      ? match[groups.message]?.trim() || rawLine
+      : rawLine;
 
     return {
       id: this.generateLogId(),
@@ -376,8 +407,8 @@ export class LogParser extends EventEmitter {
       level,
       message,
       source,
-      operationId,
-      component,
+      operationId: operationId ?? undefined,
+      component: component ?? undefined,
       rawLine,
     };
   }
@@ -393,7 +424,7 @@ export class LogParser extends EventEmitter {
     // Infer log level from content
     let level: ParsedLogEntry['level'] = 'INFO';
     const upperLine = rawLine.toUpperCase();
-    
+
     if (upperLine.includes('ERROR') || upperLine.includes('FAIL')) {
       level = 'ERROR';
     } else if (upperLine.includes('WARNING') || upperLine.includes('WARN')) {
@@ -413,7 +444,7 @@ export class LogParser extends EventEmitter {
       level,
       message: rawLine.trim() || rawLine,
       source,
-      operationId,
+      operationId: operationId ?? undefined,
       rawLine,
     };
   }
@@ -435,17 +466,19 @@ export class LogParser extends EventEmitter {
       if (format.test(timestampStr)) {
         // Convert timestamp to ISO format for proper parsing
         let isoTimestamp = timestampStr;
-        
+
         // Replace comma with dot for milliseconds
         if (isoTimestamp.includes(',')) {
           isoTimestamp = isoTimestamp.replace(',', '.');
         }
-        
+
         // Add 'T' separator and 'Z' timezone if missing
-        if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(\.\d{3})?$/.test(isoTimestamp)) {
+        if (
+          /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(\.\d{3})?$/.test(isoTimestamp)
+        ) {
           isoTimestamp = isoTimestamp.replace(' ', 'T') + 'Z';
         }
-        
+
         const parsed = new Date(isoTimestamp);
         if (!isNaN(parsed.getTime())) {
           return parsed;
