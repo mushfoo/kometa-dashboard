@@ -1,7 +1,7 @@
 # Multi-stage Docker build for Kometa Dashboard
 
 # Development stage
-FROM node:18-alpine as development
+FROM node:20-alpine as development
 WORKDIR /app
 
 # Install dependencies
@@ -18,7 +18,7 @@ EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
 # Build stage
-FROM node:18-alpine as builder
+FROM node:20-alpine as builder
 WORKDIR /app
 
 # Install dependencies
@@ -30,7 +30,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine as production
+FROM node:20-alpine as production
 WORKDIR /app
 
 # Create non-root user
