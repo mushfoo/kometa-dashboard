@@ -10,7 +10,7 @@
 /tests/e2e/playwright-report/
 /tests/e2e/artifacts/
 /tests/e2e/temp/
-# /tests/e2e/screenshots/ - Allow demo screenshots for PR
+/tests/e2e/screenshots/
 /tests/e2e/junit-results.xml
 /playwright/.cache/
 
