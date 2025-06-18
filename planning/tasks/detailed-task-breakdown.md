@@ -909,9 +909,43 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 ## Week 4: Integration, Testing & Polish (Days 22-28)
 
-### Day 22: Test Coverage Completion
+### Day 22: E2E Testing Implementation & Visual Documentation
 
-#### Task 22.1: Unit Test Coverage Analysis
+#### Task 22.1: Playwright E2E Testing Setup
+
+**Deliverable:** Complete end-to-end testing framework with visual documentation
+
+- [ ] Install Playwright and configure test environment
+- [ ] Create test structure: `tests/e2e/` with config, fixtures, and utilities
+- [ ] Configure Playwright for Chrome desktop (1920x1080), mobile (375x667), and tablet (768x1024)
+- [ ] Set up GitHub artifacts storage with 3-day retention and 25MB size limits
+- [ ] Configure failure-only recording (720p, compressed) and screenshot capture
+- [ ] **Test:** `npm run e2e` executes successfully, artifacts generate on failures only
+
+#### Task 22.2: Core Configuration Flow E2E Tests
+
+**Deliverable:** Critical user journey validation tests
+
+- [ ] Create Plex configuration flow test: URL input → Token validation → Library discovery → Selection → Save
+- [ ] Implement API keys management test: Service selection → Key input → Validation → Encryption → Storage
+- [ ] Add YAML editor test: Load existing → Modify content → Validate → Save
+- [ ] Create import/export test: Export current → Import back → Verify integrity
+- [ ] **Test:** All configuration flows complete successfully, schema validation bugs are caught
+
+#### Task 22.3: Storage Management & CI Integration
+
+**Deliverable:** Automated E2E testing with storage monitoring
+
+- [ ] Create GitHub Actions workflow for post-merge E2E testing
+- [ ] Implement artifact size monitoring and automated cleanup (weekly purge)
+- [ ] Configure conditional execution (only on UI-related changes or failures)
+- [ ] Add storage usage reporting and size warnings in CI output
+- [ ] Create NPM scripts: `e2e`, `e2e:headed`, `e2e:mobile`, `e2e:debug`
+- [ ] **Test:** CI workflow executes correctly, storage stays within GitHub free tier limits
+
+### Day 23: Test Coverage Completion
+
+#### Task 23.1: Unit Test Coverage Analysis
 
 **Deliverable:** >90% unit test coverage
 
@@ -921,7 +955,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Add tests for all Zustand store actions and state updates
 - [ ] **Test:** `npm run test:coverage` shows >90% coverage for all metrics
 
-#### Task 22.2: Component Testing Completion
+#### Task 23.2: Component Testing Completion
 
 **Deliverable:** Comprehensive component test suite
 
@@ -931,7 +965,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Test responsive behavior at different screen sizes
 - [ ] **Test:** All components render correctly, interactions work as expected
 
-#### Task 22.3: Integration Test Suite
+#### Task 23.3: Integration Test Suite
 
 **Deliverable:** Complete API integration testing
 
@@ -941,41 +975,41 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Add file system operation tests (config read/write/backup)
 - [ ] **Test:** All API endpoints work correctly, database operations are atomic
 
-### Day 23: End-to-End Testing
+### Day 24: Advanced E2E Testing
 
-#### Task 23.1: User Flow Testing
+#### Task 24.1: Advanced User Flow Testing
 
-**Deliverable:** Complete user journey tests
+**Deliverable:** Complete user journey tests with visual validation
 
-- [ ] Create E2E test for full setup flow (registration → Plex setup → first collection)
-- [ ] Test configuration wizard completion with various scenarios
-- [ ] Create collection creation and preview test scenarios
-- [ ] Test monitoring dashboard functionality during operation
-- [ ] **Test:** All critical user flows complete successfully
+- [ ] Extend E2E tests with visual regression testing for UI changes
+- [ ] Create responsive testing across desktop/mobile/tablet viewports
+- [ ] Add cross-browser compatibility testing (Chrome focus)
+- [ ] Test error state recording and failure documentation
+- [ ] **Test:** All critical user flows work across devices, visual changes documented
 
-#### Task 23.2: Error Scenario Testing
+#### Task 24.2: Error Scenario Testing with Recording
 
-**Deliverable:** Comprehensive error handling validation
+**Deliverable:** Comprehensive error handling with visual documentation
 
-- [ ] Test network failure scenarios (API timeouts, connection drops)
-- [ ] Create invalid configuration handling tests
-- [ ] Test Kometa process crash recovery and error reporting
-- [ ] Add concurrent user operation testing
-- [ ] **Test:** Application handles all error scenarios gracefully
+- [ ] Test network failure scenarios with screen recording capture
+- [ ] Create invalid configuration handling tests with failure states
+- [ ] Test and document Kometa process crash recovery scenarios
+- [ ] Add concurrent user operation testing with conflict resolution
+- [ ] **Test:** All error scenarios recorded, documentation helps debugging
 
-#### Task 23.3: Performance Testing
+#### Task 24.3: Performance Testing with Monitoring
 
-**Deliverable:** Performance benchmark validation
+**Deliverable:** Performance validation with storage efficiency
 
-- [ ] Create load tests for API endpoints (100 concurrent requests)
-- [ ] Test WebSocket performance with multiple connected clients
-- [ ] Benchmark large YAML file processing and preview generation
-- [ ] Test memory usage during extended operation monitoring
-- [ ] **Test:** All performance targets met, no memory leaks detected
+- [ ] Benchmark E2E test execution time and resource usage
+- [ ] Test artifact storage efficiency and cleanup automation
+- [ ] Monitor GitHub storage usage and optimize compression
+- [ ] Validate CI workflow performance and execution time
+- [ ] **Test:** Tests execute efficiently, storage usage stays within limits
 
-### Day 24: Docker Packaging
+### Day 25: Docker Packaging
 
-#### Task 24.1: Production Docker Images
+#### Task 25.1: Production Docker Images
 
 **Deliverable:** Optimized container images
 
@@ -985,7 +1019,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Add health check endpoint and container health monitoring
 - [ ] **Test:** Container builds successfully, runs with minimal resources
 
-#### Task 24.2: Docker Compose Configuration
+#### Task 25.2: Docker Compose Configuration
 
 **Deliverable:** Complete deployment configuration
 
@@ -995,7 +1029,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Add backup and restore scripts for Docker volumes
 - [ ] **Test:** Docker Compose deployment works from scratch
 
-#### Task 24.3: Development Environment
+#### Task 25.3: Development Environment
 
 **Deliverable:** Developer-friendly Docker setup
 
@@ -1005,9 +1039,9 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create setup scripts for initial development environment
 - [ ] **Test:** Development environment starts quickly, hot reload works
 
-### Day 25: Cross-Platform Testing
+### Day 26: Cross-Platform Testing
 
-#### Task 25.1: macOS Testing
+#### Task 26.1: macOS Testing
 
 **Deliverable:** macOS compatibility validation
 
@@ -1017,7 +1051,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create macOS-specific documentation for setup
 - [ ] **Test:** Full functionality works on both Intel and M1/M2 Macs
 
-#### Task 25.2: Linux Testing
+#### Task 26.2: Linux Testing
 
 **Deliverable:** Linux distribution compatibility
 
@@ -1027,7 +1061,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create Linux-specific installation documentation
 - [ ] **Test:** Works correctly on major Linux distributions
 
-#### Task 25.3: Windows Testing
+#### Task 26.3: Windows Testing
 
 **Deliverable:** Windows environment support
 
@@ -1037,9 +1071,9 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create Windows-specific setup documentation
 - [ ] **Test:** Full functionality available on Windows platforms
 
-### Day 26: Security Implementation
+### Day 27: Security Implementation
 
-#### Task 26.1: Application Security Audit
+#### Task 27.1: Application Security Audit
 
 **Deliverable:** Secure application system
 
@@ -1049,7 +1083,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Add file access validation to prevent directory traversal
 - [ ] **Test:** Security scan shows no vulnerabilities in application
 
-#### Task 26.2: API Key Security
+#### Task 27.2: API Key Security
 
 **Deliverable:** Secure API key management
 
@@ -1059,7 +1093,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Add API key access logging and monitoring
 - [ ] **Test:** Keys are never stored in plaintext, transmission is secure
 
-#### Task 26.3: Input Validation and Sanitization
+#### Task 27.3: Input Validation and Sanitization
 
 **Deliverable:** Comprehensive input security
 
@@ -1069,9 +1103,9 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Add SQL injection protection (Prisma handles this)
 - [ ] **Test:** Security scanner finds no input validation vulnerabilities
 
-### Day 27: Performance Optimization
+### Day 28: Performance Optimization
 
-#### Task 27.1: Frontend Performance
+#### Task 28.1: Frontend Performance
 
 **Deliverable:** Optimized client-side performance
 
@@ -1081,7 +1115,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Implement service worker for caching static assets
 - [ ] **Test:** Bundle size <2MB, initial load time <3 seconds
 
-#### Task 27.2: Backend Performance
+#### Task 28.2: Backend Performance
 
 **Deliverable:** Optimized server performance
 
@@ -1091,7 +1125,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Implement connection pooling and keep-alive
 - [ ] **Test:** API response times <500ms, handles 100 concurrent users
 
-#### Task 27.3: WebSocket Performance
+#### Task 28.3: WebSocket Performance
 
 **Deliverable:** Efficient real-time communication
 
@@ -1101,9 +1135,9 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create WebSocket message compression
 - [ ] **Test:** Supports 50+ concurrent WebSocket connections efficiently
 
-### Day 28: Documentation and Release
+### Day 29: Documentation and Release
 
-#### Task 28.1: Installation Documentation
+#### Task 29.1: Installation Documentation
 
 **Deliverable:** Complete setup documentation
 
@@ -1113,7 +1147,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create video walkthrough for initial setup
 - [ ] **Test:** New user can follow documentation to complete setup
 
-#### Task 28.2: API Documentation
+#### Task 29.2: API Documentation
 
 **Deliverable:** Complete API reference
 
@@ -1123,7 +1157,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Document WebSocket event formats and usage
 - [ ] **Test:** API documentation is accurate and complete
 
-#### Task 28.3: Production Release Preparation
+#### Task 29.3: Production Release Preparation
 
 **Deliverable:** Production-ready release
 
@@ -1132,6 +1166,17 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - [ ] Create backup and disaster recovery procedures
 - [ ] Prepare community beta release with feedback collection
 - [ ] **Test:** Production deployment process works end-to-end
+
+#### Task 29.4: Documentation Updates for E2E Testing
+
+**Deliverable:** Updated project documentation with E2E testing information
+
+- [ ] Update `CLAUDE.md` with E2E testing patterns, commands, and best practices
+- [ ] Add E2E testing workflow to development protocol in `CLAUDE.md`
+- [ ] Update `planning/continuation-prompt.md` with E2E testing context
+- [ ] Document storage management strategy and GitHub artifacts approach
+- [ ] Add troubleshooting guide for E2E test failures and CI issues
+- [ ] **Test:** Documentation accurately reflects E2E testing implementation and usage
 
 ---
 
