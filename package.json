@@ -19,7 +19,9 @@
     "e2e:headed": "playwright test --headed",
     "e2e:mobile": "playwright test --project=chromium-mobile",
     "e2e:debug": "playwright test --debug",
-    "e2e:ui": "playwright test --ui"
+    "e2e:ui": "playwright test --ui",
+    "e2e:local": "playwright test --project=chromium-desktop",
+    "e2e:quick": "playwright test tests/e2e/specs/smoke.spec.ts --project=chromium-desktop"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

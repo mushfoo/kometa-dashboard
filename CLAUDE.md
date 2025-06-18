@@ -165,6 +165,9 @@ npm run test         # Run Jest tests
 npm run test:watch   # Run tests in watch mode
 npm run test:coverage # Run tests with coverage report
 npm run storybook    # Start Storybook component library on http://localhost:6006
+npm run e2e:quick    # Run smoke E2E tests (fastest)
+npm run e2e:local    # Run full E2E suite locally
+npm run e2e:headed   # Run E2E tests with browser visible
 ```
 
 ### Project-Specific Commands
@@ -301,6 +304,59 @@ interface ErrorResponse {
 - **Memory usage:** Track memory consumption patterns
 - **API response times:** Monitor endpoint performance
 
+## E2E Testing Workflow
+
+### Testing Strategy
+
+**Post-Merge Validation**: E2E tests run automatically after merging to main branch to validate the integrated application in CI.
+
+**Local Development**: Pre-push git hook runs E2E tests locally before pushing to catch issues early.
+
+### Local E2E Testing
+
+```bash
+# Quick smoke tests (recommended for frequent testing)
+npm run e2e:quick
+
+# Full E2E test suite
+npm run e2e:local
+
+# Run with browser visible (helpful for debugging)
+npm run e2e:headed
+
+# Debug mode with step-by-step execution
+npm run e2e:debug
+
+# Interactive UI mode
+npm run e2e:ui
+```
+
+### Git Hook Behavior
+
+The pre-push hook automatically runs E2E tests when:
+
+- Pushing to main branch
+- Pushing feature branches with changes to `src/`, `tests/e2e/`, or `playwright.config.ts`
+
+**Performance Tips**:
+
+- Keep `npm run dev` running during development for faster test execution
+- Hook will detect running dev server and use it instead of starting a new one
+
+**Override Hook**:
+
+```bash
+# Skip E2E tests if needed (use sparingly)
+git push --no-verify
+```
+
+### CI/CD Integration
+
+- **PR CI**: Runs unit tests, linting, and build validation only
+- **Post-Merge CI**: Runs full E2E test suite on main branch
+- **Artifact Management**: Automatic cleanup with 25MB storage limits
+- **Failure Handling**: E2E failures trigger notifications and require investigation
+
 ---
 
 ## Quick Start for Development
@@ -309,6 +365,8 @@ interface ErrorResponse {
 2. **Update task progress:** Mark completed sub-tasks as `[x]`
 3. **Add new files:** Update "Relevant Files" section
 4. **Run tests:** `npm run test:coverage` before committing
-5. **Commit completed task:** Use format "Complete Task X.X: [Description]"
+5. **Run E2E tests:** `npm run e2e:quick` for UI changes (optional during development)
+6. **Commit completed task:** Use format "Complete Task X.X: [Description]"
+7. **Push changes:** Pre-push hook will automatically run E2E tests if needed
 
 This context file should be referenced before starting any development work to ensure consistency with established patterns and standards.

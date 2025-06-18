@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the branch being pushed
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Only run E2E tests when pushing to main or feature branches with significant changes
+if [ "$branch" = "main" ] || git diff --name-only origin/main...HEAD | grep -E "(src/|tests/e2e/|playwright.config.ts)" > /dev/null; then
+    echo "🧪 Running E2E tests before push..."
+    
+    # Check if dev server is already running
+    if curl -s http://localhost:3000 > /dev/null 2>&1; then
+        echo "✅ Dev server is already running"
+        npm run e2e -- --project=chromium-desktop
+    else
+        echo "ℹ️  Dev server not running. E2E tests will start their own server."
+        echo "ℹ️  For faster testing, run 'npm run dev' in another terminal."
+        npm run e2e -- --project=chromium-desktop
+    fi
+    
+    if [ $? -ne 0 ]; then
+        echo "❌ E2E tests failed. Push aborted."
+        echo "💡 To skip E2E tests, use: git push --no-verify"
+        exit 1
+    fi
+    
+    echo "✅ E2E tests passed!"
+else
+    echo "ℹ️  Skipping E2E tests (no significant changes detected)"
+fi

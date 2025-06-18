@@ -1,15 +1,9 @@
-name: E2E Tests
+name: E2E Tests (Post-Merge)
 
+# E2E tests run only after merge to main branch to validate the integrated application
+# Local testing is handled via pre-push git hook for faster development cycle
 on:
   push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'tests/e2e/**'
-      - 'playwright.config.ts'
-      - 'package.json'
-      - 'package-lock.json'
-  pull_request:
     branches: [main]
     paths:
       - 'src/**'
