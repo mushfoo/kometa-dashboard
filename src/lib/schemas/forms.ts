@@ -31,6 +31,9 @@ export const plexConnectionSchema = z.object({
 
 export type PlexConnectionForm = z.infer<typeof plexConnectionSchema>;
 
+// Alias for backward compatibility
+export const plexConnectionFormSchema = plexConnectionSchema;
+
 /**
  * API Keys Management Form Schema
  */
@@ -78,6 +81,28 @@ export const apiKeysSchema = z.object({
 
 export type ApiKeysForm = z.infer<typeof apiKeysSchema>;
 
+// Updated schema with correct field names for Day 11 implementation
+export const apiKeysFormSchema = z.object({
+  tmdb: z.string().optional(),
+  trakt: z
+    .object({
+      client_id: z.string().optional(),
+      client_secret: z.string().optional(),
+      pin: z.string().optional(),
+    })
+    .optional(),
+  imdb: z.string().optional(),
+  anidb: z
+    .object({
+      client: z.string().optional(),
+      version: z.string().optional(),
+      language: z.string().optional(),
+    })
+    .optional(),
+});
+
+export type ApiKeysFormSchema = z.infer<typeof apiKeysFormSchema>;
+
 /**
  * Library Settings Form Schema
  */
@@ -114,6 +139,38 @@ export const librarySettingsSchema = z.object({
 });
 
 export type LibrarySettingsForm = z.infer<typeof librarySettingsSchema>;
+
+// Updated schema for Day 11 library settings implementation
+export const librarySettingsFormSchema = z.object({
+  libraries: z.array(
+    z.object({
+      library_name: z.string(),
+      type: z.enum(['movie', 'show', 'music']),
+      operations: z.object({
+        assets_for_all: z.boolean(),
+        delete_collections: z.boolean(),
+        mass_critic_rating_update: z.boolean(),
+        split_duplicates: z.boolean(),
+      }),
+      scan_interval: z.number().optional(),
+      scanner_threads: z.number().optional(),
+      collection_refresh_interval: z.number().optional(),
+      delete_unmanaged_collections: z.boolean().optional(),
+      delete_unmanaged_assets: z.boolean().optional(),
+    })
+  ),
+  settings: z.object({
+    scan_interval: z.number().min(1).max(168).default(24),
+    scanner_threads: z.number().min(1).max(10).default(2),
+    collection_refresh_interval: z.number().min(1).max(720).default(168),
+    delete_unmanaged_collections: z.boolean().default(false),
+    delete_unmanaged_assets: z.boolean().default(false),
+  }),
+});
+
+export type LibrarySettingsFormSchema = z.infer<
+  typeof librarySettingsFormSchema
+>;
 
 /**
  * Collection Builder Form Schema
