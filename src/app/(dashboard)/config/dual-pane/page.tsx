@@ -47,10 +47,16 @@ export default function DualPaneConfigPage() {
       const response = await fetch('/api/config/yaml');
       if (!response.ok) throw new Error('Failed to load YAML configuration');
       const data = await response.json();
-      setYamlContent(data.yaml || '');
       return data;
     },
   });
+
+  // Update YAML content when currentConfig changes
+  useEffect(() => {
+    if (currentConfig?.yaml) {
+      setYamlContent(currentConfig.yaml);
+    }
+  }, [currentConfig]);
 
   const handleYamlChange = (newValue: string) => {
     setYamlContent(newValue);
