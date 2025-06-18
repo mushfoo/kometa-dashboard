@@ -10,24 +10,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle2, XCircle, Server, Library } from 'lucide-react';
-import {
-  plexConnectionFormSchema,
-  type PlexConnectionForm,
-} from '@/lib/schemas/forms';
+import { plexConfigFormSchema, type PlexConfigForm } from '@/lib/schemas/forms';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface PlexLibrary {
   key: string;
   title: string;
-  type: 'movie' | 'show' | 'music' | 'photo';
-  location: string[];
-  scanner: string;
-  agent: string;
+  type: string;
+  updatedAt?: number;
 }
 
 interface PlexConnectionTestResult {
   success: boolean;
-  message: string;
+  error?: string;
+  serverInfo?: {
+    friendlyName: string;
+    version: string;
+    platform: string;
+    machineIdentifier: string;
+  };
   libraries?: PlexLibrary[];
 }
 
@@ -55,7 +56,7 @@ export default function PlexConfigurationPage() {
     formState: { errors, isSubmitting },
     watch,
   } = useForm({
-    resolver: zodResolver(plexConnectionFormSchema),
+    resolver: zodResolver(plexConfigFormSchema),
     defaultValues: currentConfig || {
       url: '',
       token: '',
@@ -63,7 +64,7 @@ export default function PlexConfigurationPage() {
   });
 
   const testConnectionMutation = useMutation({
-    mutationFn: async (data: PlexConnectionForm) => {
+    mutationFn: async (data: PlexConfigForm) => {
       const response = await fetch('/api/config/plex/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,7 +72,7 @@ export default function PlexConfigurationPage() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Connection test failed');
+        throw new Error(error.error || 'Connection test failed');
       }
       return response.json();
     },
@@ -84,14 +85,14 @@ export default function PlexConfigurationPage() {
     onError: (error: Error) => {
       setTestResult({
         success: false,
-        message: error.message,
+        error: error.message,
       });
     },
   });
 
   const saveConfigMutation = useMutation({
     mutationFn: async (
-      data: PlexConnectionForm & { selectedLibraries: string[] }
+      data: PlexConfigForm & { selectedLibraries: string[] }
     ) => {
       const response = await fetch('/api/config/plex', {
         method: 'POST',
@@ -110,7 +111,7 @@ export default function PlexConfigurationPage() {
     },
   });
 
-  const onSubmit = async (data: PlexConnectionForm) => {
+  const onSubmit = async (data: PlexConfigForm) => {
     await saveConfigMutation.mutateAsync({
       ...data,
       selectedLibraries: Array.from(selectedLibraries),
@@ -122,12 +123,12 @@ export default function PlexConfigurationPage() {
     testConnectionMutation.mutate(formData);
   };
 
-  const toggleLibrary = (libraryKey: string) => {
+  const toggleLibrary = (libraryTitle: string) => {
     const newSelected = new Set(selectedLibraries);
-    if (newSelected.has(libraryKey)) {
-      newSelected.delete(libraryKey);
+    if (newSelected.has(libraryTitle)) {
+      newSelected.delete(libraryTitle);
     } else {
-      newSelected.add(libraryKey);
+      newSelected.add(libraryTitle);
     }
     setSelectedLibraries(newSelected);
   };
@@ -152,7 +153,7 @@ export default function PlexConfigurationPage() {
       </div>
 
       <form
-        onSubmit={handleSubmit((data: PlexConnectionForm) => onSubmit(data))}
+        onSubmit={handleSubmit((data: PlexConfigForm) => onSubmit(data))}
         className="space-y-6"
       >
         <Card className="p-6">
@@ -241,7 +242,11 @@ export default function PlexConfigurationPage() {
                   ) : (
                     <XCircle className="h-4 w-4 mt-0.5" />
                   )}
-                  <AlertDescription>{testResult.message}</AlertDescription>
+                  <AlertDescription>
+                    {testResult.success
+                      ? `Successfully connected to ${testResult.serverInfo?.friendlyName || 'Plex server'}`
+                      : testResult.error}
+                  </AlertDescription>
                 </div>
               </Alert>
             )}
@@ -268,8 +273,8 @@ export default function PlexConfigurationPage() {
                   >
                     <Checkbox
                       id={`library-${library.key}`}
-                      checked={selectedLibraries.has(library.key)}
-                      onCheckedChange={() => toggleLibrary(library.key)}
+                      checked={selectedLibraries.has(library.title)}
+                      onCheckedChange={() => toggleLibrary(library.title)}
                       className="mt-1"
                     />
                     <div className="flex-1 space-y-1">
@@ -281,9 +286,14 @@ export default function PlexConfigurationPage() {
                       </label>
                       <div className="text-xs text-muted-foreground space-y-0.5">
                         <p>Type: {library.type}</p>
-                        <p>Scanner: {library.scanner}</p>
-                        {library.location.length > 0 && (
-                          <p>Location: {library.location[0]}</p>
+                        <p>Key: {library.key}</p>
+                        {library.updatedAt && (
+                          <p>
+                            Last Updated:{' '}
+                            {new Date(
+                              library.updatedAt * 1000
+                            ).toLocaleDateString()}
+                          </p>
                         )}
                       </div>
                     </div>

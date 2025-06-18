@@ -2,103 +2,162 @@ import { NextRequest, NextResponse } from 'next/server';
 import { plexConnectionFormSchema } from '@/lib/schemas/forms';
 import { z } from 'zod';
 
-interface PlexLibrary {
-  key: string;
-  title: string;
-  type: 'movie' | 'show' | 'music' | 'photo';
-  location: string[];
-  scanner: string;
-  agent: string;
-}
+// Schema for testing Plex connection
+const plexTestSchema = plexConnectionFormSchema.pick({
+  url: true,
+  token: true,
+});
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = plexConnectionFormSchema.parse(body);
+    const validatedData = plexTestSchema.parse(body);
 
-    // Test connection to Plex server
-    const plexUrl = validatedData.url.replace(/\/$/, ''); // Remove trailing slash
-    const testUrl = `${plexUrl}/library/sections?X-Plex-Token=${validatedData.token}`;
-
-    const response = await fetch(testUrl, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
-      // Add timeout
-      signal: AbortSignal.timeout(10000), // 10 second timeout
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        return NextResponse.json({
-          success: false,
-          message:
-            'Invalid Plex token. Please check your authentication token.',
-        });
-      }
-      throw new Error(`Plex server returned status ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Parse library data
-    const libraries: PlexLibrary[] =
-      data.MediaContainer?.Directory?.map((lib: any) => ({
-        key: lib.key,
-        title: lib.title,
-        type: lib.type,
-        location: lib.Location?.map((loc: any) => loc.path) || [],
-        scanner: lib.scanner || 'Unknown',
-        agent: lib.agent || 'Unknown',
-      })) || [];
-
-    // Filter to only movie and show libraries (what Kometa supports)
-    const supportedLibraries = libraries.filter(
-      (lib) => lib.type === 'movie' || lib.type === 'show'
+    // Test Plex connection
+    const connectionResult = await testPlexConnection(
+      validatedData.url,
+      validatedData.token
     );
+
+    if (!connectionResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: connectionResult.error,
+          details: connectionResult.details,
+        },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Successfully connected to Plex server. Found ${supportedLibraries.length} supported libraries.`,
-      libraries: supportedLibraries,
+      serverInfo: connectionResult.serverInfo,
+      libraries: connectionResult.libraries,
     });
   } catch (error) {
-    console.error('Plex connection test failed:', error);
+    console.error('Failed to test Plex connection:', error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        message: 'Invalid configuration format',
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid connection data',
+          details: error.errors,
+        },
+        { status: 400 }
+      );
     }
 
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        return NextResponse.json({
-          success: false,
-          message:
-            "Connection timeout. Please check your Plex server URL and ensure it's accessible.",
-        });
-      }
+    return NextResponse.json(
+      { success: false, error: 'Failed to test connection' },
+      { status: 500 }
+    );
+  }
+}
 
-      if (error.message.includes('fetch')) {
-        return NextResponse.json({
-          success: false,
-          message:
-            'Failed to connect to Plex server. Please check the URL and ensure the server is running.',
-        });
-      }
+async function testPlexConnection(url: string, token: string) {
+  try {
+    // Clean up URL - remove trailing slash
+    const cleanUrl = url.replace(/\/$/, '');
 
-      return NextResponse.json({
-        success: false,
-        message: error.message,
-      });
-    }
+    // Test basic connectivity to Plex server
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    return NextResponse.json({
-      success: false,
-      message: 'An unexpected error occurred while testing the connection.',
+    const serverResponse = await fetch(`${cleanUrl}/`, {
+      method: 'GET',
+      headers: {
+        'X-Plex-Token': token,
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
+
+    if (!serverResponse.ok) {
+      return {
+        success: false,
+        error: 'Failed to connect to Plex server',
+        details: `HTTP ${serverResponse.status}: ${serverResponse.statusText}`,
+      };
+    }
+
+    // Get server information
+    const serverInfo = await serverResponse.json();
+
+    // Get libraries
+    const librariesController = new AbortController();
+    const librariesTimeoutId = setTimeout(
+      () => librariesController.abort(),
+      10000
+    );
+
+    const librariesResponse = await fetch(`${cleanUrl}/library/sections`, {
+      method: 'GET',
+      headers: {
+        'X-Plex-Token': token,
+        Accept: 'application/json',
+      },
+      signal: librariesController.signal,
+    });
+
+    clearTimeout(librariesTimeoutId);
+
+    if (!librariesResponse.ok) {
+      return {
+        success: false,
+        error: 'Connected to server but failed to retrieve libraries',
+        details: `HTTP ${librariesResponse.status}: ${librariesResponse.statusText}`,
+      };
+    }
+
+    const librariesData = await librariesResponse.json();
+
+    // Extract library information
+    const libraries =
+      librariesData.MediaContainer?.Directory?.map((lib: any) => ({
+        key: lib.key,
+        title: lib.title,
+        type: lib.type,
+        updatedAt: lib.updatedAt,
+      })) || [];
+
+    return {
+      success: true,
+      serverInfo: {
+        friendlyName:
+          serverInfo.MediaContainer?.friendlyName || 'Unknown Server',
+        version: serverInfo.MediaContainer?.version || 'Unknown',
+        platform: serverInfo.MediaContainer?.platform || 'Unknown',
+        machineIdentifier: serverInfo.MediaContainer?.machineIdentifier || '',
+      },
+      libraries,
+    };
+  } catch (error) {
+    console.error('Plex connection test error:', error);
+
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error - unable to reach Plex server',
+        details: 'Please check the URL and ensure the server is accessible',
+      };
+    }
+
+    if (error instanceof Error && error.name === 'AbortError') {
+      return {
+        success: false,
+        error: 'Connection timeout',
+        details: 'The Plex server did not respond within 10 seconds',
+      };
+    }
+
+    return {
+      success: false,
+      error: 'Unexpected error during connection test',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }

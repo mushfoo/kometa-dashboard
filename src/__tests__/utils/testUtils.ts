@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { NextRequest } from 'next/server';
 
 /**
  * Custom test utilities and helper functions
@@ -76,6 +77,26 @@ export const apiHelpers = {
       json: () => Promise.resolve(data),
       text: () => Promise.resolve(JSON.stringify(data)),
     });
+  },
+
+  createMockNextRequest(url: string, init: RequestInit = {}) {
+    // Create a proper NextRequest mock for testing
+    const request = new Request(url, init);
+
+    // Add NextRequest-specific properties as mock functions
+    const nextRequest = Object.create(request);
+    nextRequest.cookies = {
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      has: jest.fn(),
+      clear: jest.fn(),
+    };
+    nextRequest.nextUrl = new URL(url);
+    nextRequest.page = {};
+    nextRequest.ua = {};
+
+    return nextRequest as NextRequest;
   },
 };
 
