@@ -611,21 +611,21 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Third-party service API key configuration
 
-- [ ] Create form fields for TMDb API key (32 char hex), Trakt credentials
-- [ ] Add test buttons for each API key making actual API calls
-- [ ] Implement secure display (show only last 4 characters of keys)
-- [ ] Add help links to API registration pages for each service
-- [ ] **Test:** API validation calls work, keys are masked in display
+- [x] Create form fields for TMDb API key (32 char hex), Trakt credentials
+- [x] Add test buttons for each API key making actual API calls
+- [x] Implement secure display (show only last 4 characters of keys)
+- [x] Add help links to API registration pages for each service
+- [x] **Test:** API validation calls work, keys are masked in display
 
 #### Task 12.3: Library Settings Forms
 
 **Deliverable:** Per-library configuration interface
 
-- [ ] Create form for library-specific settings (scan interval, collection settings)
-- [ ] Add library type detection (Movies, TV Shows, Music) from Plex API
-- [ ] Implement batch operations for multiple library configuration
-- [ ] Create library status display showing last scan time and item counts
-- [ ] **Test:** Library detection works, batch operations apply to selected libraries
+- [x] Create form for library-specific settings (scan interval, collection settings)
+- [x] Add library type detection (Movies, TV Shows, Music) from Plex API
+- [x] Implement batch operations for multiple library configuration
+- [x] Create library status display showing last scan time and item counts
+- [x] **Test:** Library detection works, batch operations apply to selected libraries
 
 ### Day 13: Monaco Editor Integration
 
@@ -633,31 +633,31 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** YAML editor with syntax highlighting
 
-- [ ] Install `@monaco-editor/react` and configure for Next.js
-- [ ] Create `YamlEditor.tsx` component with YAML language support
-- [ ] Configure Monaco with YAML syntax highlighting and error markers
-- [ ] Add editor themes (VS Code Light/Dark) matching application theme
-- [ ] **Test:** Editor loads correctly, YAML syntax highlighting works
+- [x] Install `@monaco-editor/react` and configure for Next.js
+- [x] Create `YamlEditor.tsx` component with YAML language support
+- [x] Configure Monaco with YAML syntax highlighting and error markers
+- [x] Add editor themes (VS Code Light/Dark) matching application theme
+- [x] **Test:** Editor loads correctly, YAML syntax highlighting works
 
 #### Task 13.2: YAML Validation Integration
 
 **Deliverable:** Real-time YAML validation in editor
 
-- [ ] Create YAML validation service using `js-yaml` library
-- [ ] Add Kometa-specific validation rules (required fields, valid formats)
-- [ ] Implement error markers in Monaco showing line/column of errors
-- [ ] Create hover tooltips explaining validation errors
-- [ ] **Test:** Validation errors show in real-time, error messages are helpful
+- [x] Create YAML validation service using `js-yaml` library
+- [x] Add Kometa-specific validation rules (required fields, valid formats)
+- [x] Implement error markers in Monaco showing line/column of errors
+- [x] Create hover tooltips explaining validation errors
+- [x] **Test:** Validation errors show in real-time, error messages are helpful
 
 #### Task 13.3: Editor Enhancement Features
 
 **Deliverable:** Advanced editor functionality
 
-- [ ] Add find/replace functionality with regex support
-- [ ] Implement code folding for YAML sections (collections, libraries)
-- [ ] Add auto-completion for common Kometa configuration keys
-- [ ] Create editor commands for formatting and validation (Ctrl+Shift+F)
-- [ ] **Test:** All editor features work, keyboard shortcuts function correctly
+- [x] Add find/replace functionality with regex support
+- [x] Implement code folding for YAML sections (collections, libraries)
+- [x] Add auto-completion for common Kometa configuration keys
+- [x] Create editor commands for formatting and validation (Ctrl+Shift+F)
+- [x] **Test:** All editor features work, keyboard shortcuts function correctly
 
 ### Day 14: Dual-Pane Interface
 
