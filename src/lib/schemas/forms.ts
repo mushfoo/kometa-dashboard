@@ -19,7 +19,8 @@ export const plexConnectionSchema = z.object({
   token: z
     .string()
     .min(1, 'Plex token is required')
-    .length(20, 'Plex token must be exactly 20 characters')
+    .min(20, 'Plex token must be at least 20 characters')
+    .max(32, 'Plex token cannot exceed 32 characters')
     .regex(/^[a-zA-Z0-9_-]+$/, 'Invalid token format'),
   serverName: z.string().optional(),
   timeout: z
@@ -33,6 +34,28 @@ export type PlexConnectionForm = z.infer<typeof plexConnectionSchema>;
 
 // Alias for backward compatibility
 export const plexConnectionFormSchema = plexConnectionSchema;
+
+/**
+ * Plex Configuration Form Schema with Library Selection
+ */
+export const plexConfigFormSchema = plexConnectionSchema.extend({
+  selectedLibraries: z.array(z.string()).optional(),
+  connectionStatus: z
+    .enum(['connected', 'disconnected', 'testing', 'error'])
+    .optional(),
+  availableLibraries: z
+    .array(
+      z.object({
+        key: z.string(),
+        title: z.string(),
+        type: z.string(),
+        updatedAt: z.number().optional(),
+      })
+    )
+    .optional(),
+});
+
+export type PlexConfigForm = z.infer<typeof plexConfigFormSchema>;
 
 /**
  * API Keys Management Form Schema

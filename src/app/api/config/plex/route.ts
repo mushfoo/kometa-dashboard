@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { plexConnectionFormSchema } from '@/lib/schemas/forms';
+import { plexConfigFormSchema } from '@/lib/schemas/forms';
 import { ConfigService } from '@/lib/ConfigService';
 import { z } from 'zod';
-
-const plexConfigSchema = plexConnectionFormSchema.extend({
-  selectedLibraries: z.array(z.string()).optional(),
-});
 
 export async function GET() {
   try {
@@ -19,8 +15,7 @@ export async function GET() {
     return NextResponse.json({
       url: config.plex.url || '',
       token: config.plex.token || '',
-      selectedLibraries:
-        config.libraries?.map((lib: any) => lib.library_name) || [],
+      selectedLibraries: config.libraries ? Object.keys(config.libraries) : [],
     });
   } catch (error) {
     console.error('Failed to load Plex configuration:', error);
@@ -34,7 +29,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = plexConfigSchema.parse(body);
+    const validatedData = plexConfigFormSchema.parse(body);
 
     const configService = new ConfigService();
     const config = await configService.getConfig();
@@ -55,23 +50,23 @@ export async function POST(request: NextRequest) {
 
     // Update selected libraries if provided
     if (validatedData.selectedLibraries) {
-      // Preserve existing library configurations but update selection
-      config.libraries = validatedData.selectedLibraries.map((libraryName) => {
-        const existing = config.libraries?.find(
-          (lib: any) => lib.library_name === libraryName
-        );
-        return (
-          existing || {
-            library_name: libraryName,
-            operations: {
-              assets_for_all: false,
-              delete_collections: false,
-              mass_critic_rating_update: false,
-              split_duplicates: false,
-            },
-          }
-        );
-      });
+      // Store existing libraries to preserve configurations
+      const existingLibraries = config.libraries || {};
+
+      // Convert array to object format that Kometa expects
+      config.libraries = {};
+      for (const libraryName of validatedData.selectedLibraries) {
+        // Preserve existing library configuration if it exists
+        const existing = existingLibraries[libraryName];
+        config.libraries[libraryName] = existing || {
+          operations: {
+            assets_for_all: false,
+            delete_collections: false,
+            mass_critic_rating_update: false,
+            split_duplicates: false,
+          },
+        };
+      }
     }
 
     await configService.updateConfig(config);
