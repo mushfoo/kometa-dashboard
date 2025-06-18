@@ -156,6 +156,17 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/components/forms/__tests__/FormTextarea.test.tsx` - Comprehensive tests for FormTextarea component
 - `src/components/forms/DynamicForm.tsx` - Schema-driven form generation component with type inference and conditional fields
 - `src/components/forms/__tests__/DynamicForm.test.tsx` - Comprehensive tests for DynamicForm component
+- `playwright.config.ts` - Playwright configuration with multiple viewports, failure-only recording, and CI optimization
+- `tests/e2e/fixtures/base-page.ts` - Base page object class with common E2E testing methods
+- `tests/e2e/fixtures/config-page.ts` - Configuration page object with methods for all config flows
+- `tests/e2e/fixtures/test-data.ts` - Test data fixtures for E2E tests
+- `tests/e2e/utils/test-helpers.ts` - E2E testing utilities for API mocking, file operations, and artifact management
+- `tests/e2e/specs/smoke.spec.ts` - Basic smoke tests for application functionality
+- `tests/e2e/specs/plex-config.spec.ts` - Comprehensive Plex configuration flow E2E tests
+- `tests/e2e/specs/api-keys.spec.ts` - API key management E2E tests for TMDb, Trakt, and IMDb
+- `tests/e2e/specs/yaml-editor.spec.ts` - YAML editor E2E tests including Monaco editor integration
+- `tests/e2e/specs/import-export.spec.ts` - Configuration import/export E2E tests with validation and diff views
+- `.github/workflows/e2e.yml` - GitHub Actions workflow for E2E testing with artifact management and cleanup
 
 ### Modified Files
 
@@ -171,7 +182,8 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/app/layout.tsx` - Updated to include Providers with React Query and app state management
 - `src/app/page.tsx` - Redesigned home page with navigation cards and improved styling
 - `src/app/page.test.tsx` - Updated tests for new home page structure and navigation
-- `package.json` - Added React Query, Zustand, Lucide React, react-hook-form, and @hookform/resolvers dependencies
+- `package.json` - Added React Query, Zustand, Lucide React, react-hook-form, @hookform/resolvers, and Playwright dependencies; added E2E testing scripts
+- `.gitignore` - Updated to exclude E2E test artifacts, reports, and temporary files
 
 ---
 
@@ -555,33 +567,33 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Complete end-to-end testing framework with visual documentation
 
-- [ ] Install Playwright and configure test environment
-- [ ] Create test structure: `tests/e2e/` with config, fixtures, and utilities
-- [ ] Configure Playwright for Chrome desktop (1920x1080), mobile (375x667), and tablet (768x1024)
-- [ ] Set up GitHub artifacts storage with 3-day retention and 25MB size limits
-- [ ] Configure failure-only recording (720p, compressed) and screenshot capture
-- [ ] **Test:** `npm run e2e` executes successfully, artifacts generate on failures only
+- [x] Install Playwright and configure test environment
+- [x] Create test structure: `tests/e2e/` with config, fixtures, and utilities
+- [x] Configure Playwright for Chrome desktop (1920x1080), mobile (375x667), and tablet (768x1024)
+- [x] Set up GitHub artifacts storage with 3-day retention and 25MB size limits
+- [x] Configure failure-only recording (720p, compressed) and screenshot capture
+- [x] **Test:** `npm run e2e` executes successfully, artifacts generate on failures only
 
 #### Task 11.2: Core Configuration Flow E2E Tests
 
 **Deliverable:** Critical user journey validation tests
 
-- [ ] Create Plex configuration flow test: URL input → Token validation → Library discovery → Selection → Save
-- [ ] Implement API keys management test: Service selection → Key input → Validation → Encryption → Storage
-- [ ] Add YAML editor test: Load existing → Modify content → Validate → Save
-- [ ] Create import/export test: Export current → Import back → Verify integrity
-- [ ] **Test:** All configuration flows complete successfully, schema validation bugs are caught
+- [x] Create Plex configuration flow test: URL input → Token validation → Library discovery → Selection → Save
+- [x] Implement API keys management test: Service selection → Key input → Validation → Encryption → Storage
+- [x] Add YAML editor test: Load existing → Modify content → Validate → Save
+- [x] Create import/export test: Export current → Import back → Verify integrity
+- [x] **Test:** All configuration flows complete successfully, schema validation bugs are caught
 
 #### Task 11.3: Storage Management & CI Integration
 
 **Deliverable:** Automated E2E testing with storage monitoring
 
-- [ ] Create GitHub Actions workflow for post-merge E2E testing
-- [ ] Implement artifact size monitoring and automated cleanup (weekly purge)
-- [ ] Configure conditional execution (only on UI-related changes or failures)
-- [ ] Add storage usage reporting and size warnings in CI output
-- [ ] Create NPM scripts: `e2e`, `e2e:headed`, `e2e:mobile`, `e2e:debug`
-- [ ] **Test:** CI workflow executes correctly, storage stays within GitHub free tier limits
+- [x] Create GitHub Actions workflow for post-merge E2E testing
+- [x] Implement artifact size monitoring and automated cleanup (weekly purge)
+- [x] Configure conditional execution (only on UI-related changes or failures)
+- [x] Add storage usage reporting and size warnings in CI output
+- [x] Create NPM scripts: `e2e`, `e2e:headed`, `e2e:mobile`, `e2e:debug`
+- [x] **Test:** CI workflow executes correctly, storage stays within GitHub free tier limits
 
 ### Day 12: Configuration Forms
 

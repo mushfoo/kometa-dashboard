@@ -14,7 +14,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:mobile": "playwright test --project=chromium-mobile",
+    "e2e:debug": "playwright test --debug",
+    "e2e:ui": "playwright test --ui"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -50,6 +55,7 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.0",
     "@storybook/addon-docs": "^9.0.10",
     "@storybook/addon-onboarding": "^9.0.10",
     "@storybook/nextjs": "^9.0.10",

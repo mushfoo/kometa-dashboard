@@ -1,0 +1,131 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/e2e/**'
+      - 'playwright.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/e2e/**'
+      - 'playwright.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npm run e2e
+        env:
+          CI: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results-${{ github.run_id }}
+          path: |
+            tests/e2e/test-results/
+            tests/e2e/playwright-report/
+          retention-days: 3
+          if-no-files-found: ignore
+
+      - name: Upload test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-artifacts-${{ github.run_id }}
+          path: |
+            tests/e2e/artifacts/
+            tests/e2e/screenshots/
+          retention-days: 3
+          if-no-files-found: ignore
+
+      - name: Check artifact size
+        if: always()
+        run: |
+          # Calculate total size of artifacts
+          ARTIFACT_SIZE=$(du -sb tests/e2e/{test-results,playwright-report,artifacts,screenshots} 2>/dev/null | awk '{s+=$1} END {print s}' || echo 0)
+          ARTIFACT_SIZE_MB=$((ARTIFACT_SIZE / 1048576))
+
+          echo "Total artifact size: ${ARTIFACT_SIZE_MB} MB"
+
+          # Warn if approaching limit
+          if [ $ARTIFACT_SIZE_MB -gt 20 ]; then
+            echo "::warning::E2E test artifacts are ${ARTIFACT_SIZE_MB} MB, approaching 25 MB limit"
+          fi
+
+          # Fail if over limit
+          if [ $ARTIFACT_SIZE_MB -gt 25 ]; then
+            echo "::error::E2E test artifacts are ${ARTIFACT_SIZE_MB} MB, exceeding 25 MB limit"
+            exit 1
+          fi
+
+      - name: Publish test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: tests/e2e/playwright-report/
+          retention-days: 3
+
+  cleanup:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: e2e
+
+    steps:
+      - name: Delete old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+            const e2eArtifacts = artifacts.data.artifacts.filter(artifact => 
+              artifact.name.includes('e2e-') && 
+              new Date(artifact.created_at) < oneWeekAgo
+            );
+
+            for (const artifact of e2eArtifacts) {
+              console.log(`Deleting artifact: ${artifact.name}`);
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id
+              });
+            }
