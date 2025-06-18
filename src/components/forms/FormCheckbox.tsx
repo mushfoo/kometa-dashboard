@@ -60,7 +60,7 @@ export function FormCheckbox<T extends FieldValues>({
           aria-invalid={hasError}
           aria-describedby={
             helpText || error
-              ? `${name}-description ${error ? `${name}-error` : ''}`
+              ? `${name}-description${error ? ` ${name}-error` : ''}`.trim()
               : undefined
           }
         />

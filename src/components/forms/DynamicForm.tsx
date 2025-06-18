@@ -198,13 +198,14 @@ export function DynamicForm<T extends FieldValues>({
     }
 
     // Try _def.shape as a function (newer Zod versions)
-    if (zodSchema._def?.shape && typeof zodSchema._def.shape === 'function') {
-      return zodSchema._def.shape();
+    const shapeDef = (zodSchema._def as any)?.shape;
+    if (shapeDef && typeof shapeDef === 'function') {
+      return shapeDef();
     }
 
     // Try _def.shape as an object (older Zod versions)
-    if (zodSchema._def?.shape && typeof zodSchema._def.shape === 'object') {
-      return zodSchema._def.shape;
+    if (shapeDef && typeof shapeDef === 'object') {
+      return shapeDef;
     }
 
     return {};
@@ -225,7 +226,7 @@ export function DynamicForm<T extends FieldValues>({
 
       acc[section].push({
         name: fieldName,
-        config,
+        config: config || undefined,
         zodType: schemaFields[fieldName],
         order: config?.order || 0,
       });
@@ -234,19 +235,24 @@ export function DynamicForm<T extends FieldValues>({
     },
     {} as Record<
       string,
-      Array<{ name: string; config?: FieldConfig; zodType: any; order: number }>
+      Array<{
+        name: string;
+        config?: FieldConfig | undefined;
+        zodType: any;
+        order: number;
+      }>
     >
   );
 
   // Sort fields within each section
   Object.keys(fieldsBySection).forEach((section) => {
-    fieldsBySection[section].sort((a, b) => a.order - b.order);
+    fieldsBySection[section]?.sort((a, b) => a.order - b.order);
   });
 
   const renderField = (
     fieldName: string,
     zodType: any,
-    config?: FieldConfig
+    config?: FieldConfig | undefined
   ) => {
     if (!shouldShowField(fieldName, config, formValues)) {
       return null;
@@ -263,8 +269,8 @@ export function DynamicForm<T extends FieldValues>({
         config?.label ||
         fieldName.charAt(0).toUpperCase() +
           fieldName.slice(1).replace(/([A-Z])/g, ' $1'),
-      placeholder: config?.placeholder,
-      helpText: config?.helpText,
+      ...(config?.placeholder && { placeholder: config.placeholder }),
+      ...(config?.helpText && { helpText: config.helpText }),
       disabled: false,
       required:
         !zodType.isOptional?.() && zodType._def?.defaultValue === undefined,
@@ -289,7 +295,7 @@ export function DynamicForm<T extends FieldValues>({
           <FormTextarea
             {...commonProps}
             rows={config?.rows || 3}
-            maxLength={config?.maxLength}
+            {...(config?.maxLength && { maxLength: config.maxLength })}
           />
         );
 
@@ -310,7 +316,11 @@ export function DynamicForm<T extends FieldValues>({
     fields,
   }: {
     sectionName: string;
-    fields: Array<{ name: string; config?: FieldConfig; zodType: any }>;
+    fields: Array<{
+      name: string;
+      config?: FieldConfig | undefined;
+      zodType: any;
+    }>;
   }) => {
     const sectionConfig = sectionConfigs[sectionName];
     const [isExpanded, setIsExpanded] = React.useState(
