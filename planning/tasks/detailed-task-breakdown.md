@@ -167,6 +167,8 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `tests/e2e/specs/yaml-editor.spec.ts` - YAML editor E2E tests including Monaco editor integration
 - `tests/e2e/specs/import-export.spec.ts` - Configuration import/export E2E tests with validation and diff views
 - `.github/workflows/e2e.yml` - GitHub Actions workflow for E2E testing with artifact management and cleanup
+- `src/app/(dashboard)/config/dual-pane/page.tsx` - Dual-pane configuration interface with split layout
+- `src/app/(dashboard)/config/dual-pane/page.test.tsx` - Tests for dual-pane configuration page
 
 ### Modified Files
 
@@ -182,8 +184,10 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/app/layout.tsx` - Updated to include Providers with React Query and app state management
 - `src/app/page.tsx` - Redesigned home page with navigation cards and improved styling
 - `src/app/page.test.tsx` - Updated tests for new home page structure and navigation
-- `package.json` - Added React Query, Zustand, Lucide React, react-hook-form, @hookform/resolvers, and Playwright dependencies; added E2E testing scripts
+- `package.json` - Added React Query, Zustand, Lucide React, react-hook-form, @hookform/resolvers, Playwright, and @rexxars/react-split-pane dependencies; added E2E testing scripts
 - `.gitignore` - Updated to exclude E2E test artifacts, reports, and temporary files
+- `src/app/(dashboard)/config/page.tsx` - Updated with navigation cards including new dual-pane editor
+- `src/app/globals.css` - Added split pane resizer styles
 
 ---
 
@@ -665,11 +669,11 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Resizable dual-pane interface
 
-- [ ] Install `react-split-pane` or implement custom resizable layout
-- [ ] Create left pane for form interface, right pane for YAML editor
-- [ ] Add resize handle with minimum/maximum pane widths (20%-80%)
-- [ ] Implement pane layout persistence in localStorage
-- [ ] **Test:** Panes resize correctly, layout preference persists
+- [x] Install `react-split-pane` or implement custom resizable layout
+- [x] Create left pane for form interface, right pane for YAML editor
+- [x] Add resize handle with minimum/maximum pane widths (20%-80%)
+- [x] Implement pane layout persistence in localStorage
+- [x] **Test:** Panes resize correctly, layout preference persists
 
 #### Task 14.2: Form-YAML Synchronization
 
