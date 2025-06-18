@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const options = exportOptionsSchema.parse(body);
 
-    const fileManager = FileManager.getInstance();
+    const configService = new ConfigService();
     const encryptionService = EncryptionService.getInstance();
-    const config = await fileManager.readConfig();
+    const config = await configService.getConfig();
 
     // Create a clean export copy
     const exportConfig: any = { ...config };

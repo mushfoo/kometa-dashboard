@@ -54,7 +54,7 @@ export default function LibrarySettingsPage() {
     watch,
     reset,
     setValue,
-  } = useForm<LibrarySettingsFormSchema>({
+  } = useForm({
     resolver: zodResolver(librarySettingsFormSchema),
     defaultValues: {
       libraries: [],
@@ -139,7 +139,21 @@ export default function LibrarySettingsPage() {
 
   const handleApplyToAll = () => {
     const settings = watch('settings');
-    applyToAllMutation.mutate(settings);
+    if (
+      settings.scan_interval !== undefined &&
+      settings.scanner_threads !== undefined &&
+      settings.collection_refresh_interval !== undefined &&
+      settings.delete_unmanaged_collections !== undefined &&
+      settings.delete_unmanaged_assets !== undefined
+    ) {
+      applyToAllMutation.mutate({
+        scan_interval: settings.scan_interval,
+        scanner_threads: settings.scanner_threads,
+        collection_refresh_interval: settings.collection_refresh_interval,
+        delete_unmanaged_collections: settings.delete_unmanaged_collections,
+        delete_unmanaged_assets: settings.delete_unmanaged_assets,
+      });
+    }
   };
 
   const getLibraryTypeIcon = (type: string) => {
@@ -194,7 +208,12 @@ export default function LibrarySettingsPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={handleSubmit((data: LibrarySettingsFormSchema) =>
+          onSubmit(data)
+        )}
+        className="space-y-6"
+      >
         {/* Global Settings */}
         <Card className="p-6">
           <div className="space-y-4">

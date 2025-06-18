@@ -12,14 +12,15 @@ export async function GET() {
     const configService = new ConfigService();
     const config = await configService.getConfig();
 
-    if (!config.plex) {
+    if (!config || !config.plex) {
       return NextResponse.json({ url: '', token: '', selectedLibraries: [] });
     }
 
     return NextResponse.json({
       url: config.plex.url || '',
       token: config.plex.token || '',
-      selectedLibraries: config.libraries?.map((lib) => lib.library_name) || [],
+      selectedLibraries:
+        config.libraries?.map((lib: any) => lib.library_name) || [],
     });
   } catch (error) {
     console.error('Failed to load Plex configuration:', error);
@@ -38,15 +39,18 @@ export async function POST(request: NextRequest) {
     const configService = new ConfigService();
     const config = await configService.getConfig();
 
+    if (!config) {
+      return NextResponse.json(
+        { error: 'Configuration not found' },
+        { status: 404 }
+      );
+    }
+
     // Update Plex configuration
     config.plex = {
       url: validatedData.url,
       token: validatedData.token,
       timeout: 60,
-      db_cache: 4096,
-      clean_bundles: true,
-      empty_trash: true,
-      optimize: true,
     };
 
     // Update selected libraries if provided
@@ -54,7 +58,7 @@ export async function POST(request: NextRequest) {
       // Preserve existing library configurations but update selection
       config.libraries = validatedData.selectedLibraries.map((libraryName) => {
         const existing = config.libraries?.find(
-          (lib) => lib.library_name === libraryName
+          (lib: any) => lib.library_name === libraryName
         );
         return (
           existing || {

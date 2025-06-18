@@ -254,25 +254,6 @@ export default function YamlEditorPage() {
             onValidationChange={handleValidationChange}
             height="600px"
             showToolbar={false}
-            placeholder="# Kometa Configuration
-# This is your main Kometa configuration file
-# 
-# Example structure:
-# plex:
-#   url: http://localhost:32400
-#   token: YOUR_PLEX_TOKEN
-#
-# tmdb:
-#   apikey: YOUR_TMDB_API_KEY
-#
-# libraries:
-#   Movies:
-#     collections:
-#       - tmdb_popular
-#   TV Shows:
-#     collections:
-#       - tmdb_trending
-"
           />
         </div>
       </Card>

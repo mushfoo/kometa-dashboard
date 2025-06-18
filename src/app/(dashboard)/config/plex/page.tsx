@@ -54,7 +54,7 @@ export default function PlexConfigurationPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     watch,
-  } = useForm<PlexConnectionForm>({
+  } = useForm({
     resolver: zodResolver(plexConnectionFormSchema),
     defaultValues: currentConfig || {
       url: '',
@@ -151,7 +151,10 @@ export default function PlexConfigurationPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={handleSubmit((data: PlexConnectionForm) => onSubmit(data))}
+        className="space-y-6"
+      >
         <Card className="p-6">
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
@@ -169,7 +172,9 @@ export default function PlexConfigurationPage() {
               />
               {errors.url && (
                 <p id="url-error" className="text-sm text-destructive">
-                  {errors.url.message}
+                  {typeof errors.url.message === 'string'
+                    ? errors.url.message
+                    : 'Invalid URL'}
                 </p>
               )}
               <p className="text-sm text-muted-foreground">
@@ -188,7 +193,9 @@ export default function PlexConfigurationPage() {
               />
               {errors.token && (
                 <p id="token-error" className="text-sm text-destructive">
-                  {errors.token.message}
+                  {typeof errors.token.message === 'string'
+                    ? errors.token.message
+                    : 'Invalid token'}
                 </p>
               )}
               <p className="text-sm text-muted-foreground">

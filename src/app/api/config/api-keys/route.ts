@@ -10,6 +10,15 @@ export async function GET() {
     const config = await configService.getConfig();
     const encryptionService = EncryptionService.getInstance();
 
+    if (!config) {
+      return NextResponse.json({
+        tmdb: '',
+        trakt: { client_id: '', client_secret: '', pin: '' },
+        imdb: '',
+        anidb: { client: '', version: '', language: 'en' },
+      });
+    }
+
     // Return decrypted keys (but still masked for display)
     const keys = {
       tmdb: config.tmdb?.apikey
@@ -22,15 +31,15 @@ export async function GET() {
         client_secret: config.trakt?.client_secret
           ? await encryptionService.maskKey(config.trakt.client_secret)
           : '',
-        pin: config.trakt?.pin || '',
+        pin: '',
       },
       imdb: config.imdb?.apikey
         ? await encryptionService.maskKey(config.imdb.apikey)
         : '',
       anidb: {
-        client: config.anidb?.client || '',
-        version: config.anidb?.version || '',
-        language: config.anidb?.language || 'en',
+        client: '',
+        version: '',
+        language: 'en',
       },
     };
 
@@ -53,13 +62,19 @@ export async function POST(request: NextRequest) {
     const encryptionService = EncryptionService.getInstance();
     const config = await configService.getConfig();
 
+    if (!config) {
+      return NextResponse.json(
+        { error: 'Configuration not found' },
+        { status: 404 }
+      );
+    }
+
     // Update TMDb configuration
     if (validatedData.tmdb) {
       config.tmdb = {
         ...config.tmdb,
         apikey: await encryptionService.encrypt(validatedData.tmdb),
         language: config.tmdb?.language || 'en',
-        cache_expiration: config.tmdb?.cache_expiration || 60,
         region: config.tmdb?.region || '',
       };
     }
@@ -74,8 +89,7 @@ export async function POST(request: NextRequest) {
         client_secret: await encryptionService.encrypt(
           validatedData.trakt.client_secret
         ),
-        pin: validatedData.trakt.pin,
-        authorization: config.trakt?.authorization || {},
+        authorization: config.trakt?.authorization,
       };
     }
 
@@ -84,18 +98,6 @@ export async function POST(request: NextRequest) {
       config.imdb = {
         ...config.imdb,
         apikey: await encryptionService.encrypt(validatedData.imdb),
-        cache_expiration: config.imdb?.cache_expiration || 60,
-      };
-    }
-
-    // Update AniDB configuration
-    if (validatedData.anidb?.client && validatedData.anidb?.version) {
-      config.anidb = {
-        ...config.anidb,
-        client: validatedData.anidb.client,
-        version: validatedData.anidb.version,
-        language: validatedData.anidb.language || 'en',
-        cache_expiration: config.anidb?.cache_expiration || 60,
       };
     }
 

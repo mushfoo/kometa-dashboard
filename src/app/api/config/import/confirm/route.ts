@@ -20,7 +20,15 @@ export async function POST() {
       );
     }
 
-    const [importId, config] = imports[0];
+    const importEntry = imports[0];
+    if (!importEntry) {
+      return NextResponse.json(
+        { error: 'No pending import found. Please upload a file first.' },
+        { status: 400 }
+      );
+    }
+
+    const [importId, config] = importEntry;
 
     // Create backup of current configuration
     const configService = new ConfigService();

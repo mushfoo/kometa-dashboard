@@ -8,12 +8,12 @@ export async function GET() {
     const configService = new ConfigService();
     const config = await configService.getConfig();
 
-    if (!config.libraries || config.libraries.length === 0) {
+    if (!config || !config.libraries || config.libraries.length === 0) {
       return NextResponse.json([]);
     }
 
     // Transform config libraries to form format
-    const libraries = config.libraries.map((lib) => ({
+    const libraries = config.libraries.map((lib: any) => ({
       library_name: lib.library_name,
       type: lib.library_type || 'movie',
       operations: {
@@ -48,6 +48,13 @@ export async function POST(request: NextRequest) {
     const configService = new ConfigService();
     const config = await configService.getConfig();
 
+    if (!config) {
+      return NextResponse.json(
+        { error: 'Configuration not found' },
+        { status: 404 }
+      );
+    }
+
     // Update library configurations
     config.libraries = validatedData.libraries.map((lib) => ({
       library_name: lib.library_name,
@@ -75,20 +82,13 @@ export async function POST(request: NextRequest) {
       // Preserve existing collections if they exist
       collections:
         config.libraries?.find(
-          (existing) => existing.library_name === lib.library_name
+          (existing: any) => existing.library_name === lib.library_name
         )?.collections || [],
     }));
 
     // Update global settings
     config.settings = {
       ...config.settings,
-      scan_interval: validatedData.settings.scan_interval,
-      scanner_threads: validatedData.settings.scanner_threads,
-      collection_refresh_interval:
-        validatedData.settings.collection_refresh_interval,
-      delete_unmanaged_collections:
-        validatedData.settings.delete_unmanaged_collections,
-      delete_unmanaged_assets: validatedData.settings.delete_unmanaged_assets,
     };
 
     await configService.updateConfig(config);

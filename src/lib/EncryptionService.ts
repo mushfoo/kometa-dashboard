@@ -80,6 +80,10 @@ export class EncryptionService {
       }
 
       const [, ivHex, authTagHex, encrypted] = parts;
+      if (!ivHex || !authTagHex || !encrypted) {
+        throw new Error('Invalid encrypted format - missing parts');
+      }
+
       const key = await this.ensureKey();
 
       const iv = Buffer.from(ivHex, 'hex');
