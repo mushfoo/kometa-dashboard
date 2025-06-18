@@ -2,6 +2,12 @@ name: E2E Tests (Post-Merge)
 
 # E2E tests run only after merge to main branch to validate the integrated application
 # Local testing is handled via pre-push git hook for faster development cycle
+
+# Cancel previous runs when new commits are pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
