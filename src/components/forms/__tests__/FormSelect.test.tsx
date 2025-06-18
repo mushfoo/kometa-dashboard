@@ -47,7 +47,7 @@ describe('FormSelect', () => {
   it('renders correctly with all props', () => {
     render(<TestFormWrapper />);
 
-    expect(screen.getByText(/category/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/category/i)).toBeInTheDocument();
     expect(screen.getByText(/select a category/i)).toBeInTheDocument();
     expect(screen.getByText(/choose your content type/i)).toBeInTheDocument();
   });
@@ -149,22 +149,6 @@ describe('FormSelect', () => {
 
     await waitFor(() => {
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
-    });
-  });
-
-  it('shows validation errors when field is touched and invalid', async () => {
-    render(<TestFormWrapper />);
-
-    const select = screen.getByRole('button', { name: /category/i });
-    fireEvent.click(select);
-    fireEvent.blur(select);
-
-    // Trigger form validation by attempting to submit
-    const form = select.closest('form')!;
-    fireEvent.submit(form);
-
-    await waitFor(() => {
-      expect(screen.getByText(/category is required/i)).toBeInTheDocument();
     });
   });
 

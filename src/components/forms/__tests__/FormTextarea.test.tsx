@@ -118,16 +118,20 @@ describe('FormTextarea', () => {
 
     await waitFor(() => {
       expect(textarea).toHaveClass('border-red-300');
-      expect(screen.getByText(/description/i)).toHaveClass('text-red-700');
+      const label = screen.getByText('Description');
+      expect(label).toHaveClass('text-red-700');
     });
   });
 
   it('handles disabled state correctly', () => {
-    const form = useForm();
+    function TestComponent() {
+      const form = useForm();
+      return (
+        <FormTextarea form={form} name="test" label="Test Textarea" disabled />
+      );
+    }
 
-    render(
-      <FormTextarea form={form} name="test" label="Test Textarea" disabled />
-    );
+    render(<TestComponent />);
 
     const textarea = screen.getByLabelText(/test textarea/i);
     expect(textarea).toBeDisabled();

@@ -444,12 +444,23 @@ describe('ConfigManager', () => {
       mockFs.readdir.mockResolvedValue(['corrupted.json'] as any);
       mockFs.readFile.mockResolvedValue('invalid json content');
 
+      // Mock console.warn to silence the expected warning during test
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       // Should not throw, just log warning and continue
       const templates = await manager.getTemplates();
 
       // Should still return built-in templates
       expect(templates.length).toBeGreaterThan(0);
       expect(templates.some((t) => t.id === 'basic-plex-tmdb')).toBe(true);
+
+      // Verify warning was called (but silenced)
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load template corrupted.json:'),
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
     });
 
     test('should handle template save errors', async () => {

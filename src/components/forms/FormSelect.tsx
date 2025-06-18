@@ -119,16 +119,22 @@ export function FormSelect<T extends FieldValues>({
       {/* Hidden input for form registration */}
       <input {...register(name)} type="hidden" value={currentValue || ''} />
 
-      {label && <label className={labelClasses}>{label}</label>}
+      {label && (
+        <label id={`${name}-label`} className={labelClasses}>
+          {label}
+        </label>
+      )}
 
       <div className="relative" ref={dropdownRef}>
         <div
+          id={name}
           className={selectClasses}
           onClick={toggleDropdown}
           role="button"
           tabIndex={disabled ? -1 : 0}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          aria-labelledby={label ? `${name}-label` : undefined}
           aria-describedby={
             helpText || error
               ? `${name}-description${error ? ` ${name}-error` : ''}`.trim()

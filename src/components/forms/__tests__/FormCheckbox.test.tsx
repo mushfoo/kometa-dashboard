@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import { z } from 'zod';
 import { useForm } from '../../../hooks/useForm';
 import { FormCheckbox } from '../FormCheckbox';
@@ -54,17 +60,21 @@ describe('FormCheckbox', () => {
     expect(requiredLabel).toHaveClass("after:content-['*']");
   });
 
-  it('handles checkbox state changes', () => {
+  it('handles checkbox state changes', async () => {
     render(<TestFormWrapper />);
 
     const checkbox = screen.getByLabelText(/i agree to the terms/i);
 
     expect(checkbox).not.toBeChecked();
 
-    fireEvent.click(checkbox);
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
     expect(checkbox).toBeChecked();
 
-    fireEvent.click(checkbox);
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
     expect(checkbox).not.toBeChecked();
   });
 
@@ -74,9 +84,15 @@ describe('FormCheckbox', () => {
     const checkbox = screen.getByLabelText(/i agree to the terms/i);
 
     // Check and uncheck to trigger validation
-    fireEvent.click(checkbox);
-    fireEvent.click(checkbox);
-    fireEvent.blur(checkbox);
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+    await act(async () => {
+      fireEvent.blur(checkbox);
+    });
 
     await waitFor(() => {
       expect(
@@ -90,9 +106,15 @@ describe('FormCheckbox', () => {
 
     const checkbox = screen.getByLabelText(/i agree to the terms/i);
 
-    fireEvent.click(checkbox);
-    fireEvent.click(checkbox);
-    fireEvent.blur(checkbox);
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+    await act(async () => {
+      fireEvent.blur(checkbox);
+    });
 
     await waitFor(() => {
       expect(checkbox).toHaveClass('border-red-300');
@@ -135,9 +157,15 @@ describe('FormCheckbox', () => {
 
     const checkbox = screen.getByLabelText(/i agree to the terms/i);
 
-    fireEvent.click(checkbox);
-    fireEvent.click(checkbox);
-    fireEvent.blur(checkbox);
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+    await act(async () => {
+      fireEvent.blur(checkbox);
+    });
 
     await waitFor(() => {
       expect(
@@ -151,7 +179,7 @@ describe('FormCheckbox', () => {
     ).toBeInTheDocument();
   });
 
-  it('supports clicking on label to toggle checkbox', () => {
+  it('supports clicking on label to toggle checkbox', async () => {
     render(<TestFormWrapper />);
 
     const checkbox = screen.getByLabelText(/i agree to the terms/i);
@@ -159,7 +187,9 @@ describe('FormCheckbox', () => {
 
     expect(checkbox).not.toBeChecked();
 
-    fireEvent.click(label);
+    await act(async () => {
+      fireEvent.click(label);
+    });
     expect(checkbox).toBeChecked();
   });
 });

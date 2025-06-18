@@ -1,4 +1,8 @@
-import { PollingService, AdaptivePollingService, createPollingService } from '../polling';
+import {
+  PollingService,
+  AdaptivePollingService,
+  createPollingService,
+} from '../polling';
 // import { PollingConfig } from '../polling';
 
 // Mock timers for testing
@@ -16,7 +20,7 @@ describe('PollingService', () => {
       maxRetries: 2,
       retryDelay: 500,
     });
-    
+
     // Suppress error events to prevent unhandled error exceptions in tests
     service.on('error', () => {});
   });
@@ -32,7 +36,7 @@ describe('PollingService', () => {
     test('should start and stop polling', () => {
       const startedSpy = jest.fn();
       const stoppedSpy = jest.fn();
-      
+
       service.on('started', startedSpy);
       service.on('stopped', stoppedSpy);
 
@@ -84,11 +88,16 @@ describe('PollingService', () => {
       const error = new Error('Poll failed');
       mockCallback.mockRejectedValue(error);
 
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       const result = await service.poll();
 
       expect(result.success).toBe(false);
       expect(result.error).toBe(error);
       expect(result.data).toBeUndefined();
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -114,7 +123,7 @@ describe('PollingService', () => {
     test('should emit success events on successful polls', async () => {
       const successSpy = jest.fn();
       const pollSpy = jest.fn();
-      
+
       service.on('success', successSpy);
       service.on('poll', pollSpy);
 
@@ -136,11 +145,14 @@ describe('PollingService', () => {
     test('should emit error events on failed polls', async () => {
       const errorSpy = jest.fn();
       const error = new Error('Test error');
-      
+
       // Remove the automatic error handler and add our spy
       service.removeAllListeners('error');
       service.on('error', errorSpy);
-      
+
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       mockCallback.mockRejectedValue(error);
 
       service.start();
@@ -153,6 +165,8 @@ describe('PollingService', () => {
           error,
         })
       );
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -161,26 +175,39 @@ describe('PollingService', () => {
       const error = new Error('Test error');
       mockCallback.mockRejectedValue(error);
 
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       // Test individual poll with retry behavior
       const result = await service.poll();
       expect(result.success).toBe(false);
       expect(result.error).toBe(error);
       expect(service.getStatus().retryCount).toBe(1);
+
+      consoleSpy.mockRestore();
     });
 
     test('should track max retries in status', async () => {
       const error = new Error('Persistent error');
       mockCallback.mockRejectedValue(error);
 
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       // Simulate multiple failures to reach max retries
       await service.poll(); // First failure
-      await service.poll(); // Second failure  
+      await service.poll(); // Second failure
       await service.poll(); // Third failure (exceeds maxRetries=2)
 
       expect(service.getStatus().retryCount).toBe(3);
+
+      consoleSpy.mockRestore();
     });
 
     test('should reset retry count on successful poll', async () => {
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       mockCallback.mockRejectedValueOnce(new Error('Temporary error'));
 
       // First poll fails
@@ -191,6 +218,8 @@ describe('PollingService', () => {
       mockCallback.mockResolvedValue('success');
       await service.poll();
       expect(service.getStatus().retryCount).toBe(0);
+
+      consoleSpy.mockRestore();
     });
 
     test('should call error handler on failures', async () => {
@@ -202,6 +231,9 @@ describe('PollingService', () => {
       // Suppress error events for this service too
       serviceWithHandler.on('error', () => {});
 
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       const error = new Error('Test error');
       mockCallback.mockRejectedValue(error);
 
@@ -209,6 +241,7 @@ describe('PollingService', () => {
 
       expect(errorHandler).toHaveBeenCalledWith(error, 1);
 
+      consoleSpy.mockRestore();
       serviceWithHandler.stop();
     });
   });
@@ -230,7 +263,7 @@ describe('PollingService', () => {
     test('should restart polling when config changes if already polling', () => {
       const stoppedSpy = jest.fn();
       const startedSpy = jest.fn();
-      
+
       service.on('stopped', stoppedSpy);
       service.on('started', startedSpy);
 
@@ -256,6 +289,9 @@ describe('PollingService', () => {
 
   describe('Statistics and History', () => {
     test('should track polling statistics', async () => {
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       mockCallback
         .mockResolvedValueOnce('success1')
         .mockRejectedValueOnce(new Error('error1'))
@@ -273,10 +309,14 @@ describe('PollingService', () => {
       expect(stats.successRate).toBeCloseTo(66.67, 1);
       expect(stats.averageDuration).toBeGreaterThanOrEqual(0);
       expect(stats.recentResults).toHaveLength(3);
+
+      consoleSpy.mockRestore();
     });
 
     test('should maintain limited history', async () => {
-      const smallHistoryService = new PollingService(mockCallback, { interval: 100 });
+      const smallHistoryService = new PollingService(mockCallback, {
+        interval: 100,
+      });
       // Mock the maxHistorySize to be smaller for testing
       (smallHistoryService as any).maxHistorySize = 3;
 
@@ -309,12 +349,17 @@ describe('PollingService', () => {
       }
       expect(service.isHealthy()).toBe(true);
 
+      // Mock console.warn to silence expected error logging
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
       // Add some failures
       mockCallback.mockRejectedValue(new Error('error'));
       for (let i = 0; i < 8; i++) {
         await service.poll();
       }
       expect(service.isHealthy(80)).toBe(false); // 5 success / 13 total = ~38%
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -362,7 +407,7 @@ describe('createPollingService', () => {
     const callback = jest.fn().mockResolvedValue('data');
     const service = createPollingService(callback, {
       type: 'moderate',
-      customConfig: { interval: 8000 }
+      customConfig: { interval: 8000 },
     });
 
     expect(service.getStatus().interval).toBe(8000);
@@ -397,7 +442,7 @@ describe('AdaptivePollingService', () => {
 
     await adaptiveService.poll(); // value: 1
     await adaptiveService.poll(); // value: 2 (changed)
-    
+
     expect(adaptiveService.getStatus().interval).toBe(5000); // Base interval maintained
   });
 
