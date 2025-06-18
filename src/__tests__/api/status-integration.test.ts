@@ -9,11 +9,19 @@ describe('/api/status - Integration Tests', () => {
   let mockRequest: any;
 
   beforeEach(() => {
+    // Mock console.log to silence API request logging during tests
+    jest.spyOn(console, 'log').mockImplementation();
+
     mockRequest = {
       url: 'http://localhost/api/status',
       method: 'GET',
       headers: new Map(),
     };
+  });
+
+  afterEach(() => {
+    // Restore console.log after each test
+    jest.restoreAllMocks();
   });
 
   it('should return a valid status response', async () => {

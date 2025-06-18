@@ -1,0 +1,91 @@
+import React from 'react';
+import { UseFormReturn, FieldValues, Path } from 'react-hook-form';
+import { getFieldError, isFieldTouched } from '../../hooks/useForm';
+
+interface FormInputProps<T extends FieldValues> {
+  form: UseFormReturn<T>;
+  name: Path<T>;
+  label?: string;
+  placeholder?: string;
+  helpText?: string;
+  type?: 'text' | 'email' | 'password' | 'url' | 'number';
+  disabled?: boolean;
+  required?: boolean;
+  className?: string;
+}
+
+export function FormInput<T extends FieldValues>({
+  form,
+  name,
+  label,
+  placeholder,
+  helpText,
+  type = 'text',
+  disabled = false,
+  required = false,
+  className = '',
+}: FormInputProps<T>) {
+  const { register } = form;
+  const error = getFieldError(form, name);
+  const isTouched = isFieldTouched(form, name);
+  const hasError = Boolean(error && isTouched);
+
+  const inputClasses = `
+    w-full px-3 py-2 border rounded-md shadow-sm transition-colors
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+    disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
+    ${
+      hasError
+        ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'
+        : 'border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+    }
+    ${className}
+  `
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  const labelClasses = `
+    block text-sm font-medium mb-1
+    ${hasError ? 'text-red-700' : 'text-gray-700'}
+    ${required ? "after:content-['*'] after:text-red-500 after:ml-1" : ''}
+  `
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  return (
+    <div className="space-y-1">
+      {label && (
+        <label htmlFor={name} className={labelClasses}>
+          {label}
+        </label>
+      )}
+
+      <input
+        {...register(name)}
+        id={name}
+        type={type}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={inputClasses}
+        aria-invalid={hasError}
+        aria-describedby={
+          helpText || error
+            ? `${name}-description${error ? ` ${name}-error` : ''}`.trim()
+            : undefined
+        }
+      />
+
+      {helpText && !hasError && (
+        <p id={`${name}-description`} className="text-sm text-gray-500">
+          {helpText}
+        </p>
+      )}
+
+      {hasError && (
+        <p id={`${name}-error`} className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
