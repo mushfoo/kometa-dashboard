@@ -222,5 +222,5 @@ export async function DELETE(request: NextRequest): Promise<Response> {
   }
 }
 
-// Export the progress service for use in other routes
-export { progressService };
+// Note: progressService is available as a module-level variable
+// for use within this route file only
