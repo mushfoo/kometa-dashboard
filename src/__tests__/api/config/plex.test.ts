@@ -94,14 +94,14 @@ describe('/api/config/plex', () => {
     it('should save Plex configuration with selected libraries', async () => {
       const requestData = {
         url: 'http://192.168.1.100:32400',
-        token: 'new-token-456',
+        token: 'new-token-456789012345',
         selectedLibraries: ['Movies', 'TV Shows'],
       };
 
       const existingConfig = {
         plex: {
           url: 'http://localhost:32400',
-          token: 'old-token',
+          token: 'old-token-123456789012',
           timeout: 60,
         },
         libraries: {},
@@ -123,6 +123,10 @@ describe('/api/config/plex', () => {
 
       const response = await POST(request);
       const data = await response.json();
+
+      if (response.status !== 200) {
+        console.error('Test failed with response:', data);
+      }
 
       expect(response.status).toBe(200);
       expect(data).toEqual({ success: true });
@@ -158,14 +162,14 @@ describe('/api/config/plex', () => {
     it('should preserve existing library configurations', async () => {
       const requestData = {
         url: 'http://192.168.1.100:32400',
-        token: 'token-123',
+        token: 'token-123456789012345',
         selectedLibraries: ['Movies', 'TV Shows'],
       };
 
       const existingConfig = {
         plex: {
           url: 'http://localhost:32400',
-          token: 'old-token',
+          token: 'old-token-123456789012',
           timeout: 60,
         },
         libraries: {
@@ -264,7 +268,7 @@ describe('/api/config/plex', () => {
     it('should handle config service update errors', async () => {
       const requestData = {
         url: 'http://localhost:32400',
-        token: 'token-123',
+        token: 'token-123456789012345',
       };
 
       mockConfigService.getConfig.mockResolvedValue({

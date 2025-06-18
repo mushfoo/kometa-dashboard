@@ -50,11 +50,14 @@ export async function POST(request: NextRequest) {
 
     // Update selected libraries if provided
     if (validatedData.selectedLibraries) {
+      // Store existing libraries to preserve configurations
+      const existingLibraries = config.libraries || {};
+
       // Convert array to object format that Kometa expects
       config.libraries = {};
       for (const libraryName of validatedData.selectedLibraries) {
         // Preserve existing library configuration if it exists
-        const existing = config.libraries?.[libraryName];
+        const existing = existingLibraries[libraryName];
         config.libraries[libraryName] = existing || {
           operations: {
             assets_for_all: false,
