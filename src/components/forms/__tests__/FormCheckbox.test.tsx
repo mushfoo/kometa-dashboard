@@ -103,11 +103,14 @@ describe('FormCheckbox', () => {
   });
 
   it('handles disabled state correctly', () => {
-    const form = useForm();
+    function TestComponent() {
+      const form = useForm();
+      return (
+        <FormCheckbox form={form} name="test" label="Test Checkbox" disabled />
+      );
+    }
 
-    render(
-      <FormCheckbox form={form} name="test" label="Test Checkbox" disabled />
-    );
+    render(<TestComponent />);
 
     const checkbox = screen.getByLabelText(/test checkbox/i);
     expect(checkbox).toBeDisabled();

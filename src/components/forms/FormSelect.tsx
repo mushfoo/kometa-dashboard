@@ -131,7 +131,7 @@ export function FormSelect<T extends FieldValues>({
           aria-expanded={isOpen}
           aria-describedby={
             helpText || error
-              ? `${name}-description ${error ? `${name}-error` : ''}`
+              ? `${name}-description${error ? ` ${name}-error` : ''}`.trim()
               : undefined
           }
           onKeyDown={(e) => {

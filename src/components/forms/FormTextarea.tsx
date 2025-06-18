@@ -75,7 +75,7 @@ export function FormTextarea<T extends FieldValues>({
         aria-invalid={hasError}
         aria-describedby={
           helpText || error || maxLength
-            ? `${name}-description ${error ? `${name}-error` : ''} ${maxLength ? `${name}-count` : ''}`
+            ? `${name}-description${error ? ` ${name}-error` : ''}${maxLength ? ` ${name}-count` : ''}`.trim()
             : undefined
         }
       />

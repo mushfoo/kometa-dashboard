@@ -48,7 +48,10 @@ describe('FormTextarea', () => {
   it('shows required indicator for required fields', () => {
     render(<TestFormWrapper />);
 
-    const requiredLabel = screen.getByText(/description/i);
+    const requiredLabel = screen
+      .getByLabelText(/description/i)
+      .closest('div')
+      ?.querySelector('label');
     expect(requiredLabel).toHaveClass("after:content-['*']");
   });
 

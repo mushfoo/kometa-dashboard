@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import { z } from 'zod';
 import { useForm } from '../../../hooks/useForm';
 import { DynamicForm } from '../DynamicForm';
@@ -15,10 +21,8 @@ const TestSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
-type TestFormData = z.infer<typeof TestSchema>;
-
 function TestFormWrapper() {
-  const form = useForm<TestFormData>({ schema: TestSchema });
+  const form = useForm({ schema: TestSchema });
 
   return (
     <form>
@@ -48,7 +52,7 @@ function TestFormWrapper() {
 }
 
 function TestSectionedFormWrapper() {
-  const form = useForm<TestFormData>({ schema: TestSchema });
+  const form = useForm({ schema: TestSchema });
 
   return (
     <form>
@@ -205,7 +209,9 @@ describe('DynamicForm', () => {
 
     // Set age to 21
     const ageInput = screen.getByLabelText(/age/i);
-    fireEvent.change(ageInput, { target: { value: '21' } });
+    await act(async () => {
+      fireEvent.change(ageInput, { target: { value: '21' } });
+    });
 
     // Bio field should now be visible
     await waitFor(() => {
@@ -245,8 +251,10 @@ describe('DynamicForm', () => {
     const emailInput = screen.getByLabelText(/email/i);
 
     // Enter invalid email
-    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-    fireEvent.blur(emailInput);
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+      fireEvent.blur(emailInput);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
@@ -261,9 +269,9 @@ describe('DynamicForm', () => {
       return <DynamicForm form={form} schema={EmptySchema} />;
     }
 
-    render(<EmptyFormWrapper />);
+    const { container } = render(<EmptyFormWrapper />);
 
     // Should render without crashing
-    expect(screen.getByRole('generic')).toBeInTheDocument();
+    expect(container.firstChild).toBeInTheDocument();
   });
 });
