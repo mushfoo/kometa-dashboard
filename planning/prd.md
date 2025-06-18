@@ -83,6 +83,14 @@ Create a web-based GUI that makes Kometa's powerful media library automation acc
 - **Configuration Backup**: Automatic backups of working configurations
 - **Input Validation**: Comprehensive validation and sanitization of all user inputs
 
+#### 5. Quality Assurance & Testing
+
+- **End-to-End Testing**: Comprehensive Playwright-based testing of all critical user flows
+- **Visual Documentation**: Automated screenshot capture and screen recordings for UI changes
+- **Functional Validation**: Tests that prevent integration bugs like schema validation errors
+- **Cross-Device Testing**: Mobile, tablet, and desktop browser compatibility validation
+- **Storage-Conscious CI**: GitHub artifacts-only approach with automated cleanup and monitoring
+
 ### Advanced Features (Future Phases)
 
 #### Phase 2: Enhanced Operations
@@ -246,6 +254,9 @@ GET /api/logs                      # Get filtered logs
 - Write failing tests first, then implement features to pass them
 - Include unit tests for all business logic, integration tests for all APIs
 - **Edge case coverage**: Tests for error conditions, boundary cases, and failure scenarios
+- **End-to-End Testing**: Playwright-based E2E tests for all critical user flows
+- **Visual Regression Testing**: Automated screenshot capture for UI changes
+- **Functional Integration Testing**: Tests that catch bugs like schema validation errors
 - Maintain >90% test coverage throughout development
 
 #### 4. Continuous Community Feedback
@@ -286,7 +297,10 @@ GET /api/logs                      # Get filtered logs
 ### Code Quality Standards
 
 - **TypeScript Strict Mode**: All code must pass strict type checking
-- **>90% Test Coverage**: Unit tests for all business logic, integration tests for all APIs
+- **>90% Test Coverage**: Unit tests for all business logic, integration tests for all APIs, E2E tests for critical flows
+- **End-to-End Validation**: Playwright tests prevent integration bugs and validate complete user journeys
+- **Visual Documentation**: Automated screenshot capture and failure recordings for enhanced debugging
+- **Cross-Device Testing**: Mobile, tablet, desktop compatibility validation
 - **Documentation Parity**: Every feature documented with examples and screenshots
 - **Error Handling**: Comprehensive error boundaries and graceful degradation
 - **Performance Budgets**: Bundle size limits, response time targets
