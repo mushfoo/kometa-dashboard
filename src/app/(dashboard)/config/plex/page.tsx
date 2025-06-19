@@ -176,7 +176,6 @@ export default function PlexConfigurationPage() {
               <Label htmlFor="url">Plex Server URL</Label>
               <Input
                 id="url"
-                name="plexUrl"
                 placeholder="http://localhost:32400"
                 {...register('url')}
                 aria-describedby="url-error"
@@ -201,7 +200,6 @@ export default function PlexConfigurationPage() {
               <Label htmlFor="token">Plex Token</Label>
               <Input
                 id="token"
-                name="plexToken"
                 type="password"
                 placeholder="Your Plex authentication token"
                 {...register('token')}

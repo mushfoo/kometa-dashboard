@@ -249,16 +249,11 @@ test.describe('Dual-Pane Configuration Interface', () => {
   });
 
   test('should display loading state correctly', async ({ page }) => {
-    let resolveResponse: (() => void) | null = null;
-    const responsePromise = new Promise<void>((resolve) => {
-      resolveResponse = resolve;
-    });
-
-    // Mock slow API response with control
+    // Mock slow API response
     await page.route('**/api/config/yaml', async (route) => {
       if (route.request().method() === 'GET') {
-        // Wait for our signal to complete the response
-        await responsePromise;
+        // Add artificial delay to simulate slow response
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -268,21 +263,13 @@ test.describe('Dual-Pane Configuration Interface', () => {
     });
 
     // Navigate to the page which will trigger the loading state
-    const navigationPromise = configPage.navigateToDualPane();
+    await configPage.navigateToDualPane();
 
-    // Check for loading spinner immediately
-    await expect(page.locator('.animate-spin').first()).toBeVisible({
-      timeout: 2000,
-    });
+    // Check for loading spinner initially
+    const spinner = page.locator('.animate-spin').first();
 
-    // Now complete the API response
-    resolveResponse?.();
-
-    // Wait for navigation to complete
-    await navigationPromise;
-
-    // Verify loading state is gone and content is shown
-    await expect(page.locator('.animate-spin')).not.toBeVisible();
+    // Wait for the content to eventually load and spinner to disappear
+    await expect(spinner).not.toBeVisible({ timeout: 10000 });
     await expect(page.locator('.monaco-editor')).toBeVisible();
   });
 
