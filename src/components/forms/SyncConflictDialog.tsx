@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -10,8 +10,10 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import yaml from 'yaml';
 
 interface SyncConflict<T> {
   type: 'form_to_yaml' | 'yaml_to_form';
@@ -27,6 +29,12 @@ interface SyncConflictDialogProps<T> {
   onCancel: () => void;
 }
 
+interface DiffLine {
+  line: string;
+  type: 'added' | 'removed' | 'unchanged';
+  lineNumber?: number;
+}
+
 export function SyncConflictDialog<T extends Record<string, any>>({
   conflict,
   onResolve,
@@ -37,13 +45,61 @@ export function SyncConflictDialog<T extends Record<string, any>>({
     'accept_form' | 'accept_yaml' | 'merge' | null
   >(null);
 
-  const formatData = (data: any) => {
-    try {
-      return JSON.stringify(data, null, 2);
-    } catch {
-      return String(data);
+  // Generate side-by-side diff
+  const diffData = useMemo(() => {
+    const formatData = (data: any) => {
+      try {
+        return yaml.stringify(data, {
+          indent: 2,
+          lineWidth: 80,
+          minContentWidth: 40,
+        });
+      } catch {
+        return String(data);
+      }
+    };
+    const formYaml = formatData(conflict.formData);
+    const yamlData = formatData(conflict.yamlData);
+
+    const formLines = formYaml.split('\n');
+    const yamlLines = yamlData.split('\n');
+
+    // Simple diff algorithm - in a production app you'd use a library like diff2html
+    const maxLines = Math.max(formLines.length, yamlLines.length);
+    const leftDiff: DiffLine[] = [];
+    const rightDiff: DiffLine[] = [];
+
+    for (let i = 0; i < maxLines; i++) {
+      const formLine = formLines[i] || '';
+      const yamlLine = yamlLines[i] || '';
+
+      if (formLine === yamlLine) {
+        leftDiff.push({ line: formLine, type: 'unchanged', lineNumber: i + 1 });
+        rightDiff.push({
+          line: yamlLine,
+          type: 'unchanged',
+          lineNumber: i + 1,
+        });
+      } else {
+        if (formLine) {
+          leftDiff.push({ line: formLine, type: 'removed', lineNumber: i + 1 });
+        }
+        if (yamlLine) {
+          rightDiff.push({ line: yamlLine, type: 'added', lineNumber: i + 1 });
+        }
+
+        // Add empty line to maintain alignment
+        if (!formLine) {
+          leftDiff.push({ line: '', type: 'unchanged', lineNumber: i + 1 });
+        }
+        if (!yamlLine) {
+          rightDiff.push({ line: '', type: 'unchanged', lineNumber: i + 1 });
+        }
+      }
     }
-  };
+
+    return { left: leftDiff, right: rightDiff };
+  }, [conflict]);
 
   const getConflictDescription = () => {
     if (conflict.type === 'form_to_yaml') {
@@ -155,27 +211,96 @@ export function SyncConflictDialog<T extends Record<string, any>>({
               )}
             </Button>
 
-            {/* Conflict Details */}
+            {/* Enhanced Conflict Details with Side-by-Side Diff */}
             {showDetails && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Settings className="h-4 w-4" />
-                    <h4 className="font-medium">Form Data</h4>
-                  </div>
-                  <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-40">
-                    {formatData(conflict.formData)}
-                  </pre>
-                </Card>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Settings className="h-4 w-4" />
+                      <h4 className="font-medium">Form Data</h4>
+                    </div>
+                    <div className="text-xs bg-muted p-2 rounded overflow-auto max-h-60 font-mono">
+                      {diffData.left.map((line, index) => (
+                        <div
+                          key={index}
+                          className={cn(
+                            'leading-relaxed px-1',
+                            line.type === 'removed' &&
+                              'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300',
+                            line.type === 'unchanged' && 'text-muted-foreground'
+                          )}
+                        >
+                          <span className="text-xs text-muted-foreground mr-2 select-none">
+                            {line.lineNumber?.toString().padStart(3, ' ')}
+                          </span>
+                          <span
+                            className={cn(
+                              line.type === 'removed' &&
+                                'bg-red-200 dark:bg-red-800/40'
+                            )}
+                          >
+                            {line.line || ' '}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
 
-                <Card className="p-4">
+                  <Card className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileCode className="h-4 w-4" />
+                      <h4 className="font-medium">YAML Data</h4>
+                    </div>
+                    <div className="text-xs bg-muted p-2 rounded overflow-auto max-h-60 font-mono">
+                      {diffData.right.map((line, index) => (
+                        <div
+                          key={index}
+                          className={cn(
+                            'leading-relaxed px-1',
+                            line.type === 'added' &&
+                              'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300',
+                            line.type === 'unchanged' && 'text-muted-foreground'
+                          )}
+                        >
+                          <span className="text-xs text-muted-foreground mr-2 select-none">
+                            {line.lineNumber?.toString().padStart(3, ' ')}
+                          </span>
+                          <span
+                            className={cn(
+                              line.type === 'added' &&
+                                'bg-green-200 dark:bg-green-800/40'
+                            )}
+                          >
+                            {line.line || ' '}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+
+                <Card className="p-4 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-2 mb-2">
-                    <FileCode className="h-4 w-4" />
-                    <h4 className="font-medium">YAML Data</h4>
+                    <ArrowLeftRight className="h-4 w-4 text-blue-600" />
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                      Diff Legend
+                    </h4>
                   </div>
-                  <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-40">
-                    {formatData(conflict.yamlData)}
-                  </pre>
+                  <div className="text-xs space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-200 dark:bg-red-800/40 rounded"></div>
+                      <span>Removed from form (red highlight)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-200 dark:bg-green-800/40 rounded"></div>
+                      <span>Added in YAML (green highlight)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-muted rounded"></div>
+                      <span>Unchanged</span>
+                    </div>
+                  </div>
                 </Card>
               </div>
             )}

@@ -25,6 +25,9 @@ interface YamlEditorProps {
   theme?: 'light' | 'dark';
   className?: string;
   showToolbar?: boolean;
+  hasChanges?: boolean;
+  changedLines?: number[];
+  originalValue?: string;
 }
 /* eslint-enable no-unused-vars */
 
@@ -37,6 +40,9 @@ export function YamlEditor({
   theme = 'light',
   className,
   showToolbar = true,
+  hasChanges = false,
+  changedLines = [],
+  originalValue = '',
 }: YamlEditorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -91,6 +97,50 @@ export function YamlEditor({
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF, () => {
       editor.getAction('actions.find')?.run();
     });
+
+    // Apply initial change highlighting
+    applyChangeHighlighting(editor, monaco);
+  };
+
+  const applyChangeHighlighting = (editor: any, monaco: any) => {
+    if (!hasChanges || !originalValue || changedLines.length === 0) return;
+
+    const decorations = changedLines.map((lineNumber) => ({
+      range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+      options: {
+        isWholeLine: true,
+        className: 'yaml-changed-line',
+        glyphMarginClassName: 'yaml-changed-glyph',
+        minimap: {
+          color: '#fbbf24',
+          position: 1,
+        },
+        overviewRuler: {
+          color: '#fbbf24',
+          position: 1,
+        },
+      },
+    }));
+
+    editor.deltaDecorations([], decorations);
+
+    // Add CSS for highlighting
+    const style = document.createElement('style');
+    style.textContent = `
+      .yaml-changed-line {
+        background-color: rgba(251, 191, 36, 0.1) !important;
+        border-left: 3px solid #fbbf24 !important;
+      }
+      .yaml-changed-glyph {
+        background-color: #fbbf24 !important;
+        width: 3px !important;
+        margin-left: 3px !important;
+      }
+      .monaco-editor.vs-dark .yaml-changed-line {
+        background-color: rgba(251, 191, 36, 0.15) !important;
+      }
+    `;
+    document.head.appendChild(style);
   };
 
   const handleEditorChange: OnChange = (newValue) => {
@@ -167,7 +217,7 @@ export function YamlEditor({
     <div className={cn('space-y-4', className)}>
       {showToolbar && (
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               {isValid ? (
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -178,6 +228,17 @@ export function YamlEditor({
                 {isValid ? 'Valid YAML' : 'Invalid YAML'}
               </span>
             </div>
+
+            {hasChanges && (
+              <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                <span className="text-sm font-medium">
+                  {changedLines.length > 0
+                    ? `${changedLines.length} lines changed`
+                    : 'Modified'}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">

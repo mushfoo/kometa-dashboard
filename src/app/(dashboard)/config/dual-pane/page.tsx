@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlexSyncForm } from '@/components/forms/PlexSyncForm';
 import { ApiKeysSyncForm } from '@/components/forms/ApiKeysSyncForm';
 import { SyncConflictDialog } from '@/components/forms/SyncConflictDialog';
+import { TemplateSelectionModal } from '@/components/config/TemplateSelectionModal';
+import { SaveTemplateModal } from '@/components/config/SaveTemplateModal';
+import { VersionHistoryModal } from '@/components/config/VersionHistoryModal';
 import { useFormYamlSync } from '@/hooks/useFormYamlSync';
 import {
   dualPaneConfigSchema,
@@ -24,11 +27,17 @@ import {
   Info,
   RotateCcw,
   AlertTriangle,
+  FileText,
+  Download,
+  Clock,
 } from 'lucide-react';
 
 export default function DualPaneConfigPage() {
   const [paneSize, setPaneSize] = useState<number>(400);
   const [activeTab, setActiveTab] = useState('plex');
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [showVersionHistoryModal, setShowVersionHistoryModal] = useState(false);
   const queryClient = useQueryClient();
 
   // Load saved pane size from localStorage
@@ -97,7 +106,20 @@ export default function DualPaneConfigPage() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Save to version history
+      try {
+        const versionService = await import('@/lib/VersionHistoryService');
+        const service = new versionService.VersionHistoryService();
+        await service.saveVersion(
+          yamlContent,
+          `Configuration saved on ${new Date().toLocaleDateString()}`,
+          'manual'
+        );
+      } catch (error) {
+        console.error('Failed to save version history:', error);
+      }
+
       queryClient.invalidateQueries({ queryKey: ['yaml-config'] });
       queryClient.invalidateQueries({ queryKey: ['config'] });
     },
@@ -112,6 +134,45 @@ export default function DualPaneConfigPage() {
 
   const handleValidationChange = (valid: boolean, errors: string[]) => {
     console.log('YAML validation changed:', { valid, errors });
+  };
+
+  const handleTemplateSelect = async (
+    template: any,
+    customizations?: Record<string, any>
+  ) => {
+    try {
+      const templateService = await import('@/lib/TemplateService');
+      const service = new templateService.TemplateService();
+      const appliedYaml = await service.applyTemplate(
+        template.id,
+        customizations
+      );
+      setYamlContent(appliedYaml);
+
+      // Save to version history
+      try {
+        const versionService = await import('@/lib/VersionHistoryService');
+        const historyService = new versionService.VersionHistoryService();
+        await historyService.saveVersion(
+          appliedYaml,
+          `Applied template: ${template.name}`,
+          'template'
+        );
+      } catch (error) {
+        console.error('Failed to save template application to history:', error);
+      }
+    } catch (error) {
+      console.error('Failed to apply template:', error);
+    }
+  };
+
+  const handleSaveTemplate = (template: any) => {
+    console.log('Template saved:', template);
+    // Optionally show a success message
+  };
+
+  const handleRestoreVersion = (yaml: string) => {
+    setYamlContent(yaml);
   };
 
   if (isLoading) {
@@ -134,6 +195,30 @@ export default function DualPaneConfigPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowTemplateModal(true)}
+            disabled={saveConfigMutation.isPending}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Load Template
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowSaveTemplateModal(true)}
+            disabled={!yamlContent.trim() || saveConfigMutation.isPending}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Save as Template
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowVersionHistoryModal(true)}
+            disabled={saveConfigMutation.isPending}
+          >
+            <Clock className="mr-2 h-4 w-4" />
+            Version History
+          </Button>
           <Button
             variant="outline"
             onClick={resetToOriginal}
@@ -275,6 +360,8 @@ export default function DualPaneConfigPage() {
                 onValidationChange={handleValidationChange}
                 height="calc(100% - 40px)"
                 showToolbar={true}
+                hasChanges={hasChanges}
+                originalValue={currentConfig?.yaml || ''}
               />
             </Card>
           </div>
@@ -289,6 +376,29 @@ export default function DualPaneConfigPage() {
           onCancel={() => console.log('Conflict resolution cancelled')}
         />
       )}
+
+      {/* Template Selection Modal */}
+      <TemplateSelectionModal
+        isOpen={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        onSelectTemplate={handleTemplateSelect}
+      />
+
+      {/* Save Template Modal */}
+      <SaveTemplateModal
+        isOpen={showSaveTemplateModal}
+        onClose={() => setShowSaveTemplateModal(false)}
+        yamlContent={yamlContent}
+        onSave={handleSaveTemplate}
+      />
+
+      {/* Version History Modal */}
+      <VersionHistoryModal
+        isOpen={showVersionHistoryModal}
+        onClose={() => setShowVersionHistoryModal(false)}
+        currentYaml={yamlContent}
+        onRestoreVersion={handleRestoreVersion}
+      />
     </div>
   );
 }

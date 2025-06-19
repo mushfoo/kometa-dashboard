@@ -689,11 +689,11 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Configuration file management
 
-- [ ] Add file upload component for importing existing YAML configurations
-- [ ] Create export functionality generating downloadable YAML files
-- [ ] Implement configuration validation on import with error reporting
-- [ ] Add import preview showing what will be changed
-- [ ] **Test:** Import handles various YAML formats, export generates valid files
+- [x] Add file upload component for importing existing YAML configurations
+- [x] Create export functionality generating downloadable YAML files
+- [x] Implement configuration validation on import with error reporting
+- [x] Add import preview showing what will be changed
+- [x] **Test:** Import handles various YAML formats, export generates valid files
 
 ### Day 15: Advanced Editor Features
 
@@ -701,31 +701,31 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Handle form/YAML editing conflicts
 
-- [ ] Create conflict detection comparing form state with YAML state
-- [ ] Build conflict resolution modal showing differences side-by-side
-- [ ] Add options to accept form changes, YAML changes, or merge both
-- [ ] Implement change highlighting in both form and YAML views
-- [ ] **Test:** Conflicts detected correctly, resolution options work properly
+- [x] Create conflict detection comparing form state with YAML state
+- [x] Build conflict resolution modal showing differences side-by-side
+- [x] Add options to accept form changes, YAML changes, or merge both
+- [x] Implement change highlighting in both form and YAML views
+- [x] **Test:** Conflicts detected correctly, resolution options work properly
 
 #### Task 15.2: Configuration Templates
 
 **Deliverable:** Pre-built configuration loading
 
-- [ ] Create template storage system with JSON template definitions
-- [ ] Build template selection modal with preview and description
-- [ ] Implement template application with user customization options
-- [ ] Add custom template saving functionality for user-created configs
-- [ ] **Test:** Templates load correctly, customization preserves template structure
+- [x] Create template storage system with JSON template definitions
+- [x] Build template selection modal with preview and description
+- [x] Implement template application with user customization options
+- [x] Add custom template saving functionality for user-created configs
+- [x] **Test:** Templates load correctly, customization preserves template structure
 
 #### Task 15.3: Version History
 
 **Deliverable:** Configuration change tracking
 
-- [ ] Implement configuration history storage (last 10 versions)
-- [ ] Create version comparison view showing diffs between versions
-- [ ] Add version restoration functionality with confirmation dialog
-- [ ] Build history timeline showing timestamps and change descriptions
-- [ ] **Test:** History tracks changes accurately, restoration works correctly
+- [x] Implement configuration history storage (last 10 versions)
+- [x] Create version comparison view showing diffs between versions
+- [x] Add version restoration functionality with confirmation dialog
+- [x] Build history timeline showing timestamps and change descriptions
+- [x] **Test:** History tracks changes accurately, restoration works correctly
 
 ---
 
