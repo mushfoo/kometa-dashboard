@@ -65,3 +65,22 @@
   border-left-color: rgba(255, 255, 255, 0.5);
   border-right-color: rgba(255, 255, 255, 0.5);
 }
+
+/* Monaco Editor Height Fix */
+.monaco-editor {
+  height: 100% !important;
+  min-height: 300px !important;
+}
+
+.monaco-editor .editor-widget .suggest-widget {
+  z-index: 100;
+}
+
+/* Ensure Monaco Editor takes full available space in SplitPane */
+[data-testid="split-pane"] .monaco-editor {
+  height: 100% !important;
+}
+
+[data-testid="split-pane"] .monaco-editor .monaco-scrollable-element {
+  height: 100% !important;
+}
