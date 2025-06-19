@@ -8,6 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { YamlEditor } from '@/components/editor/YamlEditor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PlexSyncForm } from '@/components/forms/PlexSyncForm';
+import { ApiKeysSyncForm } from '@/components/forms/ApiKeysSyncForm';
+import { SyncConflictDialog } from '@/components/forms/SyncConflictDialog';
+import { useFormYamlSync } from '@/hooks/useFormYamlSync';
+import {
+  dualPaneConfigSchema,
+  type DualPaneConfigForm,
+} from '@/lib/schemas/forms';
 import {
   Loader2,
   Save,
@@ -15,12 +23,10 @@ import {
   Settings,
   Info,
   RotateCcw,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function DualPaneConfigPage() {
-  const [yamlContent, setYamlContent] = useState('');
-  const [isValid, setIsValid] = useState(true);
-  const [hasChanges, setHasChanges] = useState(false);
   const [paneSize, setPaneSize] = useState<number>(400);
   const [activeTab, setActiveTab] = useState('plex');
   const queryClient = useQueryClient();
@@ -51,21 +57,32 @@ export default function DualPaneConfigPage() {
     },
   });
 
-  // Update YAML content when currentConfig changes
-  useEffect(() => {
-    if (currentConfig?.yaml) {
-      setYamlContent(currentConfig.yaml);
-    }
-  }, [currentConfig]);
-
-  const handleYamlChange = (newValue: string) => {
-    setYamlContent(newValue);
-    setHasChanges(true);
-  };
-
-  const handleValidationChange = (valid: boolean) => {
-    setIsValid(valid);
-  };
+  // Use the form-YAML synchronization hook
+  const {
+    form,
+    yamlContent,
+    setYamlContent,
+    isValid,
+    validationErrors,
+    hasChanges,
+    lastUpdatedBy,
+    syncConflict,
+    resolveSyncConflict,
+    resetToOriginal,
+  } = useFormYamlSync<DualPaneConfigForm>({
+    schema: dualPaneConfigSchema,
+    initialYaml: currentConfig?.yaml || '',
+    onFormChange: (data) => {
+      console.log('Form changed:', data);
+    },
+    onYamlChange: (yaml) => {
+      console.log('YAML changed:', yaml);
+    },
+    onSyncConflict: (conflict) => {
+      console.log('Sync conflict detected:', conflict);
+    },
+    debounceMs: 300,
+  });
 
   const saveConfigMutation = useMutation({
     mutationFn: async (yaml: string) => {
@@ -81,7 +98,6 @@ export default function DualPaneConfigPage() {
       return response.json();
     },
     onSuccess: () => {
-      setHasChanges(false);
       queryClient.invalidateQueries({ queryKey: ['yaml-config'] });
       queryClient.invalidateQueries({ queryKey: ['config'] });
     },
@@ -94,11 +110,8 @@ export default function DualPaneConfigPage() {
     await saveConfigMutation.mutateAsync(yamlContent);
   };
 
-  const handleReset = () => {
-    if (currentConfig?.yaml) {
-      setYamlContent(currentConfig.yaml);
-      setHasChanges(false);
-    }
+  const handleValidationChange = (valid: boolean, errors: string[]) => {
+    console.log('YAML validation changed:', { valid, errors });
   };
 
   if (isLoading) {
@@ -123,7 +136,7 @@ export default function DualPaneConfigPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={handleReset}
+            onClick={resetToOriginal}
             disabled={!hasChanges || saveConfigMutation.isPending}
           >
             <RotateCcw className="mr-2 h-4 w-4" />
@@ -153,7 +166,28 @@ export default function DualPaneConfigPage() {
           <Info className="h-4 w-4" />
           <AlertDescription>
             You have unsaved changes. Changes in the form will automatically
-            update the YAML, and vice versa.
+            update the YAML, and vice versa.{' '}
+            {lastUpdatedBy && (
+              <span className="text-xs">
+                (Last updated by: {lastUpdatedBy === 'form' ? 'Form' : 'YAML'})
+              </span>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {validationErrors.length > 0 && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-1">
+              <p className="font-medium">Configuration Validation Errors:</p>
+              {validationErrors.map((error, index) => (
+                <p key={index} className="text-sm">
+                  {error}
+                </p>
+              ))}
+            </div>
           </AlertDescription>
         </Alert>
       )}
@@ -188,28 +222,23 @@ export default function DualPaneConfigPage() {
                       Configure your Plex server connection settings here.
                       Changes will be reflected in the YAML editor.
                     </p>
-                    <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertDescription>
-                        Form-YAML synchronization will be implemented in the
-                        next task.
-                      </AlertDescription>
-                    </Alert>
+                    <PlexSyncForm
+                      form={form as any}
+                      disabled={saveConfigMutation.isPending}
+                    />
                   </div>
                 </TabsContent>
 
                 <TabsContent value="apis" className="mt-4">
                   <div className="space-y-4">
                     <p className="text-muted-foreground">
-                      Manage your API keys for external services.
+                      Manage your API keys for external services. Changes will
+                      be reflected in the YAML editor.
                     </p>
-                    <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertDescription>
-                        Form-YAML synchronization will be implemented in the
-                        next task.
-                      </AlertDescription>
-                    </Alert>
+                    <ApiKeysSyncForm
+                      form={form as any}
+                      disabled={saveConfigMutation.isPending}
+                    />
                   </div>
                 </TabsContent>
 
@@ -221,8 +250,9 @@ export default function DualPaneConfigPage() {
                     <Alert>
                       <Info className="h-4 w-4" />
                       <AlertDescription>
-                        Form-YAML synchronization will be implemented in the
-                        next task.
+                        Library-specific forms will be implemented in a future
+                        task. Use the YAML editor to configure libraries
+                        directly.
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -241,7 +271,7 @@ export default function DualPaneConfigPage() {
 
               <YamlEditor
                 value={yamlContent}
-                onChange={handleYamlChange}
+                onChange={setYamlContent}
                 onValidationChange={handleValidationChange}
                 height="calc(100% - 40px)"
                 showToolbar={true}
@@ -250,6 +280,15 @@ export default function DualPaneConfigPage() {
           </div>
         </SplitPane>
       </div>
+
+      {/* Sync Conflict Dialog */}
+      {syncConflict && (
+        <SyncConflictDialog
+          conflict={syncConflict}
+          onResolve={resolveSyncConflict}
+          onCancel={() => console.log('Conflict resolution cancelled')}
+        />
+      )}
     </div>
   );
 }

@@ -39,6 +39,61 @@ jest.mock('@/components/editor/YamlEditor', () => ({
   ),
 }));
 
+// Mock the form-YAML sync hook
+const mockUseFormYamlSync = {
+  form: {
+    register: jest.fn(() => ({
+      name: 'test',
+      onChange: jest.fn(),
+      onBlur: jest.fn(),
+    })),
+    formState: { errors: {} },
+    watch: jest.fn(() => ({})),
+    setValue: jest.fn(),
+    getValues: jest.fn(() => ({})),
+    reset: jest.fn(),
+  },
+  yamlContent: 'test: config',
+  setYamlContent: jest.fn(),
+  isValid: true,
+  validationErrors: [],
+  hasChanges: false,
+  lastUpdatedBy: null as 'form' | 'yaml' | null,
+  syncConflict: null,
+  resolveSyncConflict: jest.fn(),
+  resetToOriginal: jest.fn(),
+};
+
+jest.mock('@/hooks/useFormYamlSync', () => ({
+  useFormYamlSync: jest.fn(() => mockUseFormYamlSync),
+}));
+
+// Mock the form components
+jest.mock('@/components/forms/PlexSyncForm', () => ({
+  PlexSyncForm: ({ disabled }: { form: any; disabled: boolean }) => (
+    <div data-testid="plex-sync-form" data-disabled={disabled}>
+      Plex Configuration Form
+    </div>
+  ),
+}));
+
+jest.mock('@/components/forms/ApiKeysSyncForm', () => ({
+  ApiKeysSyncForm: ({ disabled }: { form: any; disabled: boolean }) => (
+    <div data-testid="api-keys-sync-form" data-disabled={disabled}>
+      API Keys Configuration Form
+    </div>
+  ),
+}));
+
+jest.mock('@/components/forms/SyncConflictDialog', () => ({
+  SyncConflictDialog: ({ onResolve }: { conflict: any; onResolve: any }) => (
+    <div data-testid="sync-conflict-dialog">
+      Sync Conflict Dialog
+      <button onClick={() => onResolve('accept_form')}>Accept Form</button>
+    </div>
+  ),
+}));
+
 // Mock localStorage
 const localStorageMock = {
   getItem: jest.fn(),
@@ -57,6 +112,14 @@ describe('DualPaneConfigPage', () => {
       },
     });
     jest.clearAllMocks();
+
+    // Reset mock state
+    mockUseFormYamlSync.yamlContent = 'test: config';
+    mockUseFormYamlSync.hasChanges = false;
+    mockUseFormYamlSync.lastUpdatedBy = null;
+    mockUseFormYamlSync.isValid = true;
+    mockUseFormYamlSync.validationErrors = [];
+    mockUseFormYamlSync.syncConflict = null;
 
     // Mock fetch for loading config
     global.fetch = jest.fn(() =>
@@ -129,6 +192,10 @@ describe('DualPaneConfigPage', () => {
   });
 
   it('tracks changes when YAML is modified', async () => {
+    // Update mock to show changes
+    mockUseFormYamlSync.hasChanges = true;
+    mockUseFormYamlSync.lastUpdatedBy = 'yaml';
+
     renderComponent();
 
     await waitFor(() => {
@@ -144,6 +211,11 @@ describe('DualPaneConfigPage', () => {
   });
 
   it('saves configuration when save button is clicked', async () => {
+    // Update mock to show changes and valid state
+    mockUseFormYamlSync.hasChanges = true;
+    mockUseFormYamlSync.isValid = true;
+    mockUseFormYamlSync.yamlContent = 'modified: config';
+
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce({
@@ -161,9 +233,6 @@ describe('DualPaneConfigPage', () => {
       expect(screen.getByText('Save Configuration')).toBeInTheDocument();
     });
 
-    const yamlEditor = screen.getByLabelText('YAML Editor');
-    fireEvent.change(yamlEditor, { target: { value: 'modified: config' } });
-
     const saveButton = screen.getByText('Save Configuration').closest('button');
     fireEvent.click(saveButton!);
 
@@ -177,6 +246,10 @@ describe('DualPaneConfigPage', () => {
   });
 
   it('resets changes when reset button is clicked', async () => {
+    // Update mock to show changes initially
+    mockUseFormYamlSync.hasChanges = true;
+    mockUseFormYamlSync.yamlContent = 'modified: config';
+
     renderComponent();
 
     await waitFor(() => {
@@ -184,16 +257,18 @@ describe('DualPaneConfigPage', () => {
     });
 
     const yamlEditor = screen.getByLabelText('YAML Editor');
-    fireEvent.change(yamlEditor, { target: { value: 'modified: config' } });
+    expect((yamlEditor as HTMLTextAreaElement).value).toBe('modified: config');
 
     await waitFor(() => {
       expect(screen.getByText('Reset')).toBeInTheDocument();
     });
 
     const resetButton = screen.getByText('Reset').closest('button');
+    expect(resetButton).not.toBeDisabled();
+
     fireEvent.click(resetButton!);
 
-    expect((yamlEditor as HTMLTextAreaElement).value).toBe('test: config');
+    expect(mockUseFormYamlSync.resetToOriginal).toHaveBeenCalled();
   });
 
   it('switches between form tabs', async () => {
