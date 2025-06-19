@@ -285,6 +285,8 @@ export default function DualPaneConfigPage() {
           defaultSize={paneSize}
           onChange={handlePaneChange}
           paneStyle={{ overflow: 'auto' }}
+          style={{ position: 'relative' }}
+          data-testid="split-pane"
         >
           {/* Left Pane - Forms */}
           <div className="h-full pr-2 min-w-0">
