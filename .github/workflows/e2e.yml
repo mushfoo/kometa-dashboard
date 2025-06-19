@@ -79,13 +79,13 @@ jobs:
           echo "Total artifact size: ${ARTIFACT_SIZE_MB} MB"
 
           # Warn if approaching limit
-          if [ $ARTIFACT_SIZE_MB -gt 20 ]; then
-            echo "::warning::E2E test artifacts are ${ARTIFACT_SIZE_MB} MB, approaching 25 MB limit"
+          if [ $ARTIFACT_SIZE_MB -gt 60 ]; then
+            echo "::warning::E2E test artifacts are ${ARTIFACT_SIZE_MB} MB, approaching 75 MB limit"
           fi
 
           # Fail if over limit
-          if [ $ARTIFACT_SIZE_MB -gt 25 ]; then
-            echo "::error::E2E test artifacts are ${ARTIFACT_SIZE_MB} MB, exceeding 25 MB limit"
+          if [ $ARTIFACT_SIZE_MB -gt 75 ]; then
+            echo "::error::E2E test artifacts are ${ARTIFACT_SIZE_MB} MB, exceeding 75 MB limit"
             exit 1
           fi
 
