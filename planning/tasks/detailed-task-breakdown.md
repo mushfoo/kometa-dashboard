@@ -605,11 +605,11 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Plex server configuration interface
 
-- [ ] Create Zod schema for Plex config: url (URL format), token (32 char string)
-- [ ] Add connection test button making real API call to Plex server
-- [ ] Display library list after successful connection with selection checkboxes
-- [ ] Show connection status with clear error messages for failed connections
-- [ ] **Test:** Form validates URL format, connection test works, libraries load
+- [x] Create Zod schema for Plex config: url (URL format), token (32 char string)
+- [x] Add connection test button making real API call to Plex server
+- [x] Display library list after successful connection with selection checkboxes
+- [x] Show connection status with clear error messages for failed connections
+- [x] **Test:** Form validates URL format, connection test works, libraries load
 
 #### Task 12.2: API Keys Management Form
 
@@ -679,11 +679,11 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Bidirectional form and YAML sync
 
-- [ ] Create `useFormYamlSync` hook managing state synchronization
-- [ ] Implement form-to-YAML conversion triggering on form changes
-- [ ] Add YAML-to-form parsing with form field population
-- [ ] Handle sync conflicts when both sides are modified simultaneously
-- [ ] **Test:** Changes in form update YAML immediately, YAML changes populate form
+- [x] Create `useFormYamlSync` hook managing state synchronization
+- [x] Implement form-to-YAML conversion triggering on form changes
+- [x] Add YAML-to-form parsing with form field population
+- [x] Handle sync conflicts when both sides are modified simultaneously
+- [x] **Test:** Changes in form update YAML immediately, YAML changes populate form
 
 #### Task 14.3: Import/Export Functionality
 

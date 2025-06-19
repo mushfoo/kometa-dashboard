@@ -163,6 +163,95 @@ export const librarySettingsSchema = z.object({
 
 export type LibrarySettingsForm = z.infer<typeof librarySettingsSchema>;
 
+/**
+ * Complete Configuration Schema for Dual-Pane Editor
+ * Combines all configuration sections into a single schema
+ */
+export const dualPaneConfigSchema = z.object({
+  plex: z
+    .object({
+      url: z.string().optional(),
+      token: z.string().optional(),
+      serverName: z.string().optional(),
+      timeout: z.number().optional(),
+      selectedLibraries: z.array(z.string()).optional(),
+      connectionStatus: z
+        .enum(['connected', 'disconnected', 'testing', 'error'])
+        .optional(),
+      availableLibraries: z
+        .array(
+          z.object({
+            key: z.string(),
+            title: z.string(),
+            type: z.string(),
+            updatedAt: z.number().optional(),
+          })
+        )
+        .optional(),
+    })
+    .optional(),
+  tmdb: z.string().optional(),
+  trakt: z
+    .object({
+      client_id: z.string().optional(),
+      client_secret: z.string().optional(),
+      pin: z.string().optional(),
+    })
+    .optional(),
+  imdb: z.string().optional(),
+  anidb: z
+    .object({
+      client: z.string().optional(),
+      version: z.string().optional(),
+      language: z.string().optional(),
+    })
+    .optional(),
+  libraries: z.record(z.string(), z.any()).optional(),
+  settings: z
+    .object({
+      run_order: z.array(z.string()).optional(),
+      cache_expiration: z.number().optional(),
+      asset_directory: z.array(z.string()).optional(),
+      asset_folders: z.boolean().optional(),
+      asset_depth: z.number().optional(),
+      create_asset_folders: z.boolean().optional(),
+      prioritize_assets: z.boolean().optional(),
+      download_url_assets: z.boolean().optional(),
+      show_missing_season_assets: z.boolean().optional(),
+      show_missing_episode_assets: z.boolean().optional(),
+      show_asset_not_needed: z.boolean().optional(),
+      sync_mode: z.enum(['append', 'sync']).optional(),
+      minimum_items: z.number().optional(),
+      delete_below_minimum: z.boolean().optional(),
+      delete_not_scheduled: z.boolean().optional(),
+      run_again_delay: z.number().optional(),
+      missing_only_released: z.boolean().optional(),
+      only_filter_missing: z.boolean().optional(),
+      show_unmanaged: z.boolean().optional(),
+      show_filtered: z.boolean().optional(),
+      show_options: z.boolean().optional(),
+      show_missing: z.boolean().optional(),
+      save_report: z.boolean().optional(),
+      tvdb_language: z.string().optional(),
+      ignore_ids: z.array(z.number()).optional(),
+      ignore_imdb_ids: z.array(z.string()).optional(),
+      playlist_sync_to_user: z.array(z.string()).optional(),
+      playlist_exclude_users: z.array(z.string()).optional(),
+    })
+    .optional(),
+  webhooks: z
+    .object({
+      error: z.string().optional(),
+      version: z.string().optional(),
+      run_start: z.string().optional(),
+      run_end: z.string().optional(),
+      changes: z.string().optional(),
+    })
+    .optional(),
+});
+
+export type DualPaneConfigForm = z.infer<typeof dualPaneConfigSchema>;
+
 // Updated schema for Day 11 library settings implementation
 export const librarySettingsFormSchema = z.object({
   libraries: z.array(

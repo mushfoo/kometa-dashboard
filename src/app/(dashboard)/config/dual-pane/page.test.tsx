@@ -39,6 +39,59 @@ jest.mock('@/components/editor/YamlEditor', () => ({
   ),
 }));
 
+// Mock the form-YAML sync hook
+jest.mock('@/hooks/useFormYamlSync', () => ({
+  useFormYamlSync: jest.fn(() => ({
+    form: {
+      register: jest.fn(() => ({
+        name: 'test',
+        onChange: jest.fn(),
+        onBlur: jest.fn(),
+      })),
+      formState: { errors: {} },
+      watch: jest.fn(() => ({})),
+      setValue: jest.fn(),
+      getValues: jest.fn(() => ({})),
+      reset: jest.fn(),
+    },
+    yamlContent: '',
+    setYamlContent: jest.fn(),
+    isValid: true,
+    validationErrors: [],
+    hasChanges: false,
+    lastUpdatedBy: null,
+    syncConflict: null,
+    resolveSyncConflict: jest.fn(),
+    resetToOriginal: jest.fn(),
+  })),
+}));
+
+// Mock the form components
+jest.mock('@/components/forms/PlexSyncForm', () => ({
+  PlexSyncForm: ({ disabled }: { form: any; disabled: boolean }) => (
+    <div data-testid="plex-sync-form" data-disabled={disabled}>
+      Plex Configuration Form
+    </div>
+  ),
+}));
+
+jest.mock('@/components/forms/ApiKeysSyncForm', () => ({
+  ApiKeysSyncForm: ({ disabled }: { form: any; disabled: boolean }) => (
+    <div data-testid="api-keys-sync-form" data-disabled={disabled}>
+      API Keys Configuration Form
+    </div>
+  ),
+}));
+
+jest.mock('@/components/forms/SyncConflictDialog', () => ({
+  SyncConflictDialog: ({ onResolve }: { conflict: any; onResolve: any }) => (
+    <div data-testid="sync-conflict-dialog">
+      Sync Conflict Dialog
+      <button onClick={() => onResolve('accept_form')}>Accept Form</button>
+    </div>
+  ),
+}));
+
 // Mock localStorage
 const localStorageMock = {
   getItem: jest.fn(),
