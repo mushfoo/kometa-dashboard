@@ -13,7 +13,7 @@ class BrowserStorageService {
     localStorage.setItem(path, JSON.stringify(data));
   }
 }
-import yaml from 'yaml';
+import * as yaml from 'yaml';
 
 export interface ConfigTemplate {
   id: string;

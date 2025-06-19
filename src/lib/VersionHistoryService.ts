@@ -13,7 +13,7 @@ class BrowserStorageService {
     localStorage.setItem(path, JSON.stringify(data));
   }
 }
-import yaml from 'yaml';
+import * as yaml from 'yaml';
 
 export interface ConfigVersion {
   id: string;
@@ -219,7 +219,7 @@ export class VersionHistoryService {
         ...this.getAllKeys(toConfig),
       ]);
 
-      for (const key of allKeys) {
+      for (const key of Array.from(allKeys)) {
         const fromValue = this.getValueByPath(fromConfig, key);
         const toValue = this.getValueByPath(toConfig, key);
 

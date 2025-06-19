@@ -8,12 +8,30 @@ export async function GET() {
     const configService = new ConfigService();
     const config = await configService.getConfig();
 
-    if (!config || !config.libraries || config.libraries.length === 0) {
+    if (!config || !config.libraries) {
+      return NextResponse.json([]);
+    }
+
+    // Handle both array and object formats for libraries
+    let librariesArray: any[] = [];
+    if (Array.isArray(config.libraries)) {
+      librariesArray = config.libraries;
+    } else if (typeof config.libraries === 'object') {
+      // Convert object to array
+      librariesArray = Object.entries(config.libraries).map(
+        ([name, libConfig]: [string, any]) => ({
+          library_name: name,
+          ...libConfig,
+        })
+      );
+    }
+
+    if (librariesArray.length === 0) {
       return NextResponse.json([]);
     }
 
     // Transform config libraries to form format
-    const libraries = config.libraries.map((lib: any) => ({
+    const libraries = librariesArray.map((lib: any) => ({
       library_name: lib.library_name,
       type: lib.library_type || 'movie',
       operations: {
