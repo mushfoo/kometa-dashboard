@@ -339,7 +339,8 @@ export default function ImportExportPage() {
                   <Alert>
                     <FileText className="h-4 w-4" />
                     <AlertDescription>
-                      Selected file: {importFile.name} (
+                      Selected file:{' '}
+                      <span data-testid="file-name">{importFile.name}</span> (
                       {(importFile.size / 1024).toFixed(1)} KB)
                     </AlertDescription>
                   </Alert>
@@ -368,6 +369,9 @@ export default function ImportExportPage() {
               {importResult && (
                 <Alert
                   variant={importResult.success ? 'default' : 'destructive'}
+                  data-testid={
+                    importResult.success ? 'import-success' : 'import-error'
+                  }
                 >
                   <div className="flex items-start gap-2">
                     {importResult.success ? (
@@ -393,7 +397,10 @@ export default function ImportExportPage() {
 
                         {importResult.warnings &&
                           importResult.warnings.length > 0 && (
-                            <div className="space-y-1">
+                            <div
+                              className="space-y-1"
+                              data-testid="import-warning"
+                            >
                               <p className="text-sm font-medium text-amber-600">
                                 Warnings:
                               </p>
@@ -414,7 +421,7 @@ export default function ImportExportPage() {
               )}
 
               {importPreview && (
-                <Card className="p-4">
+                <Card className="p-4" data-testid="import-preview">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium">Configuration Preview</h3>
