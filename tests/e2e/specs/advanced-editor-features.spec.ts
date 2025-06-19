@@ -6,7 +6,6 @@ test.describe('Advanced Editor Features (Day 15)', () => {
 
   test.beforeEach(async ({ page }) => {
     configPage = new ConfigPage(page);
-    await configPage.goto();
     await configPage.navigateToDualPane();
   });
 

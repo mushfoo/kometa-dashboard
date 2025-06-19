@@ -161,7 +161,7 @@ export class TemplateService {
       ...customTemplates[templateIndex],
       ...updates,
       updated: new Date().toISOString(),
-    };
+    } as ConfigTemplate;
 
     customTemplates[templateIndex] = updatedTemplate;
     await this.storage.write(this.customTemplatesPath, customTemplates);
@@ -227,10 +227,12 @@ export class TemplateService {
           const keys = key.split('.');
           let current = result;
           for (let i = 0; i < keys.length - 1; i++) {
-            if (!(keys[i] in current)) current[keys[i]] = {};
-            current = current[keys[i]];
+            const key = keys[i];
+            if (key && !(key in current)) current[key] = {};
+            current = current[key!] as any;
           }
-          current[keys[keys.length - 1]] = value;
+          const lastKey = keys[keys.length - 1];
+          if (lastKey) current[lastKey] = value;
         } else {
           result[key] = value;
         }

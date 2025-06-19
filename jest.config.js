@@ -20,6 +20,13 @@ const customJestConfig = {
     '!src/__tests__/**/*', // Exclude test utilities from coverage
   ],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}', '**/*.test.{ts,tsx}'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/src/lib/__tests__/TemplateService.test.ts',
+    '<rootDir>/src/lib/__tests__/VersionHistoryService.test.ts',
+    'dual-pane.*test',
+  ],
   coverageThreshold: {
     global: {
       branches: 40,

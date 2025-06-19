@@ -79,6 +79,7 @@ export class VersionHistoryService {
       return existingVersion;
     }
 
+    const stats = this.generateStats(yaml);
     const newVersion: ConfigVersion = {
       id: `version-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toISOString(),
@@ -87,7 +88,7 @@ export class VersionHistoryService {
       hash,
       changeType,
       size: new Blob([yaml]).size,
-      stats: this.generateStats(yaml),
+      ...(stats && { stats }),
     };
 
     // Add to beginning of array (newest first)

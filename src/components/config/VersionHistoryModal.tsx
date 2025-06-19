@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -55,7 +55,7 @@ export function VersionHistoryModal({
   const [error, setError] = useState<string | null>(null);
   const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
 
-  const versionService = new VersionHistoryService();
+  const versionService = useMemo(() => new VersionHistoryService(), []);
 
   const loadVersionHistory = useCallback(async () => {
     try {
@@ -218,10 +218,13 @@ export function VersionHistoryModal({
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleCompareVersions(
-                                  version,
-                                  versions[index - 1]
-                                );
+                                const previousVersion = versions[index - 1];
+                                if (previousVersion) {
+                                  handleCompareVersions(
+                                    version,
+                                    previousVersion
+                                  );
+                                }
                               }}
                               title="Compare with previous version"
                             >

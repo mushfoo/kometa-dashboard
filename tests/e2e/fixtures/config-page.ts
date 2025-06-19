@@ -100,19 +100,6 @@ export class ConfigPage extends BasePage {
     });
   }
 
-  async setYamlContent(content: string) {
-    // Monaco editor requires special handling
-    await this.page.evaluate((content) => {
-      const monaco = (window as any).monaco;
-      if (monaco) {
-        const editor = monaco.editor.getModels()[0];
-        if (editor) {
-          editor.setValue(content);
-        }
-      }
-    }, content);
-  }
-
   async validateYaml() {
     await this.clickElement('button:has-text("Validate")');
   }
@@ -205,6 +192,28 @@ export class ConfigPage extends BasePage {
         }
       }
     }, content);
+  }
+
+  async appendYamlContent(content: string) {
+    // Wait for Monaco editor to load
+    await this.page.waitForSelector('.monaco-editor', { timeout: 10000 });
+
+    // Append content to Monaco editor
+    await this.page.evaluate((content) => {
+      const monaco = (window as any).monaco;
+      if (monaco && monaco.editor) {
+        const models = monaco.editor.getModels();
+        if (models && models.length > 0) {
+          const currentValue = models[0].getValue();
+          models[0].setValue(currentValue + content);
+        }
+      }
+    }, content);
+  }
+
+  // Alias for dual-pane specific methods to work with generic test code
+  async setYamlContent(content: string) {
+    return this.setDualPaneYamlContent(content);
   }
 
   async saveDualPaneConfiguration() {

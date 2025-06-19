@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,9 +29,10 @@ import {
 interface TemplateSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // eslint-disable-next-line no-unused-vars
   onSelectTemplate: (
+    // eslint-disable-next-line no-unused-vars
     template: ConfigTemplate,
+    // eslint-disable-next-line no-unused-vars
     customizations?: Record<string, any>
   ) => void;
 }
@@ -52,7 +53,7 @@ export function TemplateSelectionModal({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const templateService = new TemplateService();
+  const templateService = useMemo(() => new TemplateService(), []);
 
   const loadTemplates = useCallback(async () => {
     try {

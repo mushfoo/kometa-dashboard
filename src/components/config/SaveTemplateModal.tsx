@@ -201,15 +201,15 @@ export function SaveTemplateModal({
                   const preview = templateService.generatePreview(yamlContent);
                   return (
                     <>
-                      {preview.collections && (
+                      {preview?.collections && (
                         <div>
                           📁 {preview.collections} collections will be created
                         </div>
                       )}
-                      {preview.libraries && preview.libraries.length > 0 && (
+                      {preview?.libraries && preview.libraries.length > 0 && (
                         <div>📚 Libraries: {preview.libraries.join(', ')}</div>
                       )}
-                      {preview.features && preview.features.length > 0 && (
+                      {preview?.features && preview.features.length > 0 && (
                         <div>⚡ Features: {preview.features.join(', ')}</div>
                       )}
                       <div>
