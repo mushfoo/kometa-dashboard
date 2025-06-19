@@ -33,8 +33,8 @@ interface UseFormYamlSyncReturn<T extends Record<string, any>> {
   hasChanges: boolean;
   lastUpdatedBy: 'form' | 'yaml' | null;
   syncConflict: SyncConflict<T> | null;
-  // eslint-disable-next-line no-unused-vars
   resolveSyncConflict: (
+    // eslint-disable-next-line no-unused-vars
     resolutionType: 'accept_form' | 'accept_yaml' | 'merge'
   ) => void;
   resetToOriginal: () => void;
