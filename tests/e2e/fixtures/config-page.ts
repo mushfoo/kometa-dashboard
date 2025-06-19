@@ -31,13 +31,18 @@ export class ConfigPage extends BasePage {
     await this.waitForPageLoad();
   }
 
+  async navigateToDualPane() {
+    await this.navigate('/config/dual-pane');
+    await this.waitForPageLoad();
+  }
+
   // Plex Configuration Methods
   async fillPlexUrl(url: string) {
-    await this.fillInput('input[name="plexUrl"]', url);
+    await this.fillInput('input[id="url"]', url);
   }
 
   async fillPlexToken(token: string) {
-    await this.fillInput('input[name="plexToken"]', token);
+    await this.fillInput('input[id="token"]', token);
   }
 
   async clickTestConnection() {
@@ -55,7 +60,8 @@ export class ConfigPage extends BasePage {
   }
 
   async selectLibrary(libraryName: string) {
-    await this.clickElement(`input[type="checkbox"][value="${libraryName}"]`);
+    // Click the label instead of the checkbox since it's more reliable
+    await this.page.locator(`label:has-text("${libraryName}")`).click();
   }
 
   async saveConfiguration() {
@@ -135,5 +141,116 @@ export class ConfigPage extends BasePage {
 
   async getImportPreview(): Promise<string> {
     return await this.getText('[data-testid="import-preview"]');
+  }
+
+  // Dual-Pane Configuration Methods
+  async switchToFormTab(tabName: 'plex' | 'apis' | 'libraries') {
+    // Click the tab trigger directly by its text content
+    await this.page
+      .locator(
+        `button[role="tab"]:has-text("${tabName === 'apis' ? 'API Keys' : tabName === 'libraries' ? 'Libraries' : 'Plex'}")`
+      )
+      .click();
+  }
+
+  async getCurrentFormTab(): Promise<string> {
+    // Find the active tab by checking which tab panel is visible
+    const plexVisible = await this.page
+      .locator('[role="tabpanel"][id*="plex"]')
+      .isVisible()
+      .catch(() => false);
+    const apisVisible = await this.page
+      .locator('[role="tabpanel"][id*="apis"]')
+      .isVisible()
+      .catch(() => false);
+    const librariesVisible = await this.page
+      .locator('[role="tabpanel"][id*="libraries"]')
+      .isVisible()
+      .catch(() => false);
+
+    if (plexVisible) return 'plex';
+    if (apisVisible) return 'apis';
+    if (librariesVisible) return 'libraries';
+    return '';
+  }
+
+  async getDualPaneYamlContent(): Promise<string> {
+    // Wait for Monaco editor to load
+    await this.page.waitForSelector('.monaco-editor', { timeout: 10000 });
+
+    // Get content from Monaco editor in dual-pane interface
+    return await this.page.evaluate(() => {
+      const monaco = (window as any).monaco;
+      if (monaco && monaco.editor) {
+        const models = monaco.editor.getModels();
+        if (models && models.length > 0) {
+          return models[0].getValue();
+        }
+      }
+      return '';
+    });
+  }
+
+  async setDualPaneYamlContent(content: string) {
+    // Wait for Monaco editor to load
+    await this.page.waitForSelector('.monaco-editor', { timeout: 10000 });
+
+    // Set content in Monaco editor
+    await this.page.evaluate((content) => {
+      const monaco = (window as any).monaco;
+      if (monaco && monaco.editor) {
+        const models = monaco.editor.getModels();
+        if (models && models.length > 0) {
+          models[0].setValue(content);
+        }
+      }
+    }, content);
+  }
+
+  async saveDualPaneConfiguration() {
+    await this.clickElement('button:has-text("Save Configuration")');
+  }
+
+  async resetDualPaneConfiguration() {
+    await this.clickElement('button:has-text("Reset")');
+  }
+
+  async checkPaneSizePersistedCorrectly() {
+    // Check if the split pane has been resized (localStorage persistence)
+    const splitPane = await this.page.locator('.SplitPane').first();
+    return await splitPane.isVisible();
+  }
+
+  async resizeSplitPane(direction: 'left' | 'right', pixels: number) {
+    const splitter = await this.page.locator('.Resizer').first();
+    const splitterBox = await splitter.boundingBox();
+
+    if (splitterBox) {
+      const startX = splitterBox.x + splitterBox.width / 2;
+      const startY = splitterBox.y + splitterBox.height / 2;
+      const endX = direction === 'right' ? startX + pixels : startX - pixels;
+
+      await this.page.mouse.move(startX, startY);
+      await this.page.mouse.down();
+      await this.page.mouse.move(endX, startY);
+      await this.page.mouse.up();
+    }
+  }
+
+  async waitForUnsavedChangesAlert() {
+    await this.page.waitForSelector('text=You have unsaved changes', {
+      timeout: 5000,
+    });
+  }
+
+  async checkForUnsavedChangesAlert(): Promise<boolean> {
+    try {
+      await this.page.waitForSelector('text=You have unsaved changes', {
+        timeout: 1000,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

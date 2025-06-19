@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -33,12 +33,18 @@ interface PlexConnectionTestResult {
 }
 
 export default function PlexConfigurationPage() {
+  // Set page title
+  useEffect(() => {
+    document.title = 'Plex Configuration - Kometa Dashboard';
+  }, []);
+
   const [testResult, setTestResult] = useState<PlexConnectionTestResult | null>(
     null
   );
   const [selectedLibraries, setSelectedLibraries] = useState<Set<string>>(
     new Set()
   );
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentConfig, isLoading: isLoadingConfig } = useQuery({
@@ -106,6 +112,8 @@ export default function PlexConfigurationPage() {
       return response.json();
     },
     onSuccess: () => {
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 5000);
       queryClient.invalidateQueries({ queryKey: ['plex-config'] });
       queryClient.invalidateQueries({ queryKey: ['config'] });
     },
@@ -155,6 +163,7 @@ export default function PlexConfigurationPage() {
       <form
         onSubmit={handleSubmit((data: PlexConfigForm) => onSubmit(data))}
         className="space-y-6"
+        data-testid="plex-config-form"
       >
         <Card className="p-6">
           <div className="space-y-4">
@@ -172,7 +181,11 @@ export default function PlexConfigurationPage() {
                 aria-describedby="url-error"
               />
               {errors.url && (
-                <p id="url-error" className="text-sm text-destructive">
+                <p
+                  id="url-error"
+                  className="text-sm text-destructive"
+                  data-testid="url-error"
+                >
                   {typeof errors.url.message === 'string'
                     ? errors.url.message
                     : 'Invalid URL'}
@@ -235,7 +248,10 @@ export default function PlexConfigurationPage() {
             </div>
 
             {testResult && (
-              <Alert variant={testResult.success ? 'default' : 'destructive'}>
+              <Alert
+                variant={testResult.success ? 'default' : 'destructive'}
+                data-testid="connection-result"
+              >
                 <div className="flex items-start gap-2">
                   {testResult.success ? (
                     <CheckCircle2 className="h-4 w-4 mt-0.5" />
@@ -244,7 +260,7 @@ export default function PlexConfigurationPage() {
                   )}
                   <AlertDescription>
                     {testResult.success
-                      ? `Successfully connected to ${testResult.serverInfo?.friendlyName || 'Plex server'}`
+                      ? `Connection successful. Successfully connected to ${testResult.serverInfo?.friendlyName || 'Plex server'}`
                       : testResult.error}
                   </AlertDescription>
                 </div>
@@ -273,6 +289,7 @@ export default function PlexConfigurationPage() {
                   >
                     <Checkbox
                       id={`library-${library.key}`}
+                      value={library.title}
                       checked={selectedLibraries.has(library.title)}
                       onCheckedChange={() => toggleLibrary(library.title)}
                       className="mt-1"
@@ -302,6 +319,27 @@ export default function PlexConfigurationPage() {
               </div>
             </div>
           </Card>
+        )}
+
+        {selectedLibraries.size === 0 &&
+          testResult?.success &&
+          testResult?.libraries &&
+          testResult.libraries.length > 0 && (
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription data-testid="library-error">
+                Please select at least one library
+              </AlertDescription>
+            </Alert>
+          )}
+
+        {saveSuccess && (
+          <Alert>
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertDescription data-testid="save-success">
+              Configuration saved successfully
+            </AlertDescription>
+          </Alert>
         )}
 
         <div className="flex justify-end gap-3">
