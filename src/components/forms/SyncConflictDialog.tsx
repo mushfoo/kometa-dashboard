@@ -117,7 +117,7 @@ export function SyncConflictDialog<T extends Record<string, any>>({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <Card className="max-w-4xl w-full max-h-[90vh] overflow-hidden bg-background border shadow-lg">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
