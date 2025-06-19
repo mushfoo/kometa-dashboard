@@ -184,7 +184,7 @@ export default function DualPaneConfigPage() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col max-w-full overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -277,7 +277,7 @@ export default function DualPaneConfigPage() {
         </Alert>
       )}
 
-      <div className="flex-1 min-h-0" style={{ height: 'calc(100vh - 300px)' }}>
+      <div className="flex-1 min-h-0 max-w-full overflow-hidden">
         <SplitPane
           split="vertical"
           minSize={300}

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "src/lib/__tests__/TemplateService.test.ts",
+    "src/lib/__tests__/VersionHistoryService.test.ts",
+    "src/app/(dashboard)/config/dual-pane/page.test.tsx"
+  ]
+}

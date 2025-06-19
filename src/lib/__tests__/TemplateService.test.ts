@@ -67,10 +67,10 @@ describe('TemplateService', () => {
       const categories = await templateService.getAllTemplates();
 
       expect(categories).toHaveLength(3);
-      expect(categories[0].id).toBe('basic');
-      expect(categories[1].id).toBe('advanced');
-      expect(categories[2].id).toBe('custom');
-      expect(categories[2].templates).toHaveLength(0);
+      expect(categories[0]?.id).toBe('basic');
+      expect(categories[1]?.id).toBe('advanced');
+      expect(categories[2]?.id).toBe('custom');
+      expect(categories[2]?.templates).toHaveLength(0);
     });
 
     it('should include custom templates when they exist', async () => {
@@ -100,12 +100,13 @@ describe('TemplateService', () => {
 
   describe('saveCustomTemplate', () => {
     it('should save a new custom template', async () => {
-      mockStorageService.read.mockResolvedValueOnce([]); // Existing custom templates
-      mockStorageService.write.mockResolvedValueOnce(undefined);
+      mockRead.mockResolvedValueOnce([]); // Existing custom templates
+      mockWrite.mockResolvedValueOnce(undefined);
 
       const templateData = {
         name: 'Test Template',
         description: 'Test description',
+        category: 'custom' as const,
         tags: ['test'],
         version: '1.0.0',
         yaml: 'test: configuration',
@@ -117,7 +118,7 @@ describe('TemplateService', () => {
       expect(savedTemplate.name).toBe(templateData.name);
       expect(savedTemplate.category).toBe('custom');
       expect(savedTemplate.id).toMatch(/^custom-/);
-      expect(mockStorageService.write).toHaveBeenCalledWith(
+      expect(mockWrite).toHaveBeenCalledWith(
         'templates/custom-templates.json',
         expect.arrayContaining([expect.objectContaining(templateData)])
       );
@@ -138,7 +139,7 @@ describe('TemplateService', () => {
         yaml: 'plex:\n  url: placeholder\n  token: placeholder',
       };
 
-      mockStorageService.read
+      mockRead
         .mockResolvedValueOnce([template]) // Built-in templates
         .mockResolvedValueOnce([]); // Custom templates
 
@@ -160,7 +161,7 @@ describe('TemplateService', () => {
         yaml: 'plex:\n  url: placeholder\n  token: placeholder',
       };
 
-      mockStorageService.read
+      mockRead
         .mockResolvedValueOnce([template]) // Built-in templates
         .mockResolvedValueOnce([]); // Custom templates
 
@@ -179,7 +180,7 @@ describe('TemplateService', () => {
     });
 
     it('should throw error for non-existent template', async () => {
-      mockStorageService.read
+      mockRead
         .mockResolvedValueOnce([]) // Built-in templates
         .mockResolvedValueOnce([]); // Custom templates
 
@@ -227,10 +228,10 @@ collections:
 
       const preview = templateService.generatePreview(yamlContent);
 
-      expect(preview.collections).toBe(3);
-      expect(preview.libraries).toEqual(['Movies', 'TV Shows']);
-      expect(preview.features).toContain('Plex Integration');
-      expect(preview.features).toContain('TMDB API');
+      expect(preview?.collections).toBe(3);
+      expect(preview?.libraries).toEqual(['Movies', 'TV Shows']);
+      expect(preview?.features).toContain('Plex Integration');
+      expect(preview?.features).toContain('TMDB API');
     });
 
     it('should handle invalid YAML gracefully', () => {
@@ -256,25 +257,25 @@ collections:
         yaml: 'test: yaml',
       };
 
-      mockStorageService.read.mockResolvedValueOnce([existingTemplate]);
-      mockStorageService.write.mockResolvedValueOnce(undefined);
+      mockRead.mockResolvedValueOnce([existingTemplate]);
+      mockWrite.mockResolvedValueOnce(undefined);
 
       const result = await templateService.deleteCustomTemplate('custom-123');
 
       expect(result).toBe(true);
-      expect(mockStorageService.write).toHaveBeenCalledWith(
+      expect(mockWrite).toHaveBeenCalledWith(
         'templates/custom-templates.json',
         []
       );
     });
 
     it('should return false for non-existent template', async () => {
-      mockStorageService.read.mockResolvedValueOnce([]);
+      mockRead.mockResolvedValueOnce([]);
 
       const result = await templateService.deleteCustomTemplate('non-existent');
 
       expect(result).toBe(false);
-      expect(mockStorageService.write).not.toHaveBeenCalled();
+      expect(mockWrite).not.toHaveBeenCalled();
     });
   });
 });
