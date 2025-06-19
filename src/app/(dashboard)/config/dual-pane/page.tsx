@@ -287,18 +287,24 @@ export default function DualPaneConfigPage() {
           paneStyle={{ overflow: 'auto' }}
         >
           {/* Left Pane - Forms */}
-          <div className="h-full pr-2">
-            <Card className="h-full p-6 overflow-auto">
+          <div className="h-full pr-2 min-w-0">
+            <Card className="h-full p-6 overflow-auto max-w-full">
               <div className="flex items-center gap-2 mb-4">
                 <Settings className="h-5 w-5" />
                 <h2 className="text-lg font-semibold">Configuration Forms</h2>
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="plex">Plex</TabsTrigger>
-                  <TabsTrigger value="apis">API Keys</TabsTrigger>
-                  <TabsTrigger value="libraries">Libraries</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 max-w-full overflow-hidden">
+                  <TabsTrigger value="plex" className="truncate">
+                    Plex
+                  </TabsTrigger>
+                  <TabsTrigger value="apis" className="truncate">
+                    API Keys
+                  </TabsTrigger>
+                  <TabsTrigger value="libraries" className="truncate">
+                    Libraries
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="plex" className="mt-4">
@@ -347,8 +353,8 @@ export default function DualPaneConfigPage() {
           </div>
 
           {/* Right Pane - YAML Editor */}
-          <div className="h-full pl-2">
-            <Card className="h-full p-6">
+          <div className="h-full pl-2 min-w-0">
+            <Card className="h-full p-6 max-w-full overflow-hidden">
               <div className="flex items-center gap-2 mb-4">
                 <FileCode className="h-5 w-5" />
                 <h2 className="text-lg font-semibold">YAML Editor</h2>
