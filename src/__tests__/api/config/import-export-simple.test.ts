@@ -15,9 +15,7 @@ const mockYaml = require('yaml');
 const mockConfigService = ConfigService as jest.MockedClass<
   typeof ConfigService
 >;
-const mockEncryptionService = EncryptionService as jest.MockedClass<
-  typeof EncryptionService
->;
+const mockEncryptionService = EncryptionService as any;
 
 describe('Import/Export API Integration Tests', () => {
   beforeEach(() => {
@@ -55,9 +53,9 @@ describe('Import/Export API Integration Tests', () => {
           .fn()
           .mockImplementation((value: string) => `enc:${value}`),
       };
-      mockEncryptionService.getInstance.mockReturnValue(
-        mockEncryptionServiceInstance as any
-      );
+      mockEncryptionService.getInstance = jest
+        .fn()
+        .mockReturnValue(mockEncryptionServiceInstance);
 
       // Test the encryption logic
       const configService = new ConfigService();
@@ -67,11 +65,13 @@ describe('Import/Export API Integration Tests', () => {
       expect(config).toEqual(mockConfig);
 
       // Test encryption
-      const encryptedToken = await encryptionService.encrypt(config.plex.token);
+      const encryptedToken = await encryptionService.encrypt(
+        config!.plex.token
+      );
       expect(encryptedToken).toBe('enc:test-token');
 
       const encryptedApiKey = await encryptionService.encrypt(
-        config.tmdb.apikey
+        config!.tmdb!.apikey
       );
       expect(encryptedApiKey).toBe('enc:test-tmdb-key');
     });
@@ -98,9 +98,9 @@ describe('Import/Export API Integration Tests', () => {
       const configService = new ConfigService();
       const config = await configService.getConfig();
 
-      expect(config.plex.url).toBe('http://localhost:32400');
-      expect(config.plex.token).toBeUndefined();
-      expect(config.libraries).toBeDefined();
+      expect(config!.plex.url).toBe('http://localhost:32400');
+      expect(config!.plex.token).toBeUndefined();
+      expect(config!.libraries).toBeDefined();
     });
   });
 
@@ -162,7 +162,7 @@ describe('Import/Export API Integration Tests', () => {
 
       const errors: string[] = [];
 
-      if (!invalidConfig.plex) {
+      if (!(invalidConfig as any).plex) {
         errors.push('Plex configuration is required');
       }
 
@@ -288,16 +288,20 @@ describe('Import/Export API Integration Tests', () => {
       const preview = {
         plex: {
           url: minimalConfig.plex?.url || 'Not configured',
-          token: minimalConfig.plex?.token
+          token: (minimalConfig as any).plex?.token
             ? '***configured***'
             : 'Not configured',
         },
-        libraries: minimalConfig.libraries
-          ? Object.keys(minimalConfig.libraries)
+        libraries: (minimalConfig as any).libraries
+          ? Object.keys((minimalConfig as any).libraries)
           : [],
-        tmdb: minimalConfig.tmdb?.apikey ? 'Configured' : 'Not configured',
-        trakt: minimalConfig.trakt?.client_id ? 'Configured' : 'Not configured',
-        settings: minimalConfig.settings ? 'Included' : 'Not included',
+        tmdb: (minimalConfig as any).tmdb?.apikey
+          ? 'Configured'
+          : 'Not configured',
+        trakt: (minimalConfig as any).trakt?.client_id
+          ? 'Configured'
+          : 'Not configured',
+        settings: (minimalConfig as any).settings ? 'Included' : 'Not included',
       };
 
       expect(preview.plex.url).toBe('http://localhost:32400');
@@ -350,7 +354,9 @@ describe('Import/Export API Integration Tests', () => {
       await configService.createBackup();
       expect(mockConfigServiceInstance.createBackup).toHaveBeenCalled();
 
-      const newConfig = { plex: { url: 'http://localhost:32400' } };
+      const newConfig = {
+        plex: { url: 'http://localhost:32400', token: 'test-token' },
+      } as any;
       await configService.updateConfig(newConfig);
       expect(mockConfigServiceInstance.updateConfig).toHaveBeenCalledWith(
         newConfig
