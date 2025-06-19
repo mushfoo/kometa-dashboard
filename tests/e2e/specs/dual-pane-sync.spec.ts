@@ -6,7 +6,7 @@ test.describe('Dual-Pane Configuration Synchronization', () => {
 
   test.beforeEach(async ({ page }) => {
     configPage = new ConfigPage(page);
-    await configPage.goto('/config/dual-pane');
+    await configPage.navigateToDualPane();
   });
 
   test('should display dual-pane interface correctly', async ({ page }) => {

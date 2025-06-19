@@ -58,7 +58,7 @@ const mockUseFormYamlSync = {
   isValid: true,
   validationErrors: [],
   hasChanges: false,
-  lastUpdatedBy: null,
+  lastUpdatedBy: null as 'form' | 'yaml' | null,
   syncConflict: null,
   resolveSyncConflict: jest.fn(),
   resetToOriginal: jest.fn(),
