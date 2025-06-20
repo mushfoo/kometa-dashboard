@@ -167,8 +167,6 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `tests/e2e/specs/yaml-editor.spec.ts` - YAML editor E2E tests including Monaco editor integration
 - `tests/e2e/specs/import-export.spec.ts` - Configuration import/export E2E tests with validation and diff views
 - `.github/workflows/e2e.yml` - GitHub Actions workflow for E2E testing with artifact management and cleanup
-- `src/app/(dashboard)/config/dual-pane/page.tsx` - Dual-pane configuration interface with split layout
-- `src/app/(dashboard)/config/dual-pane/page.test.tsx` - Tests for dual-pane configuration page
 
 ### Modified Files
 
@@ -184,12 +182,13 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `src/app/layout.tsx` - Updated to include Providers with React Query and app state management
 - `src/app/page.tsx` - Redesigned home page with navigation cards and improved styling
 - `src/app/page.test.tsx` - Updated tests for new home page structure and navigation
-- `package.json` - Added React Query, Zustand, Lucide React, react-hook-form, @hookform/resolvers, Playwright, and @rexxars/react-split-pane dependencies; added E2E testing scripts
+- `package.json` - Added React Query, Zustand, Lucide React, react-hook-form, @hookform/resolvers, and Playwright dependencies; added E2E testing scripts
 - `.gitignore` - Updated to exclude E2E test artifacts, reports, and temporary files
-- `src/app/(dashboard)/config/page.tsx` - Updated with navigation cards including new dual-pane editor
-- `src/app/globals.css` - Added split pane resizer styles
+- `src/app/(dashboard)/config/page.tsx` - Updated with navigation cards for configuration options
 
 ---
+
+**Note: Tasks below reflect original planning. See "MVP Priority Tasks (Reorganized)" section at the end for updated priorities after dual-pane editor removal and feature de-scoping.**
 
 ## Week 1: Foundation & Core Backend (Days 1-7)
 
@@ -697,35 +696,35 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 ### Day 15: Advanced Editor Features
 
-#### Task 15.1: Conflict Resolution Interface
+#### Task 15.1: ~~Conflict Resolution Interface~~ [CANCELLED - No longer needed without dual-pane]
 
-**Deliverable:** Handle form/YAML editing conflicts
+**Deliverable:** ~~Handle form/YAML editing conflicts~~
 
-- [ ] Create conflict detection comparing form state with YAML state
-- [ ] Build conflict resolution modal showing differences side-by-side
-- [ ] Add options to accept form changes, YAML changes, or merge both
-- [ ] Implement change highlighting in both form and YAML views
-- [ ] **Test:** Conflicts detected correctly, resolution options work properly
+- ~~[ ] Create conflict detection comparing form state with YAML state~~
+- ~~[ ] Build conflict resolution modal showing differences side-by-side~~
+- ~~[ ] Add options to accept form changes, YAML changes, or merge both~~
+- ~~[ ] Implement change highlighting in both form and YAML views~~
+- ~~[ ] **Test:** Conflicts detected correctly, resolution options work properly~~
 
-#### Task 15.2: Configuration Templates
+#### Task 15.2: ~~Configuration Templates~~ [CANCELLED - Move to post-MVP]
 
-**Deliverable:** Pre-built configuration loading
+**Deliverable:** ~~Pre-built configuration loading~~
 
-- [ ] Create template storage system with JSON template definitions
-- [ ] Build template selection modal with preview and description
-- [ ] Implement template application with user customization options
-- [ ] Add custom template saving functionality for user-created configs
-- [ ] **Test:** Templates load correctly, customization preserves template structure
+- ~~[ ] Create template storage system with JSON template definitions~~
+- ~~[ ] Build template selection modal with preview and description~~
+- ~~[ ] Implement template application with user customization options~~
+- ~~[ ] Add custom template saving functionality for user-created configs~~
+- ~~[ ] **Test:** Templates load correctly, customization preserves template structure~~
 
-#### Task 15.3: Version History
+#### Task 15.3: ~~Version History~~ [CANCELLED - Git handles this]
 
-**Deliverable:** Configuration change tracking
+**Deliverable:** ~~Configuration change tracking~~
 
-- [ ] Implement configuration history storage (last 10 versions)
-- [ ] Create version comparison view showing diffs between versions
-- [ ] Add version restoration functionality with confirmation dialog
-- [ ] Build history timeline showing timestamps and change descriptions
-- [ ] **Test:** History tracks changes accurately, restoration works correctly
+- ~~[ ] Implement configuration history storage (last 10 versions)~~
+- ~~[ ] Create version comparison view showing diffs between versions~~
+- ~~[ ] Add version restoration functionality with confirmation dialog~~
+- ~~[ ] Build history timeline showing timestamps and change descriptions~~
+- ~~[ ] **Test:** History tracks changes accurately, restoration works correctly~~
 
 ---
 
@@ -733,35 +732,35 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 ### Day 16: Configuration Wizard
 
-#### Task 16.1: Step-by-Step Wizard Interface
+#### Task 16.1: ~~Step-by-Step Wizard Interface~~ [CANCELLED - Current forms sufficient]
 
-**Deliverable:** Guided configuration setup
+**Deliverable:** ~~Guided configuration setup~~
 
-- [ ] Create `ConfigWizard.tsx` with step navigation (4 steps: Plex, APIs, Libraries, Review)
-- [ ] Implement step validation preventing advancement with incomplete data
-- [ ] Add progress indicator showing current step and completion percentage
-- [ ] Create step-specific validation with clear error messaging
-- [ ] **Test:** Cannot advance with invalid data, progress accurately reflects completion
+- ~~[ ] Create `ConfigWizard.tsx` with step navigation (4 steps: Plex, APIs, Libraries, Review)~~
+- ~~[ ] Implement step validation preventing advancement with incomplete data~~
+- ~~[ ] Add progress indicator showing current step and completion percentage~~
+- ~~[ ] Create step-specific validation with clear error messaging~~
+- ~~[ ] **Test:** Cannot advance with invalid data, progress accurately reflects completion~~
 
-#### Task 16.2: Plex Connection Wizard Step
+#### Task 16.2: ~~Plex Connection Wizard Step~~ [CANCELLED - Current forms sufficient]
 
-**Deliverable:** Guided Plex server setup
+**Deliverable:** ~~Guided Plex server setup~~
 
-- [ ] Create Plex URL input with format validation and example placeholder
-- [ ] Add Plex token input with instructions for obtaining token
-- [ ] Implement connection test with loading state and success/error feedback
-- [ ] Display detected Plex server info (name, version, platform) on success
-- [ ] **Test:** Connection validation works, server info displays correctly
+- ~~[ ] Create Plex URL input with format validation and example placeholder~~
+- ~~[ ] Add Plex token input with instructions for obtaining token~~
+- ~~[ ] Implement connection test with loading state and success/error feedback~~
+- ~~[ ] Display detected Plex server info (name, version, platform) on success~~
+- ~~[ ] **Test:** Connection validation works, server info displays correctly~~
 
-#### Task 16.3: Library Detection and Selection
+#### Task 16.3: ~~Library Detection and Selection~~ [CANCELLED - Current forms sufficient]
 
-**Deliverable:** Automatic library discovery interface
+**Deliverable:** ~~Automatic library discovery interface~~
 
-- [ ] Fetch and display all Plex libraries with type, item count, and last scan
-- [ ] Create library selection interface with select all/none functionality
-- [ ] Add library-specific settings for each selected library
-- [ ] Implement library filtering by type (Movies, TV Shows, Music)
-- [ ] **Test:** All libraries load correctly, selection state persists across steps
+- ~~[ ] Fetch and display all Plex libraries with type, item count, and last scan~~
+- ~~[ ] Create library selection interface with select all/none functionality~~
+- ~~[ ] Add library-specific settings for each selected library~~
+- ~~[ ] Implement library filtering by type (Movies, TV Shows, Music)~~
+- ~~[ ] **Test:** All libraries load correctly, selection state persists across steps~~
 
 ### Day 17: Configuration Templates
 
@@ -925,35 +924,35 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 ### Day 21: Advanced Dashboard Features
 
-#### Task 21.4: Performance Monitoring
+#### Task 21.4: ~~Performance Monitoring~~ [CANCELLED - Advanced feature]
 
-**Deliverable:** System performance tracking
+**Deliverable:** ~~System performance tracking~~
 
-- [ ] Create performance metrics collection (CPU, memory, disk I/O)
-- [ ] Build performance charts using Chart.js or similar library
-- [ ] Add performance alert thresholds with notification system
-- [ ] Implement historical performance data storage and display
-- [ ] **Test:** Metrics collect accurately, alerts trigger at correct thresholds
+- ~~[ ] Create performance metrics collection (CPU, memory, disk I/O)~~
+- ~~[ ] Build performance charts using Chart.js or similar library~~
+- ~~[ ] Add performance alert thresholds with notification system~~
+- ~~[ ] Implement historical performance data storage and display~~
+- ~~[ ] **Test:** Metrics collect accurately, alerts trigger at correct thresholds~~
 
-#### Task 21.5: Operation History and Statistics
+#### Task 21.5: ~~Operation History and Statistics~~ [CANCELLED - Advanced feature]
 
-**Deliverable:** Historical operation analysis
+**Deliverable:** ~~Historical operation analysis~~
 
-- [ ] Create operation history table with pagination and sorting
-- [ ] Add operation statistics (success rate, average duration, error frequency)
-- [ ] Implement operation comparison showing performance trends
-- [ ] Create downloadable operation reports in CSV format
-- [ ] **Test:** History displays correctly, statistics calculate accurately
+- ~~[ ] Create operation history table with pagination and sorting~~
+- ~~[ ] Add operation statistics (success rate, average duration, error frequency)~~
+- ~~[ ] Implement operation comparison showing performance trends~~
+- ~~[ ] Create downloadable operation reports in CSV format~~
+- ~~[ ] **Test:** History displays correctly, statistics calculate accurately~~
 
-#### Task 21.6: System Health Monitoring
+#### Task 21.6: ~~System Health Monitoring~~ [CANCELLED - Advanced feature]
 
-**Deliverable:** Comprehensive system status monitoring
+**Deliverable:** ~~Comprehensive system status monitoring~~
 
-- [ ] Monitor Plex server connectivity with periodic health checks
-- [ ] Track API service availability and response times
-- [ ] Monitor disk space and file system health
-- [ ] Create health status dashboard with color-coded indicators
-- [ ] **Test:** Health checks work correctly, status indicators update properly
+- ~~[ ] Monitor Plex server connectivity with periodic health checks~~
+- ~~[ ] Track API service availability and response times~~
+- ~~[ ] Monitor disk space and file system health~~
+- ~~[ ] Create health status dashboard with color-coded indicators~~
+- ~~[ ] **Test:** Health checks work correctly, status indicators update properly~~
 
 ---
 
@@ -1206,6 +1205,48 @@ Each task must meet these criteria before marking complete:
 4. **Code Quality:** Passes ESLint, Prettier, and TypeScript strict mode
 5. **Performance:** Meets specified response time and resource usage targets
 6. **Security:** No security vulnerabilities in code or dependencies
+
+## MVP Priority Tasks (Reorganized)
+
+Based on user feedback and YAGNI principles, remaining tasks are reorganized by priority with a focused 8-9 day timeline.
+
+### Priority 1: Kometa Integration (2-3 days) - CRITICAL
+
+- Enable actual Kometa subprocess execution
+- Real-time log streaming
+- Process management (start/stop)
+
+### Priority 2: Basic Monitoring Dashboard (2 days) - CORE
+
+- Task 20.1: Dashboard Layout
+- Task 20.2: Operation Status Display
+- Task 20.3: Quick Actions Panel
+- Task 21.1: Log Viewer Interface
+- Task 21.2: Log Search and Filtering
+- Task 21.3: Error Highlighting
+
+### Priority 3: Collection Builder (3 days) - DIFFERENTIATOR
+
+- Task 18.1-18.3: Basic collection builder interface
+- Task 19.1-19.3: API integrations and preview system
+
+### Priority 4: Testing & Polish (1 day) - QUALITY
+
+- Task 22.1-22.3: Complete test coverage to 90%
+- Task 23.1-23.2: E2E test scenarios
+
+## MVP Completion Criteria
+
+The MVP is complete when:
+
+- [x] Users can configure Kometa through forms or YAML editor
+- [x] Configuration can be imported/exported
+- [ ] Kometa operations can be started/stopped through the GUI
+- [ ] Operation logs are visible in real-time
+- [ ] Basic collections can be created visually
+- [ ] All features have >90% test coverage
+
+**Total MVP Timeline: 8-9 days**
 
 ## Risk Mitigation Notes
 
