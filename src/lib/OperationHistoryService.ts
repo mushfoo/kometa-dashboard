@@ -158,8 +158,8 @@ class OperationHistoryService {
     }
 
     // Apply pagination
-    const start = filters.offset;
-    const end = start + filters.limit;
+    const start = filters.offset ?? 0;
+    const end = start + (filters.limit ?? 50);
 
     return filtered.slice(start, end);
   }

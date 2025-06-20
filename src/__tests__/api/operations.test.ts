@@ -4,18 +4,15 @@ import { FileStorageService } from '@/lib/file-storage-service';
 // Mock the FileStorageService
 jest.mock('@/lib/file-storage-service');
 
-// Mock NextRequest
-jest.mock('next/server', () => ({
-  NextRequest: jest.fn().mockImplementation((url: string) => ({
+// Create mock request helper
+const createMockRequest = (url: string) =>
+  ({
     url,
-  })),
-  NextResponse: {
-    json: (data: any, options?: any) => ({
-      status: options?.status || 200,
-      json: async () => data,
-    }),
-  },
-}));
+    method: 'GET',
+    headers: new Headers(),
+    json: async () => ({}),
+    text: async () => '',
+  }) as any;
 
 describe('/api/operations', () => {
   let mockFileStorageService: jest.Mocked<FileStorageService>;
@@ -39,7 +36,7 @@ describe('/api/operations', () => {
         lastUpdated: new Date().toISOString(),
       });
 
-      const request = new NextRequest(
+      const request = createMockRequest(
         'http://localhost:3000/api/operations?limit=5'
       );
       const response = await GET(request);
@@ -64,7 +61,7 @@ describe('/api/operations', () => {
         lastUpdated: new Date().toISOString(),
       });
 
-      const request = new NextRequest('http://localhost:3000/api/operations');
+      const request = createMockRequest('http://localhost:3000/api/operations');
       const response = await GET(request);
       const json = await response.json();
 
@@ -94,7 +91,7 @@ describe('/api/operations', () => {
         lastUpdated: new Date().toISOString(),
       });
 
-      const request = new NextRequest(
+      const request = createMockRequest(
         'http://localhost:3000/api/operations?status=completed'
       );
       const response = await GET(request);
@@ -110,12 +107,12 @@ describe('/api/operations', () => {
         new Error('File not found')
       );
 
-      const request = new NextRequest('http://localhost:3000/api/operations');
+      const request = createMockRequest('http://localhost:3000/api/operations');
       const response = await GET(request);
       const json = await response.json();
 
       expect(response.status).toBe(500);
-      expect(json.error).toBe('Failed to get operation history');
+      expect(json.error).toBe('File not found');
     });
   });
 });

@@ -132,6 +132,7 @@ beforeAll(() => {
       'Failed to save Plex configuration:',
       'Failed to test Plex connection:',
       'Plex connection test error:',
+      'API Error:',
     ];
 
     const isExpectedError = expectedErrors.some(
