@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createErrorResponse, logApiRequest } from '@/lib/api-utils';
-import { KometaOperationService } from '@/lib/KometaOperationService';
+import { KometaService } from '@/lib/KometaService';
 import { OperationHistoryService } from '@/lib/OperationHistoryService';
 import { z } from 'zod';
 
@@ -13,11 +13,11 @@ const StopOperationRequest = z.object({
 type StopOperationRequest = z.infer<typeof StopOperationRequest>;
 
 class OperationStopService {
-  private operationService: KometaOperationService;
+  private kometaService: KometaService;
   private historyService: OperationHistoryService;
 
   constructor() {
-    this.operationService = new KometaOperationService();
+    this.kometaService = new KometaService();
     this.historyService = new OperationHistoryService();
   }
 
@@ -26,37 +26,37 @@ class OperationStopService {
     success: boolean;
     message: string;
   }> {
-    // Get the current running operation
-    const currentOperation = this.operationService.getCurrentOperation();
+    // Get the current process info
+    const processInfo = this.kometaService.getProcessInfo();
 
-    if (!currentOperation) {
+    if (!processInfo || !this.kometaService.isRunning()) {
       throw new Error('No operation is currently running');
     }
 
     // If specific operation ID provided, verify it matches
     if (
       request.operationId &&
-      request.operationId !== currentOperation.operationId
+      request.operationId !== processInfo.operationId
     ) {
       throw new Error(
         `Operation ${request.operationId} is not currently running`
       );
     }
 
-    const operationId = currentOperation.operationId;
+    const operationId = processInfo.operationId;
 
     try {
-      const success = await this.operationService.stopOperation(
-        operationId,
-        request.force
-      );
+      const success = await this.kometaService.stopProcess(request.force);
 
       if (success) {
-        // Update operation status
+        // The KometaService will handle updating its own status
+        // We just need to update the operation history
         await this.historyService.updateOperation(operationId, {
           status: 'cancelled',
           endTime: new Date().toISOString(),
-          duration: Date.now() - currentOperation.startTime.getTime(),
+          duration: processInfo.startTime
+            ? Date.now() - processInfo.startTime.getTime()
+            : undefined,
         });
 
         return {
@@ -85,20 +85,45 @@ class OperationStopService {
     type?: string;
     startTime?: string;
     duration?: number;
+    status?: string;
+    pid?: number;
   }> {
-    const currentOperation = this.operationService.getCurrentOperation();
+    const processInfo = this.kometaService.getProcessInfo();
 
-    if (!currentOperation) {
+    if (!processInfo) {
       return { hasRunningOperation: false };
     }
 
-    return {
-      hasRunningOperation: true,
-      operationId: currentOperation.operationId,
-      type: currentOperation.type,
-      startTime: currentOperation.startTime.toISOString(),
-      duration: Date.now() - currentOperation.startTime.getTime(),
+    const result: {
+      hasRunningOperation: boolean;
+      operationId?: string;
+      type?: string;
+      startTime?: string;
+      duration?: number;
+      status?: string;
+      pid?: number;
+    } = {
+      hasRunningOperation: this.kometaService.isRunning(),
     };
+
+    if (processInfo.operationId) {
+      result.operationId = processInfo.operationId;
+    }
+    if (processInfo.config.operationType) {
+      result.type = processInfo.config.operationType;
+    }
+    if (processInfo.startTime) {
+      result.startTime = processInfo.startTime.toISOString();
+      result.duration = Date.now() - processInfo.startTime.getTime();
+    }
+    if (processInfo.status) {
+      result.status = processInfo.status;
+    }
+    if (processInfo.pid) {
+      result.pid = processInfo.pid;
+    }
+
+    return result;
   }
 }
 
