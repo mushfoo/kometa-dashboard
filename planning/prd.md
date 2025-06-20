@@ -57,7 +57,7 @@ Create a web-based GUI that makes Kometa's powerful media library automation acc
 #### 1. Configuration Management
 
 - **Visual YAML Builder**: Form-based configuration with real-time YAML generation
-- **Dual-Pane Editor**: Synchronized visual and code views
+- **Separate Editors**: Dedicated form pages and YAML editor for different user preferences
 - **Template System**: Pre-built configurations for common setups
 - **Validation Engine**: Real-time syntax and logic validation
 - **Import/Export**: Load existing YAML files and export generated configurations
@@ -109,6 +109,16 @@ Create a web-based GUI that makes Kometa's powerful media library automation acc
 - **API Integration**: RESTful API for external integrations
 - **Database Migration**: SQLite integration for enhanced data management
 
+### De-scoped Features
+
+The following features were removed from MVP to focus on core functionality and reduce timeline:
+
+- **Dual-Pane Editor**: Originally planned synchronized visual and code views, replaced with separate form pages and YAML editor
+- **Configuration Templates**: Pre-built configurations moved to post-MVP phase
+- **Version History**: Configuration change tracking (Git handles this functionality)
+- **Configuration Wizard**: Step-by-step setup (current form pages provide sufficient guidance)
+- **Advanced Monitoring**: Performance monitoring, operation history, and system health monitoring moved to future phases
+
 ## Technical Architecture
 
 ### Technology Stack Recommendations
@@ -119,7 +129,7 @@ Create a web-based GUI that makes Kometa's powerful media library automation acc
 - **UI Library**: Tailwind CSS + Shadcn/UI for consistent design system
 - **State Management**: React Query for server state, Zustand for client state
 - **Form Handling**: React Hook Form with Zod validation
-- **Code Editor**: Monaco Editor for YAML editing with syntax highlighting
+- **Code Editor**: Monaco Editor for dedicated YAML editing page with syntax highlighting
 
 #### Backend
 
@@ -158,6 +168,9 @@ POST /api/operations/start         # Start Kometa run
 POST /api/operations/stop          # Stop current operation
 GET /api/logs                      # Get filtered logs
 ```
+
+Note: Configuration can be edited via forms OR YAML editor on separate pages.
+Import/export functionality allows moving between formats.
 
 ## User Stories & Acceptance Criteria
 
@@ -396,7 +409,7 @@ GET /api/logs                      # Get filtered logs
 
 - Complete React app with routing and state management
 - All UI components with Tailwind/Shadcn styling
-- Dual-pane YAML editor with Monaco integration
+- Separate YAML editor page with Monaco integration
 - Form validation and error handling
 
 **Week 3: Core Features**
@@ -435,8 +448,8 @@ GET /api/logs                      # Get filtered logs
 
 - [ ] Developer can create Plex + API configurations through visual forms
 - [ ] Generated `config.yml` files work identically to hand-written YAML with real Kometa
-- [ ] Dual-pane editor shows real-time sync between visual forms and YAML code
-- [ ] Import/export functionality works with existing Kometa configurations
+- [ ] Form pages generate valid YAML, separate YAML editor provides direct editing
+- [ ] Import/export functionality allows moving between form and YAML configurations
 - [ ] All configuration validation prevents invalid YAML generation
 
 #### **Epic 2: Collection Creation - COMPLETE**

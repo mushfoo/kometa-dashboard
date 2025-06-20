@@ -8,25 +8,17 @@ import {
   Library,
   FileCode,
   Download,
-  Layout,
   ChevronRight,
 } from 'lucide-react';
 
 const configSections = [
-  {
-    title: 'Dual-Pane Editor',
-    description: 'Configure Kometa using forms with live YAML preview',
-    href: '/config/dual-pane',
-    icon: Layout,
-    color: 'bg-purple-500',
-    badge: 'New',
-  },
   {
     title: 'Plex Connection',
     description: 'Configure your Plex server connection and library settings',
     href: '/config/plex',
     icon: Server,
     color: 'bg-blue-500',
+    badge: undefined as string | undefined,
   },
   {
     title: 'API Keys',
@@ -34,6 +26,7 @@ const configSections = [
     href: '/config/api-keys',
     icon: Key,
     color: 'bg-green-500',
+    badge: undefined as string | undefined,
   },
   {
     title: 'Library Settings',
@@ -41,6 +34,7 @@ const configSections = [
     href: '/config/libraries',
     icon: Library,
     color: 'bg-orange-500',
+    badge: undefined as string | undefined,
   },
   {
     title: 'YAML Editor',
@@ -48,6 +42,7 @@ const configSections = [
     href: '/config/yaml',
     icon: FileCode,
     color: 'bg-red-500',
+    badge: undefined as string | undefined,
   },
   {
     title: 'Import/Export',
@@ -55,6 +50,7 @@ const configSections = [
     href: '/config/import-export',
     icon: Download,
     color: 'bg-indigo-500',
+    badge: undefined as string | undefined,
   },
 ];
 
