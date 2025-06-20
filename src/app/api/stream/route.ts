@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { SSEBroadcastService } from '@/lib/SSEBroadcastService';
 
 // Query parameters schema for stream configuration
 const StreamQuerySchema = z.object({
@@ -399,25 +400,108 @@ async function sendBufferedData(
   filters: z.infer<typeof StreamQuerySchema>
 ): Promise<void> {
   try {
-    // This would typically fetch from your data services
-    // For now, send a placeholder message
+    const sseBroadcastService = SSEBroadcastService.getInstance();
+
+    switch (filters.type) {
+      case 'logs': {
+        // Get recent log entries from KometaService
+        const recentLogs = sseBroadcastService.getRecentLogs(filters.buffer);
+
+        // Send each log entry as a separate message
+        for (const logEntry of recentLogs) {
+          // Apply filters
+          if (filters.level && logEntry.level !== filters.level) {
+            continue;
+          }
+          if (
+            filters.operationId &&
+            logEntry.operationId !== filters.operationId
+          ) {
+            continue;
+          }
+
+          controller.enqueue(
+            `data: ${JSON.stringify({
+              type: 'logs',
+              payload: {
+                timestamp: logEntry.timestamp.toISOString(),
+                level: logEntry.level,
+                message: logEntry.message,
+                source: logEntry.source,
+              },
+              operationId: logEntry.operationId,
+              level: logEntry.level,
+            })}\n\n`
+          );
+        }
+        break;
+      }
+
+      case 'operations': {
+        // Get current process info
+        const processInfo = sseBroadcastService.getCurrentProcessInfo();
+        if (processInfo) {
+          controller.enqueue(
+            `data: ${JSON.stringify({
+              type: 'operations',
+              payload: {
+                type: 'current_status',
+                operationId: processInfo.operationId,
+                status: processInfo.status,
+                startTime: processInfo.startTime?.toISOString(),
+                endTime: processInfo.endTime?.toISOString(),
+                pid: processInfo.pid,
+                config: processInfo.config,
+                timestamp: new Date().toISOString(),
+              },
+            })}\n\n`
+          );
+        }
+        break;
+      }
+
+      case 'status': {
+        // Send current system status
+        const processInfo = sseBroadcastService.getCurrentProcessInfo();
+        controller.enqueue(
+          `data: ${JSON.stringify({
+            type: 'status',
+            payload: {
+              hasActiveOperation: !!processInfo,
+              operationStatus: processInfo?.status || 'idle',
+              timestamp: new Date().toISOString(),
+            },
+          })}\n\n`
+        );
+        break;
+      }
+    }
+
+    // Send buffer completion message
     controller.enqueue(
       `data: ${JSON.stringify({
         type: 'buffer',
         payload: {
-          message: `Buffered data for ${filters.type} (last ${filters.buffer} items)`,
+          message: `Buffered data sent for ${filters.type} (${filters.buffer} items max)`,
           filters,
           timestamp: new Date().toISOString(),
         },
       })}\n\n`
     );
-
-    // TODO: Implement actual buffered data retrieval based on filters.type
-    // - For logs: get recent log entries from LogService
-    // - For operations: get recent operation status from OperationService
-    // - For status: get current system status
   } catch (error) {
     console.error('Error sending buffered data:', error);
+
+    // Send error message to client
+    controller.enqueue(
+      `data: ${JSON.stringify({
+        type: 'error',
+        payload: {
+          message: 'Failed to retrieve buffered data',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+        },
+      })}\n\n`
+    );
   }
 }
 
