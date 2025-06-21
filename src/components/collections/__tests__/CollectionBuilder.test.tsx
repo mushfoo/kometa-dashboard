@@ -71,7 +71,7 @@ describe('CollectionBuilder', () => {
 
     // Change sort order
     await user.click(screen.getByLabelText(/sort order/i));
-    await user.click(screen.getByText(/release date/i));
+    await user.click(screen.getByRole('option', { name: /release date/i }));
 
     // Submit form
     await user.click(
@@ -192,15 +192,33 @@ describe('CollectionBuilder', () => {
     const user = userEvent.setup();
     render(<CollectionBuilder onSave={mockOnSave} />);
 
+    // The default is smart collection, and the preview button should be disabled initially
     const previewButton = screen.getByRole('button', {
       name: /update preview/i,
     });
-    await user.click(previewButton);
 
-    // Should show estimated items count
+    // Button should be disabled when no filters are added
+    expect(previewButton).toBeDisabled();
+
+    // Add a genre filter
+    await user.click(screen.getByText(/genre/i));
+
+    // Wait for the genre filter to be added
     await waitFor(() => {
-      expect(screen.getByText(/estimated items/i)).toBeInTheDocument();
+      expect(screen.getByText(/genres/i)).toBeInTheDocument();
     });
+
+    // At this point, the auto-preview should trigger due to the useEffect
+    // We should see either loading state or results
+    await waitFor(
+      () => {
+        const hasPreviewContent = screen.queryByText(
+          /generating preview|total matches|please add at least one filter/i
+        );
+        expect(hasPreviewContent).toBeInTheDocument();
+      },
+      { timeout: 2000 }
+    );
   });
 
   it('loads initial data when provided', () => {

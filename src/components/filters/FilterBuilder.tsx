@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, Copy, AlertTriangle } from 'lucide-react';
 import { MultiSelectFilter } from './MultiSelectFilter';
 import { RangeSliderFilter } from './RangeSliderFilter';
 import { SelectFilter } from './SelectFilter';
+import { DateFilter } from './DateFilter';
 import {
   CollectionFilter,
   FilterGroup,
   FilterOperator,
+  RuleOperator,
   FilterPreset,
   GenreFilter,
   YearFilter,
@@ -14,7 +16,14 @@ import {
   AvailabilityFilter,
   ContentTypeFilter,
   ResolutionFilter,
+  DateAddedFilter,
+  DateReleasedFilter,
+  DirectorFilter,
+  ActorFilter,
+  StudioFilter,
   validateFilter,
+  validateFilterGroup,
+  detectLogicalConflicts,
 } from '@/types/filters';
 
 interface FilterBuilderProps {
@@ -72,6 +81,34 @@ const RESOLUTIONS = [
   { value: 'SD', label: 'SD' },
 ];
 
+const DIRECTORS = [
+  { value: 'christopher_nolan', label: 'Christopher Nolan' },
+  { value: 'steven_spielberg', label: 'Steven Spielberg' },
+  { value: 'martin_scorsese', label: 'Martin Scorsese' },
+  { value: 'quentin_tarantino', label: 'Quentin Tarantino' },
+  { value: 'ridley_scott', label: 'Ridley Scott' },
+  { value: 'denis_villeneuve', label: 'Denis Villeneuve' },
+];
+
+const ACTORS = [
+  { value: 'leonardo_dicaprio', label: 'Leonardo DiCaprio' },
+  { value: 'meryl_streep', label: 'Meryl Streep' },
+  { value: 'tom_hanks', label: 'Tom Hanks' },
+  { value: 'denzel_washington', label: 'Denzel Washington' },
+  { value: 'scarlett_johansson', label: 'Scarlett Johansson' },
+  { value: 'robert_downey_jr', label: 'Robert Downey Jr.' },
+];
+
+const STUDIOS = [
+  { value: 'disney', label: 'Disney' },
+  { value: 'warner_bros', label: 'Warner Bros.' },
+  { value: 'universal', label: 'Universal Pictures' },
+  { value: 'paramount', label: 'Paramount Pictures' },
+  { value: 'sony', label: 'Sony Pictures' },
+  { value: 'netflix', label: 'Netflix' },
+  { value: 'amazon_studios', label: 'Amazon Studios' },
+];
+
 export function FilterBuilder({
   filters,
   onChange,
@@ -88,7 +125,11 @@ export function FilterBuilder({
     type: CollectionFilter['field']
   ): CollectionFilter => {
     const id = `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const baseFilter = { id, enabled: true };
+    const baseFilter = {
+      id,
+      enabled: true,
+      ruleOperator: 'include' as RuleOperator,
+    };
 
     switch (type) {
       case 'genre':
@@ -133,6 +174,41 @@ export function FilterBuilder({
           operator: 'equals',
           value: '1080p',
         } as ResolutionFilter;
+      case 'date_added':
+        return {
+          ...baseFilter,
+          field: 'date_added',
+          operator: 'greater_than',
+          value: new Date().toISOString().split('T')[0],
+        } as DateAddedFilter;
+      case 'date_released':
+        return {
+          ...baseFilter,
+          field: 'date_released',
+          operator: 'greater_than',
+          value: new Date().toISOString().split('T')[0],
+        } as DateReleasedFilter;
+      case 'director':
+        return {
+          ...baseFilter,
+          field: 'director',
+          operator: 'contains',
+          value: [],
+        } as DirectorFilter;
+      case 'actor':
+        return {
+          ...baseFilter,
+          field: 'actor',
+          operator: 'contains',
+          value: [],
+        } as ActorFilter;
+      case 'studio':
+        return {
+          ...baseFilter,
+          field: 'studio',
+          operator: 'contains',
+          value: [],
+        } as StudioFilter;
       default:
         throw new Error(`Unknown filter type: ${type}`);
     }
@@ -163,6 +239,53 @@ export function FilterBuilder({
     onChange({ ...filters, operator });
   };
 
+  const updateFilterRuleOperator = (
+    index: number,
+    ruleOperator: RuleOperator
+  ) => {
+    const filter = filters.filters[index] as CollectionFilter;
+    const updatedFilter = { ...filter, ruleOperator };
+    updateFilter(index, updatedFilter);
+  };
+
+  const duplicateFilter = (index: number) => {
+    const filter = filters.filters[index] as CollectionFilter;
+    const newFilter = {
+      ...filter,
+      id: `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    onChange({
+      ...filters,
+      filters: [...filters.filters, newFilter],
+    });
+  };
+
+  const createNestedGroup = (filterIndex?: number) => {
+    const groupId = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newGroup: FilterGroup = {
+      id: groupId,
+      operator: 'AND',
+      filters: [],
+      isNested: true,
+      parentId: filters.id,
+    };
+
+    if (filterIndex !== undefined && filters.filters[filterIndex]) {
+      // Move selected filter into new group
+      const filterToMove = filters.filters[filterIndex];
+      newGroup.filters = [filterToMove];
+      const newFilters = [...filters.filters];
+      newFilters[filterIndex] = newGroup;
+      onChange({ ...filters, filters: newFilters });
+    } else {
+      // Add empty group
+      onChange({
+        ...filters,
+        filters: [...filters.filters, newGroup],
+      });
+    }
+  };
+
   const handleSavePreset = () => {
     if (presetName && onSavePreset) {
       onSavePreset(presetName, presetDescription);
@@ -174,25 +297,69 @@ export function FilterBuilder({
 
   const renderFilter = (filter: CollectionFilter, index: number) => {
     const isValid = validateFilter(filter);
+    const isExclude = filter.ruleOperator === 'exclude';
 
     return (
       <div
         key={filter.id}
-        className={`p-4 bg-zinc-800/50 rounded-lg border ${
-          isValid ? 'border-zinc-700' : 'border-red-500/50'
+        className={`p-4 rounded-lg border ${
+          isValid
+            ? isExclude
+              ? 'bg-red-900/20 border-red-700/50'
+              : 'bg-zinc-800/50 border-zinc-700'
+            : 'border-red-500/50 bg-red-900/20'
         }`}
       >
         <div className="flex items-start justify-between mb-3">
-          <h4 className="text-sm font-medium text-zinc-300 capitalize">
-            {filter.field.replace('_', ' ')} Filter
-          </h4>
-          <button
-            type="button"
-            onClick={() => removeFilter(index)}
-            className="text-zinc-500 hover:text-red-400 transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-medium text-zinc-300 capitalize">
+              {filter.field.replace('_', ' ')} Filter
+            </h4>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => updateFilterRuleOperator(index, 'include')}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  !isExclude
+                    ? 'bg-green-500 text-white'
+                    : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
+                }`}
+                title="Include items matching this filter"
+              >
+                Include
+              </button>
+              <button
+                type="button"
+                onClick={() => updateFilterRuleOperator(index, 'exclude')}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  isExclude
+                    ? 'bg-red-500 text-white'
+                    : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
+                }`}
+                title="Exclude items matching this filter"
+              >
+                Exclude
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => duplicateFilter(index)}
+              className="text-zinc-500 hover:text-blue-400 transition-colors"
+              title="Duplicate filter"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => removeFilter(index)}
+              className="text-zinc-500 hover:text-red-400 transition-colors"
+              title="Remove filter"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {filter.field === 'genre' && (
@@ -279,6 +446,67 @@ export function FilterBuilder({
           />
         )}
 
+        {filter.field === 'date_added' && (
+          <DateFilter
+            label="Date Added"
+            value={(filter as DateAddedFilter).value}
+            onChange={(value) =>
+              updateFilter(index, { ...filter, value } as DateAddedFilter)
+            }
+            operator={(filter as DateAddedFilter).operator as any}
+            onOperatorChange={(operator) =>
+              updateFilter(index, { ...filter, operator } as DateAddedFilter)
+            }
+          />
+        )}
+
+        {filter.field === 'date_released' && (
+          <DateFilter
+            label="Release Date"
+            value={(filter as DateReleasedFilter).value}
+            onChange={(value) =>
+              updateFilter(index, { ...filter, value } as DateReleasedFilter)
+            }
+            operator={(filter as DateReleasedFilter).operator as any}
+            onOperatorChange={(operator) =>
+              updateFilter(index, { ...filter, operator } as DateReleasedFilter)
+            }
+          />
+        )}
+
+        {filter.field === 'director' && (
+          <MultiSelectFilter
+            label="Directors"
+            options={DIRECTORS}
+            value={(filter as DirectorFilter).value}
+            onChange={(value) =>
+              updateFilter(index, { ...filter, value } as DirectorFilter)
+            }
+          />
+        )}
+
+        {filter.field === 'actor' && (
+          <MultiSelectFilter
+            label="Actors"
+            options={ACTORS}
+            value={(filter as ActorFilter).value}
+            onChange={(value) =>
+              updateFilter(index, { ...filter, value } as ActorFilter)
+            }
+          />
+        )}
+
+        {filter.field === 'studio' && (
+          <MultiSelectFilter
+            label="Studios"
+            options={STUDIOS}
+            value={(filter as StudioFilter).value}
+            onChange={(value) =>
+              updateFilter(index, { ...filter, value } as StudioFilter)
+            }
+          />
+        )}
+
         {!isValid && (
           <p className="mt-2 text-sm text-red-400">
             Please complete this filter configuration
@@ -288,8 +516,31 @@ export function FilterBuilder({
     );
   };
 
+  // Check for logical conflicts
+  const conflicts = detectLogicalConflicts(filters);
+  const _isGroupValid = validateFilterGroup(filters);
+
   return (
     <div className={`space-y-4 ${className}`}>
+      {/* Conflict Warnings */}
+      {conflicts.length > 0 && (
+        <div className="p-4 bg-yellow-900/20 border border-yellow-700/50 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 className="text-sm font-medium text-yellow-400 mb-2">
+                Logical Conflicts Detected
+              </h4>
+              <ul className="text-sm text-yellow-300 space-y-1">
+                {conflicts.map((conflict, idx) => (
+                  <li key={idx}>• {conflict}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Filter Operator Selection */}
       {filters.filters.length > 1 && (
         <div className="flex items-center gap-4 p-4 bg-zinc-800/30 rounded-lg">
@@ -318,6 +569,14 @@ export function FilterBuilder({
               OR (any can match)
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => createNestedGroup()}
+            className="px-3 py-1 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors"
+            title="Create nested group"
+          >
+            + Group
+          </button>
         </div>
       )}
 
@@ -329,55 +588,114 @@ export function FilterBuilder({
       </div>
 
       {/* Add Filter Buttons */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => addFilter('genre')}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Genre Filter
-        </button>
-        <button
-          type="button"
-          onClick={() => addFilter('year')}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Year Filter
-        </button>
-        <button
-          type="button"
-          onClick={() => addFilter('rating')}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Rating Filter
-        </button>
-        <button
-          type="button"
-          onClick={() => addFilter('availability')}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Availability Filter
-        </button>
-        <button
-          type="button"
-          onClick={() => addFilter('content_type')}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Content Type Filter
-        </button>
-        <button
-          type="button"
-          onClick={() => addFilter('resolution')}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Resolution Filter
-        </button>
+      <div className="space-y-3">
+        <div className="text-sm font-medium text-zinc-300">Basic Filters</div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => addFilter('genre')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Genre
+          </button>
+          <button
+            type="button"
+            onClick={() => addFilter('year')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Year
+          </button>
+          <button
+            type="button"
+            onClick={() => addFilter('rating')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Rating
+          </button>
+          <button
+            type="button"
+            onClick={() => addFilter('content_type')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Content Type
+          </button>
+        </div>
+
+        <div className="text-sm font-medium text-zinc-300">Date Filters</div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => addFilter('date_added')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Date Added
+          </button>
+          <button
+            type="button"
+            onClick={() => addFilter('date_released')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Release Date
+          </button>
+        </div>
+
+        <div className="text-sm font-medium text-zinc-300">
+          Metadata Filters
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => addFilter('director')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Director
+          </button>
+          <button
+            type="button"
+            onClick={() => addFilter('actor')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Actor
+          </button>
+          <button
+            type="button"
+            onClick={() => addFilter('studio')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Studio
+          </button>
+        </div>
+
+        <div className="text-sm font-medium text-zinc-300">
+          Technical Filters
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => addFilter('availability')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Streaming Platform
+          </button>
+          <button
+            type="button"
+            onClick={() => addFilter('resolution')}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Resolution
+          </button>
+        </div>
       </div>
 
       {/* Preset Management */}

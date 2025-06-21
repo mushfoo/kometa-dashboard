@@ -199,7 +199,7 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `.gitignore` - Updated to exclude E2E test artifacts, reports, and temporary files
 - `src/app/(dashboard)/config/page.tsx` - Updated with navigation cards for configuration options
 - `src/app/(dashboard)/collections/page.tsx` - Updated to include CollectionBuilder component for collection creation
-- `src/components/collections/CollectionBuilder.tsx` - Enhanced with FilterBuilder integration for smart collections
+- `src/components/CollectionBuilder.tsx` - Enhanced with FilterBuilder integration for smart collections
 
 ---
 

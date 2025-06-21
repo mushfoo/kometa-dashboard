@@ -3,6 +3,7 @@
  */
 
 export type FilterOperator = 'AND' | 'OR';
+export type RuleOperator = 'include' | 'exclude';
 export type ComparisonOperator =
   | 'equals'
   | 'contains'
@@ -18,6 +19,7 @@ export interface BaseFilter {
   operator: ComparisonOperator;
   value: unknown;
   enabled: boolean;
+  ruleOperator?: RuleOperator; // New: include/exclude behavior
 }
 
 export interface GenreFilter extends BaseFilter {
@@ -56,18 +58,56 @@ export interface ResolutionFilter extends BaseFilter {
   value: '4K' | '1080p' | '720p' | '480p' | 'SD';
 }
 
+export interface DateAddedFilter extends BaseFilter {
+  field: 'date_added';
+  operator: 'equals' | 'greater_than' | 'less_than' | 'between';
+  value: string | [string, string]; // ISO date strings
+}
+
+export interface DateReleasedFilter extends BaseFilter {
+  field: 'date_released';
+  operator: 'equals' | 'greater_than' | 'less_than' | 'between';
+  value: string | [string, string]; // ISO date strings
+}
+
+export interface DirectorFilter extends BaseFilter {
+  field: 'director';
+  operator: 'equals' | 'contains';
+  value: string[];
+}
+
+export interface ActorFilter extends BaseFilter {
+  field: 'actor';
+  operator: 'equals' | 'contains';
+  value: string[];
+}
+
+export interface StudioFilter extends BaseFilter {
+  field: 'studio';
+  operator: 'equals' | 'contains';
+  value: string[];
+}
+
 export type CollectionFilter =
   | GenreFilter
   | YearFilter
   | RatingFilter
   | AvailabilityFilter
   | ContentTypeFilter
-  | ResolutionFilter;
+  | ResolutionFilter
+  | DateAddedFilter
+  | DateReleasedFilter
+  | DirectorFilter
+  | ActorFilter
+  | StudioFilter;
 
 export interface FilterGroup {
   id: string;
   operator: FilterOperator;
   filters: (CollectionFilter | FilterGroup)[];
+  label?: string; // Human-readable label for the group
+  isNested?: boolean; // Whether this group is nested inside another
+  parentId?: string; // ID of parent group (for nested groups)
 }
 
 export interface FilterPreset {
@@ -159,9 +199,91 @@ export const validateFilter = (filter: CollectionFilter): boolean => {
       return ['4K', '1080p', '720p', '480p', 'SD'].includes(
         filter.value as string
       );
+    case 'date_added':
+    case 'date_released':
+      if (filter.operator === 'between') {
+        return (
+          Array.isArray(filter.value) &&
+          filter.value.length === 2 &&
+          typeof filter.value[0] === 'string' &&
+          typeof filter.value[1] === 'string' &&
+          new Date(filter.value[0]) <= new Date(filter.value[1])
+        );
+      }
+      return (
+        typeof filter.value === 'string' && !isNaN(Date.parse(filter.value))
+      );
+    case 'director':
+    case 'actor':
+    case 'studio':
+      return Array.isArray(filter.value) && filter.value.length > 0;
     default:
       return false;
   }
+};
+
+// Validate entire filter group for logical consistency
+export const validateFilterGroup = (group: FilterGroup): boolean => {
+  if (group.filters.length === 0) return false;
+
+  // Check all filters in group are valid
+  for (const filter of group.filters) {
+    if (isFilterGroup(filter)) {
+      if (!validateFilterGroup(filter)) return false;
+    } else {
+      if (!validateFilter(filter as CollectionFilter)) return false;
+    }
+  }
+
+  // Check for logical conflicts (e.g., include AND exclude same genre)
+  const conflicts = detectLogicalConflicts(group);
+  return conflicts.length === 0;
+};
+
+// Detect logical conflicts in filter groups
+export const detectLogicalConflicts = (group: FilterGroup): string[] => {
+  const conflicts: string[] = [];
+  const includeFilters: CollectionFilter[] = [];
+  const excludeFilters: CollectionFilter[] = [];
+
+  // Separate include/exclude filters
+  for (const filter of group.filters) {
+    if (!isFilterGroup(filter)) {
+      const f = filter as CollectionFilter;
+      if (f.ruleOperator === 'exclude') {
+        excludeFilters.push(f);
+      } else {
+        includeFilters.push(f);
+      }
+    }
+  }
+
+  // Check for same field with conflicting values
+  for (const includeFilter of includeFilters) {
+    for (const excludeFilter of excludeFilters) {
+      if (includeFilter.field === excludeFilter.field) {
+        // Check if there's overlap in values
+        if (hasValueOverlap(includeFilter, excludeFilter)) {
+          conflicts.push(
+            `Conflict: Including and excluding the same ${includeFilter.field} values`
+          );
+        }
+      }
+    }
+  }
+
+  return conflicts;
+};
+
+// Check if two filters have overlapping values
+const hasValueOverlap = (
+  filter1: CollectionFilter,
+  filter2: CollectionFilter
+): boolean => {
+  if (Array.isArray(filter1.value) && Array.isArray(filter2.value)) {
+    return filter1.value.some((v) => (filter2.value as unknown[]).includes(v));
+  }
+  return filter1.value === filter2.value;
 };
 
 // Filter serialization for Kometa config
@@ -169,43 +291,128 @@ export const serializeFilterToKometa = (
   filter: CollectionFilter
 ): Record<string, unknown> => {
   const kometaFilter: Record<string, unknown> = {};
+  const isExclude = filter.ruleOperator === 'exclude';
 
   switch (filter.field) {
     case 'genre':
-      kometaFilter.genre = filter.value;
+      kometaFilter[isExclude ? 'genre.not' : 'genre'] = filter.value;
       break;
     case 'year':
+      const yearField = isExclude ? 'year.not' : 'year';
       if (filter.operator === 'equals') {
-        kometaFilter.year = filter.value;
+        kometaFilter[yearField] = filter.value;
       } else if (filter.operator === 'greater_than') {
-        kometaFilter.year = { gte: filter.value };
+        kometaFilter[yearField] = { gte: filter.value };
       } else if (filter.operator === 'less_than') {
-        kometaFilter.year = { lte: filter.value };
+        kometaFilter[yearField] = { lte: filter.value };
       } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
-        kometaFilter.year = { gte: filter.value[0], lte: filter.value[1] };
+        kometaFilter[yearField] = {
+          gte: filter.value[0],
+          lte: filter.value[1],
+        };
       }
       break;
     case 'rating':
+      const ratingField = isExclude ? 'rating.not' : 'rating';
       if (filter.operator === 'equals') {
-        kometaFilter.rating = filter.value;
+        kometaFilter[ratingField] = filter.value;
       } else if (filter.operator === 'greater_than') {
-        kometaFilter.rating = { gte: filter.value };
+        kometaFilter[ratingField] = { gte: filter.value };
       } else if (filter.operator === 'less_than') {
-        kometaFilter.rating = { lte: filter.value };
+        kometaFilter[ratingField] = { lte: filter.value };
       } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
-        kometaFilter.rating = { gte: filter.value[0], lte: filter.value[1] };
+        kometaFilter[ratingField] = {
+          gte: filter.value[0],
+          lte: filter.value[1],
+        };
       }
       break;
     case 'availability':
-      kometaFilter.streaming = filter.value;
+      kometaFilter[isExclude ? 'streaming.not' : 'streaming'] = filter.value;
       break;
     case 'content_type':
-      kometaFilter.type = filter.value;
+      kometaFilter[isExclude ? 'type.not' : 'type'] = filter.value;
       break;
     case 'resolution':
-      kometaFilter.resolution = filter.value;
+      kometaFilter[isExclude ? 'resolution.not' : 'resolution'] = filter.value;
+      break;
+    case 'date_added':
+      const dateAddedField = isExclude ? 'date_added.not' : 'date_added';
+      if (filter.operator === 'equals') {
+        kometaFilter[dateAddedField] = filter.value;
+      } else if (filter.operator === 'greater_than') {
+        kometaFilter[dateAddedField] = { gte: filter.value };
+      } else if (filter.operator === 'less_than') {
+        kometaFilter[dateAddedField] = { lte: filter.value };
+      } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
+        kometaFilter[dateAddedField] = {
+          gte: filter.value[0],
+          lte: filter.value[1],
+        };
+      }
+      break;
+    case 'date_released':
+      const dateReleasedField = isExclude ? 'release_date.not' : 'release_date';
+      if (filter.operator === 'equals') {
+        kometaFilter[dateReleasedField] = filter.value;
+      } else if (filter.operator === 'greater_than') {
+        kometaFilter[dateReleasedField] = { gte: filter.value };
+      } else if (filter.operator === 'less_than') {
+        kometaFilter[dateReleasedField] = { lte: filter.value };
+      } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
+        kometaFilter[dateReleasedField] = {
+          gte: filter.value[0],
+          lte: filter.value[1],
+        };
+      }
+      break;
+    case 'director':
+      kometaFilter[isExclude ? 'director.not' : 'director'] = filter.value;
+      break;
+    case 'actor':
+      kometaFilter[isExclude ? 'actor.not' : 'actor'] = filter.value;
+      break;
+    case 'studio':
+      kometaFilter[isExclude ? 'studio.not' : 'studio'] = filter.value;
       break;
   }
 
   return kometaFilter;
+};
+
+// Serialize entire filter group to Kometa format
+export const serializeFilterGroupToKometa = (
+  group: FilterGroup
+): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
+
+  if (group.filters.length === 0) return result;
+
+  if (group.filters.length === 1) {
+    const filter = group.filters[0];
+    if (filter && isFilterGroup(filter)) {
+      return serializeFilterGroupToKometa(filter);
+    } else if (filter) {
+      return serializeFilterToKometa(filter as CollectionFilter);
+    }
+    return {};
+  }
+
+  // Multiple filters - need to group them
+  const serializedFilters = group.filters.map((filter) => {
+    if (isFilterGroup(filter)) {
+      return serializeFilterGroupToKometa(filter);
+    } else {
+      return serializeFilterToKometa(filter as CollectionFilter);
+    }
+  });
+
+  // Use all/any based on operator
+  if (group.operator === 'AND') {
+    result.all = serializedFilters;
+  } else {
+    result.any = serializedFilters;
+  }
+
+  return result;
 };
