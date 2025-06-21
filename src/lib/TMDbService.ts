@@ -16,7 +16,7 @@ export interface TMDbMovie {
   vote_count: number;
   popularity: number;
   adult: boolean;
-  video: boolean;
+  video?: boolean;
   original_language: string;
 }
 
@@ -257,7 +257,7 @@ export class TMDbService {
   ): Promise<TMDbSearchResults<TMDbMovie>> {
     return this.makeRequest<TMDbSearchResults<TMDbMovie>>(
       '/discover/movie',
-      options
+      options as Record<string, string | number>
     );
   }
 
@@ -269,7 +269,7 @@ export class TMDbService {
   ): Promise<TMDbSearchResults<TMDbTVShow>> {
     return this.makeRequest<TMDbSearchResults<TMDbTVShow>>(
       '/discover/tv',
-      options
+      options as Record<string, string | number>
     );
   }
 
@@ -388,14 +388,15 @@ export class TMDbService {
         `${this.baseUrl}/configuration?api_key=${this.apiKey}`
       );
 
+      const rateLimitRemaining = response.headers.get('X-RateLimit-Remaining');
+      const rateLimitReset = response.headers.get('X-RateLimit-Reset');
+
       return {
         valid: response.ok,
-        rateLimitRemaining: response.headers.get('X-RateLimit-Remaining')
-          ? parseInt(response.headers.get('X-RateLimit-Remaining')!)
-          : undefined,
-        rateLimitReset: response.headers.get('X-RateLimit-Reset')
-          ? parseInt(response.headers.get('X-RateLimit-Reset')!)
-          : undefined,
+        ...(rateLimitRemaining && {
+          rateLimitRemaining: parseInt(rateLimitRemaining),
+        }),
+        ...(rateLimitReset && { rateLimitReset: parseInt(rateLimitReset) }),
       };
     } catch (error) {
       return { valid: false };

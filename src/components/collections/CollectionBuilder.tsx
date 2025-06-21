@@ -96,7 +96,7 @@ export function CollectionBuilder({
     onSave?.(collectionData);
   };
 
-  const handlePreview = useCallback(async () => {
+  const handlePreview = useCallback(async (): Promise<void> => {
     if (activeFilters.filters.length === 0) {
       setPreviewError('Please add at least one filter to generate a preview');
       return;

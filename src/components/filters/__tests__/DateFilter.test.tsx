@@ -141,7 +141,7 @@ describe('DateFilter', () => {
     render(<DateFilter {...defaultProps} operator="between" value="" />);
 
     const inputs = screen.getAllByDisplayValue('');
-    const fromInput = inputs[0];
+    const fromInput = inputs[0]!;
 
     await user.type(fromInput, '2023-01-01');
 

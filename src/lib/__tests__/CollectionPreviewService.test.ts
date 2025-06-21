@@ -27,7 +27,7 @@ describe('CollectionPreviewService', () => {
   describe('generatePreview', () => {
     it('generates preview with empty filters', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [],
       };
 
@@ -47,7 +47,7 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by genre', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -71,7 +71,7 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by year', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -90,7 +90,7 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by rating range', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -111,11 +111,11 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by content type', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
-            field: 'type',
+            field: 'content_type',
             operator: 'equals',
             value: 'movie',
             enabled: true,
@@ -134,11 +134,18 @@ describe('CollectionPreviewService', () => {
           {
             id: 12345,
             title: 'External Movie',
+            original_title: 'External Movie',
             release_date: '2023-01-01',
             genre_ids: [28],
             vote_average: 7.5,
+            vote_count: 100,
+            popularity: 50.0,
             poster_path: '/poster.jpg',
+            backdrop_path: '/backdrop.jpg',
             overview: 'External movie description',
+            adult: false,
+            video: false,
+            original_language: 'en',
           },
         ],
         total_results: 1,
@@ -147,7 +154,7 @@ describe('CollectionPreviewService', () => {
       });
 
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -170,7 +177,7 @@ describe('CollectionPreviewService', () => {
 
     it('limits results based on max_items option', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [],
       };
 
@@ -187,11 +194,18 @@ describe('CollectionPreviewService', () => {
           {
             id: 12345,
             title: 'Low Confidence Movie',
+            original_title: 'Low Confidence Movie',
             release_date: '2023-01-01',
             genre_ids: [28],
             vote_average: 5.0,
+            vote_count: 50,
+            popularity: 10.0,
             poster_path: '/poster.jpg',
+            backdrop_path: '/backdrop.jpg',
             overview: 'Low rated movie',
+            adult: false,
+            video: false,
+            original_language: 'en',
           },
         ],
         total_results: 1,
@@ -200,7 +214,7 @@ describe('CollectionPreviewService', () => {
       });
 
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -225,7 +239,7 @@ describe('CollectionPreviewService', () => {
 
     it('sorts results by different criteria', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [],
       };
 
@@ -235,15 +249,15 @@ describe('CollectionPreviewService', () => {
       });
 
       for (let i = 1; i < result.items.length; i++) {
-        const prevRating = result.items[i - 1].rating || 0;
-        const currentRating = result.items[i].rating || 0;
+        const prevRating = result.items[i - 1]?.rating || 0;
+        const currentRating = result.items[i]?.rating || 0;
         expect(prevRating).toBeGreaterThanOrEqual(currentRating);
       }
     });
 
     it('calculates confidence score correctly', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -263,7 +277,7 @@ describe('CollectionPreviewService', () => {
 
     it('handles complex filter combinations', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -303,7 +317,7 @@ describe('CollectionPreviewService', () => {
 
     it('handles disabled filters correctly', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -336,7 +350,7 @@ describe('CollectionPreviewService', () => {
       );
 
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -363,7 +377,7 @@ describe('CollectionPreviewService', () => {
       );
 
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [
           {
             id: '1',
@@ -387,7 +401,7 @@ describe('CollectionPreviewService', () => {
   describe('caching', () => {
     it('uses cached library data within expiry time', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [],
       };
 
@@ -404,7 +418,7 @@ describe('CollectionPreviewService', () => {
   describe('preview item structure', () => {
     it('returns correctly structured preview items', async () => {
       const filters: FilterGroup = {
-        operator: 'and',
+        operator: 'AND',
         filters: [],
       };
 

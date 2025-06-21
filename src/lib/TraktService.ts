@@ -159,11 +159,11 @@ export class TraktService {
       throw new Error('Trakt access token required for this operation');
     }
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'trakt-api-version': '2',
       'trakt-api-key': this.credentials.client_id,
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (this.credentials.access_token && requireAuth) {
@@ -194,7 +194,7 @@ export class TraktService {
 
     // Handle empty responses
     const text = await response.text();
-    return text ? JSON.parse(text) : {};
+    return text ? JSON.parse(text) : ({} as T);
   }
 
   /**
@@ -397,12 +397,14 @@ export class TraktService {
         },
       });
 
+      const rateLimitRemaining = response.headers.get('X-Ratelimit-Remaining');
+
       return {
         valid: response.ok,
         authenticated: !!this.credentials?.access_token,
-        rateLimitRemaining: response.headers.get('X-Ratelimit-Remaining')
-          ? parseInt(response.headers.get('X-Ratelimit-Remaining')!)
-          : undefined,
+        ...(rateLimitRemaining && {
+          rateLimitRemaining: parseInt(rateLimitRemaining),
+        }),
       };
     } catch (error) {
       return {

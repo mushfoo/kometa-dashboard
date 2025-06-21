@@ -179,23 +179,26 @@ export class CollectionPreviewService {
 
     return items
       .filter((item) => this.itemMatchesFilters(item, kometaFilters))
-      .map((item) => ({
-        id: item.id,
-        title: item.title,
-        year: item.year,
-        type: item.type,
-        rating: item.rating,
-        genres: item.genres,
-        match_confidence: 95, // High confidence for library matches
-        source: 'plex' as const,
-        external_ids: {
-          tmdb: item.tmdb_id,
-          imdb: item.imdb_id,
-        },
-        in_library: true,
-        file_path: item.file_path,
-        plex_id: item.id,
-      }));
+      .map(
+        (item) =>
+          ({
+            id: item.id,
+            title: item.title,
+            year: item.year,
+            type: item.type,
+            rating: item.rating,
+            genres: item.genres,
+            match_confidence: 95, // High confidence for library matches
+            source: 'plex' as const,
+            external_ids: {
+              tmdb: item.tmdb_id,
+              imdb: item.imdb_id,
+            },
+            in_library: true,
+            file_path: item.file_path,
+            plex_id: item.id,
+          }) as PreviewItem
+      );
   }
 
   /**
@@ -286,23 +289,26 @@ export class CollectionPreviewService {
           });
 
           externalItems.push(
-            ...tmdbMovies.results.slice(0, 10).map((movie) => ({
-              id: `tmdb-movie-${movie.id}`,
-              title: movie.title,
-              year: movie.release_date
-                ? new Date(movie.release_date).getFullYear()
-                : undefined,
-              type: 'movie' as const,
-              poster_url: movie.poster_path || undefined,
-              rating: movie.vote_average,
-              overview: movie.overview,
-              match_confidence: 75, // Medium confidence for external matches
-              source: 'tmdb' as const,
-              external_ids: {
-                tmdb: movie.id,
-              },
-              in_library: false,
-            }))
+            ...tmdbMovies.results.slice(0, 10).map(
+              (movie) =>
+                ({
+                  id: `tmdb-movie-${movie.id}`,
+                  title: movie.title,
+                  year: movie.release_date
+                    ? new Date(movie.release_date).getFullYear()
+                    : undefined,
+                  type: 'movie' as const,
+                  poster_url: movie.poster_path || undefined,
+                  rating: movie.vote_average,
+                  overview: movie.overview,
+                  match_confidence: 75, // Medium confidence for external matches
+                  source: 'tmdb' as const,
+                  external_ids: {
+                    tmdb: movie.id,
+                  },
+                  in_library: false,
+                }) as PreviewItem
+            )
           );
         } catch (error) {
           console.warn('TMDb API error:', error);
@@ -472,7 +478,7 @@ export class CollectionPreviewService {
         if (
           existingIndex >= 0 &&
           item.in_library &&
-          !unique[existingIndex].in_library
+          !unique[existingIndex]?.in_library
         ) {
           unique[existingIndex] = item;
         }
