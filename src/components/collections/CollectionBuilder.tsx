@@ -133,6 +133,7 @@ export function CollectionBuilder({
       return () => clearTimeout(timer);
     } else {
       setPreviewResult(null);
+      return undefined;
     }
   }, [activeFilters, watchType, handlePreview]);
 

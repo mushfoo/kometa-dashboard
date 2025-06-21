@@ -27,6 +27,7 @@ describe('CollectionPreviewService', () => {
   describe('generatePreview', () => {
     it('generates preview with empty filters', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-1',
         operator: 'AND',
         filters: [],
       };
@@ -47,6 +48,7 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by genre', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-2',
         operator: 'AND',
         filters: [
           {
@@ -71,6 +73,7 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by year', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-3',
         operator: 'AND',
         filters: [
           {
@@ -90,6 +93,7 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by rating range', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-4',
         operator: 'AND',
         filters: [
           {
@@ -111,6 +115,7 @@ describe('CollectionPreviewService', () => {
 
     it('filters library items by content type', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-5',
         operator: 'AND',
         filters: [
           {
@@ -154,6 +159,7 @@ describe('CollectionPreviewService', () => {
       });
 
       const filters: FilterGroup = {
+        id: 'test-filter-group-6',
         operator: 'AND',
         filters: [
           {
@@ -177,6 +183,7 @@ describe('CollectionPreviewService', () => {
 
     it('limits results based on max_items option', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-7',
         operator: 'AND',
         filters: [],
       };
@@ -214,6 +221,7 @@ describe('CollectionPreviewService', () => {
       });
 
       const filters: FilterGroup = {
+        id: 'test-filter-group-8',
         operator: 'AND',
         filters: [
           {
@@ -239,6 +247,7 @@ describe('CollectionPreviewService', () => {
 
     it('sorts results by different criteria', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-9',
         operator: 'AND',
         filters: [],
       };
@@ -257,6 +266,7 @@ describe('CollectionPreviewService', () => {
 
     it('calculates confidence score correctly', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-10',
         operator: 'AND',
         filters: [
           {
@@ -277,6 +287,7 @@ describe('CollectionPreviewService', () => {
 
     it('handles complex filter combinations', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-11',
         operator: 'AND',
         filters: [
           {
@@ -317,6 +328,7 @@ describe('CollectionPreviewService', () => {
 
     it('handles disabled filters correctly', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-12',
         operator: 'AND',
         filters: [
           {
@@ -350,6 +362,7 @@ describe('CollectionPreviewService', () => {
       );
 
       const filters: FilterGroup = {
+        id: 'test-filter-group-13',
         operator: 'AND',
         filters: [
           {
@@ -377,6 +390,7 @@ describe('CollectionPreviewService', () => {
       );
 
       const filters: FilterGroup = {
+        id: 'test-filter-group-14',
         operator: 'AND',
         filters: [
           {
@@ -401,6 +415,7 @@ describe('CollectionPreviewService', () => {
   describe('caching', () => {
     it('uses cached library data within expiry time', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-15',
         operator: 'AND',
         filters: [],
       };
@@ -418,6 +433,7 @@ describe('CollectionPreviewService', () => {
   describe('preview item structure', () => {
     it('returns correctly structured preview items', async () => {
       const filters: FilterGroup = {
+        id: 'test-filter-group-16',
         operator: 'AND',
         filters: [],
       };
