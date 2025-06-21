@@ -37,7 +37,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body = await request.json();
-    const startRequest = StartOperationRequest.parse(body);
+
+    // Validate request body
+    const parseResult = StartOperationRequest.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Invalid request format',
+          details: parseResult.error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    const startRequest = parseResult.data;
 
     // Check if another operation is already running
     if (kometaService.isRunning()) {
