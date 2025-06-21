@@ -16,6 +16,9 @@ import { FormInput } from '@/components/forms/FormInput';
 import { FormTextarea } from '@/components/forms/FormTextarea';
 import { FormSelect } from '@/components/forms/FormSelect';
 import { Info } from 'lucide-react';
+import { FilterBuilder } from '@/components/filters';
+import { useFilterStore } from '@/stores/filterStore';
+import { serializeFilterToKometa } from '@/types/filters';
 
 // Collection schema based on Kometa's collection structure
 const collectionSchema = z.object({
@@ -51,6 +54,8 @@ export function CollectionBuilder({
   initialData,
 }: CollectionBuilderProps) {
   const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const { activeFilters, setActiveFilters, presets, savePreset, loadPreset } =
+    useFilterStore();
 
   const form = useForm<CollectionFormData>({
     resolver: zodResolver(collectionSchema),
@@ -71,7 +76,19 @@ export function CollectionBuilder({
   const watchType = form.watch('type');
 
   const handleSubmit = (data: CollectionFormData) => {
-    onSave?.(data);
+    // If it's a smart collection, include the filters
+    const collectionData = { ...data };
+    if (data.type === 'smart' && activeFilters.filters.length > 0) {
+      // Serialize filters for Kometa format
+      const kometaFilters = activeFilters.filters
+        .filter((f) => 'field' in f) // Only process CollectionFilter types, not FilterGroups
+        .map((f) => serializeFilterToKometa(f as any));
+
+      // Add filters to collection data (this would be properly structured for Kometa)
+      (collectionData as any).filters = kometaFilters;
+      (collectionData as any).filter_operator = activeFilters.operator;
+    }
+    onSave?.(collectionData);
   };
 
   const handlePreview = () => {
@@ -138,7 +155,7 @@ export function CollectionBuilder({
                     <TabsTrigger value="smart">Smart Collection</TabsTrigger>
                     <TabsTrigger value="manual">Manual Collection</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="smart" className="mt-4">
+                  <TabsContent value="smart" className="mt-4 space-y-4">
                     <Alert>
                       <Info className="h-4 w-4" />
                       <AlertDescription>
@@ -147,6 +164,21 @@ export function CollectionBuilder({
                         automatically as your library changes.
                       </AlertDescription>
                     </Alert>
+
+                    <div className="mt-6">
+                      <h4 className="text-md font-semibold mb-4">
+                        Collection Filters
+                      </h4>
+                      <FilterBuilder
+                        filters={activeFilters}
+                        onChange={setActiveFilters}
+                        presets={presets}
+                        onSavePreset={(name, description) =>
+                          savePreset(name, description)
+                        }
+                        onLoadPreset={(preset) => loadPreset(preset.id)}
+                      />
+                    </div>
                   </TabsContent>
                   <TabsContent value="manual" className="mt-4">
                     <Alert>
@@ -292,6 +324,25 @@ export function CollectionBuilder({
                     .replace(/\b\w/g, (l) => l.toUpperCase())}
                 </span>
               </div>
+
+              {form.watch('type') === 'smart' &&
+                activeFilters.filters.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      Active Filters ({activeFilters.filters.length}):
+                    </div>
+                    <div className="text-xs space-y-1">
+                      {activeFilters.filters.map((filter: any, idx: number) => (
+                        <div key={idx} className="text-gray-500">
+                          • {filter.field}:{' '}
+                          {Array.isArray(filter.value)
+                            ? filter.value.join(', ')
+                            : filter.value}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
 
             {previewCount !== null && (
