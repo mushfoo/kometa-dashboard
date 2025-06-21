@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DateFilter } from '../DateFilter';
 import { ComparisonOperator } from '@/types/filters';
@@ -59,7 +59,6 @@ describe('DateFilter', () => {
   });
 
   it('handles range date changes', async () => {
-    const user = userEvent.setup();
     render(
       <DateFilter
         {...defaultProps}
@@ -74,14 +73,13 @@ describe('DateFilter', () => {
     expect(fromInput).toHaveValue('2023-01-01');
     expect(toInput).toHaveValue('2023-12-31');
 
-    await user.clear(fromInput);
-    await user.type(fromInput, '2023-06-01');
+    // Test the onChange functionality by directly triggering change
+    fireEvent.change(fromInput, { target: { value: '2023-06-01' } });
 
     expect(mockOnChange).toHaveBeenCalledWith(['2023-06-01', '2023-12-31']);
   });
 
   it('handles range date changes for "to" input', async () => {
-    const user = userEvent.setup();
     render(
       <DateFilter
         {...defaultProps}
@@ -92,21 +90,18 @@ describe('DateFilter', () => {
 
     const toInput = screen.getByDisplayValue('2023-12-31');
 
-    await user.clear(toInput);
-    await user.type(toInput, '2023-06-30');
+    fireEvent.change(toInput, { target: { value: '2023-06-30' } });
 
     expect(mockOnChange).toHaveBeenCalledWith(['2023-01-01', '2023-06-30']);
   });
 
   it('handles array value with single date operator', async () => {
-    const user = userEvent.setup();
     render(<DateFilter {...defaultProps} value={['2023-01-01', '']} />);
 
     const input = screen.getByDisplayValue('2023-01-01');
     expect(input).toHaveValue('2023-01-01');
 
-    await user.clear(input);
-    await user.type(input, '2023-12-25');
+    fireEvent.change(input, { target: { value: '2023-12-25' } });
 
     expect(mockOnChange).toHaveBeenCalledWith('2023-12-25');
   });

@@ -59,7 +59,7 @@ describe('FilterBuilder', () => {
     render(<FilterBuilder {...defaultProps} onChange={onChange} />);
 
     // Add year filter
-    await user.click(screen.getByText('Add Year Filter'));
+    await user.click(screen.getByText('Year'));
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
         filters: [
@@ -74,7 +74,7 @@ describe('FilterBuilder', () => {
 
     // Add rating filter
     onChange.mockClear();
-    await user.click(screen.getByText('Add Rating Filter'));
+    await user.click(screen.getByText('Rating'));
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
         filters: [
@@ -180,13 +180,10 @@ describe('FilterBuilder', () => {
     );
 
     // Find and click the trash icon
-    const deleteButton = screen.getByRole('button', { name: '' });
-    const trashButton = Array.from(
-      deleteButton.parentElement?.querySelectorAll('button') || []
-    ).find((btn) => btn.querySelector('svg[class*="lucide-trash"]'));
+    const deleteButton = screen.getByRole('button', { name: 'Remove filter' });
 
-    if (trashButton) {
-      await user.click(trashButton);
+    if (deleteButton) {
+      await user.click(deleteButton);
       expect(onChange).toHaveBeenCalledWith({
         ...filterWithOne,
         filters: [],
