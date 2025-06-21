@@ -167,6 +167,19 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `tests/e2e/specs/yaml-editor.spec.ts` - YAML editor E2E tests including Monaco editor integration
 - `tests/e2e/specs/import-export.spec.ts` - Configuration import/export E2E tests with validation and diff views
 - `.github/workflows/e2e.yml` - GitHub Actions workflow for E2E testing with artifact management and cleanup
+- `src/components/CollectionBuilder.tsx` - Collection builder interface with form fields, type selection, and preview panel
+- `src/components/__tests__/CollectionBuilder.test.tsx` - Comprehensive tests for CollectionBuilder component
+- `src/types/filters.ts` - Comprehensive filter system types, validation, and serialization utilities
+- `src/components/filters/MultiSelectFilter.tsx` - Multi-select dropdown component with search and tagging
+- `src/components/filters/RangeSliderFilter.tsx` - Range slider component with operator selection (equals, greater than, less than, between)
+- `src/components/filters/SelectFilter.tsx` - Single-select dropdown component for simple selections
+- `src/components/filters/FilterBuilder.tsx` - Main filter builder component combining all filter types with preset management
+- `src/components/filters/index.ts` - Filter components barrel export
+- `src/stores/filterStore.ts` - Zustand store for filter state management with persistence
+- `src/components/filters/__tests__/MultiSelectFilter.test.tsx` - Comprehensive tests for MultiSelectFilter component
+- `src/components/filters/__tests__/RangeSliderFilter.test.tsx` - Comprehensive tests for RangeSliderFilter component
+- `src/components/filters/__tests__/FilterBuilder.test.tsx` - Comprehensive tests for FilterBuilder component
+- `src/types/__tests__/filters.test.ts` - Comprehensive tests for filter types, validation, and serialization
 
 ### Modified Files
 
@@ -185,6 +198,8 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 - `package.json` - Added React Query, Zustand, Lucide React, react-hook-form, @hookform/resolvers, and Playwright dependencies; added E2E testing scripts
 - `.gitignore` - Updated to exclude E2E test artifacts, reports, and temporary files
 - `src/app/(dashboard)/config/page.tsx` - Updated with navigation cards for configuration options
+- `src/app/(dashboard)/collections/page.tsx` - Updated to include CollectionBuilder component for collection creation
+- `src/components/collections/CollectionBuilder.tsx` - Enhanced with FilterBuilder integration for smart collections
 
 ---
 
@@ -800,21 +815,21 @@ Each task includes specific deliverables, acceptance criteria, and test requirem
 
 **Deliverable:** Visual collection creation form
 
-- [ ] Create `CollectionBuilder.tsx` with name, description, and poster fields
-- [ ] Add collection type selection (smart/manual) with appropriate form sections
-- [ ] Implement basic metadata fields (sort order, visibility, collection mode)
-- [ ] Create collection preview panel showing estimated item count
-- [ ] **Test:** Form validates required fields, preview updates with changes
+- [x] Create `CollectionBuilder.tsx` with name, description, and poster fields
+- [x] Add collection type selection (smart/manual) with appropriate form sections
+- [x] Implement basic metadata fields (sort order, visibility, collection mode)
+- [x] Create collection preview panel showing estimated item count
+- [x] **Test:** Form validates required fields, preview updates with changes
 
 #### Task 18.2: Filter System Architecture
 
 **Deliverable:** Content filtering framework
 
-- [ ] Create filter schema supporting genre, year, rating, availability filters
-- [ ] Build filter UI components (multi-select, range sliders, checkboxes)
-- [ ] Implement filter combination logic (AND/OR operations between filters)
-- [ ] Add filter persistence and preset saving functionality
-- [ ] **Test:** Filters combine correctly, presets save and load properly
+- [x] Create filter schema supporting genre, year, rating, availability filters
+- [x] Build filter UI components (multi-select, range sliders, checkboxes)
+- [x] Implement filter combination logic (AND/OR operations between filters)
+- [x] Add filter persistence and preset saving functionality
+- [x] **Test:** Filters combine correctly, presets save and load properly
 
 #### Task 18.3: Smart Collection Logic
 
