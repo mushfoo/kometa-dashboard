@@ -32,10 +32,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       total: history.operations.length,
       filtered: filteredOperations.length,
       pagination: {
-        limit: queryParams.limit,
-        offset: queryParams.offset,
+        limit: queryParams.limit ?? 50,
+        offset: queryParams.offset ?? 0,
         hasMore:
-          queryParams.offset + queryParams.limit < history.operations.length,
+          (queryParams.offset ?? 0) + (queryParams.limit ?? 50) <
+          history.operations.length,
       },
       lastUpdated: history.lastUpdated,
     };

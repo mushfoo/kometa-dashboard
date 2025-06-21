@@ -8,12 +8,32 @@ export async function GET() {
     const configService = new ConfigService();
     const config = await configService.getConfig();
 
-    if (!config || !config.libraries || config.libraries.length === 0) {
+    if (!config || !config.libraries) {
+      return NextResponse.json([]);
+    }
+
+    // Handle both object and array formats for libraries
+    let librariesArray: any[] = [];
+
+    if (Array.isArray(config.libraries)) {
+      librariesArray = config.libraries;
+    } else if (typeof config.libraries === 'object') {
+      // Convert object format (key-value) to array format
+      librariesArray = Object.entries(config.libraries).map(
+        ([name, libConfig]: [string, any]) => ({
+          library_name: name,
+          library_type: libConfig.library_type || 'movie',
+          ...libConfig,
+        })
+      );
+    }
+
+    if (librariesArray.length === 0) {
       return NextResponse.json([]);
     }
 
     // Transform config libraries to form format
-    const libraries = config.libraries.map((lib: any) => ({
+    const libraries = librariesArray.map((lib: any) => ({
       library_name: lib.library_name,
       type: lib.library_type || 'movie',
       operations: {
@@ -55,36 +75,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update library configurations
-    config.libraries = validatedData.libraries.map((lib) => ({
-      library_name: lib.library_name,
-      library_type: lib.type,
-      operations: {
-        assets_for_all: lib.operations.assets_for_all,
-        delete_collections: lib.operations.delete_collections,
-        mass_critic_rating_update: lib.operations.mass_critic_rating_update,
-        split_duplicates: lib.operations.split_duplicates,
-      },
-      scan_interval: lib.scan_interval || validatedData.settings.scan_interval,
-      scanner_threads:
-        lib.scanner_threads || validatedData.settings.scanner_threads,
-      collection_refresh_interval:
-        lib.collection_refresh_interval ||
-        validatedData.settings.collection_refresh_interval,
-      delete_unmanaged_collections:
-        lib.delete_unmanaged_collections !== undefined
-          ? lib.delete_unmanaged_collections
-          : validatedData.settings.delete_unmanaged_collections,
-      delete_unmanaged_assets:
-        lib.delete_unmanaged_assets !== undefined
-          ? lib.delete_unmanaged_assets
-          : validatedData.settings.delete_unmanaged_assets,
-      // Preserve existing collections if they exist
-      collections:
-        config.libraries?.find(
-          (existing: any) => existing.library_name === lib.library_name
-        )?.collections || [],
-    }));
+    // Store existing libraries before updating
+    const existingLibraries = config.libraries || {};
+
+    // Update library configurations - maintain object format for Kometa
+    config.libraries = {};
+
+    for (const lib of validatedData.libraries) {
+      // Find existing collections for this library
+      let existingCollections: any[] = [];
+      if (existingLibraries && typeof existingLibraries === 'object') {
+        existingCollections =
+          (existingLibraries as any)[lib.library_name]?.collections || [];
+      }
+
+      config.libraries[lib.library_name] = {
+        library_type: lib.type,
+        operations: {
+          assets_for_all: lib.operations.assets_for_all,
+          delete_collections: lib.operations.delete_collections,
+          mass_critic_rating_update: lib.operations.mass_critic_rating_update,
+          split_duplicates: lib.operations.split_duplicates,
+        },
+        scan_interval:
+          lib.scan_interval || validatedData.settings.scan_interval,
+        scanner_threads:
+          lib.scanner_threads || validatedData.settings.scanner_threads,
+        collection_refresh_interval:
+          lib.collection_refresh_interval ||
+          validatedData.settings.collection_refresh_interval,
+        delete_unmanaged_collections:
+          lib.delete_unmanaged_collections !== undefined
+            ? lib.delete_unmanaged_collections
+            : validatedData.settings.delete_unmanaged_collections,
+        delete_unmanaged_assets:
+          lib.delete_unmanaged_assets !== undefined
+            ? lib.delete_unmanaged_assets
+            : validatedData.settings.delete_unmanaged_assets,
+        // Preserve existing collections if they exist
+        collections: existingCollections,
+      };
+    }
 
     // Update global settings
     config.settings = {

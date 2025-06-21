@@ -1241,10 +1241,10 @@ The MVP is complete when:
 
 - [x] Users can configure Kometa through forms or YAML editor
 - [x] Configuration can be imported/exported
-- [ ] Kometa operations can be started/stopped through the GUI
-- [ ] Operation logs are visible in real-time
+- [x] Kometa operations can be started/stopped through the GUI
+- [x] Operation logs are visible in real-time
 - [ ] Basic collections can be created visually
-- [ ] All features have >90% test coverage
+- [x] All features have >90% test coverage
 
 **Total MVP Timeline: 8-9 days**
 

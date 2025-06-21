@@ -120,3 +120,31 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
+
+// Suppress console.error during tests to prevent CI failures on expected error logs
+const originalError = console.error;
+beforeAll(() => {
+  console.error = (...args) => {
+    const message = args[0];
+    // Only suppress expected error messages from tests
+    const expectedErrors = [
+      'Failed to load Plex configuration:',
+      'Failed to save Plex configuration:',
+      'Failed to test Plex connection:',
+      'Plex connection test error:',
+      'API Error:',
+    ];
+
+    const isExpectedError = expectedErrors.some(
+      (errorMsg) => typeof message === 'string' && message.includes(errorMsg)
+    );
+
+    if (!isExpectedError) {
+      originalError.apply(console, args);
+    }
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
+});

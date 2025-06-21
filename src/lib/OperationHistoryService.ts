@@ -46,14 +46,16 @@ type OperationHistory = z.infer<typeof OperationHistory>;
 const OperationQueryParams = z.object({
   status: z
     .enum(['queued', 'running', 'completed', 'failed', 'cancelled'])
+    .nullable()
     .optional(),
   type: z
     .enum(['full_run', 'collections_only', 'library_only', 'config_reload'])
+    .nullable()
     .optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  limit: z.coerce.number().min(1).max(100).default(50),
-  offset: z.coerce.number().min(0).default(0),
+  startDate: z.string().datetime().nullable().optional(),
+  endDate: z.string().datetime().nullable().optional(),
+  limit: z.coerce.number().min(1).max(100).nullable().default(50),
+  offset: z.coerce.number().min(0).nullable().default(0),
 });
 
 class OperationHistoryService {
@@ -156,8 +158,8 @@ class OperationHistoryService {
     }
 
     // Apply pagination
-    const start = filters.offset;
-    const end = start + filters.limit;
+    const start = filters.offset ?? 0;
+    const end = start + (filters.limit ?? 50);
 
     return filtered.slice(start, end);
   }

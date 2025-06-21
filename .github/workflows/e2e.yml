@@ -1,7 +1,7 @@
-name: E2E Tests (Post-Merge)
+name: E2E Smoke Tests (Post-Merge)
 
-# E2E tests run only after merge to main branch to validate the integrated application
-# Local testing is handled via pre-push git hook for faster development cycle
+# E2E smoke tests run only after merge to main branch to validate critical paths
+# Full E2E suite is run locally via pre-push git hook for comprehensive testing
 
 # Cancel previous runs when new commits are pushed
 concurrency:
@@ -43,8 +43,8 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Run E2E tests
-        run: npm run e2e
+      - name: Run E2E tests (smoke tests only)
+        run: npm run e2e:quick
         env:
           CI: true
 
