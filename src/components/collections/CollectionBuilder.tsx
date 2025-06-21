@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,10 +15,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormTextarea } from '@/components/forms/FormTextarea';
 import { FormSelect } from '@/components/forms/FormSelect';
-import { Info } from 'lucide-react';
+import { Info, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { FilterBuilder } from '@/components/filters';
 import { useFilterStore } from '@/stores/filterStore';
-import { serializeFilterToKometa } from '@/types/filters';
+import { serializeFilterGroupToKometa } from '@/types/filters';
+import {
+  collectionPreviewService,
+  PreviewResult,
+} from '@/lib/CollectionPreviewService';
 
 // Collection schema based on Kometa's collection structure
 const collectionSchema = z.object({
@@ -53,7 +57,11 @@ export function CollectionBuilder({
   onSave,
   initialData,
 }: CollectionBuilderProps) {
-  const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const [previewResult, setPreviewResult] = useState<PreviewResult | null>(
+    null
+  );
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const { activeFilters, setActiveFilters, presets, savePreset, loadPreset } =
     useFilterStore();
 
@@ -79,23 +87,55 @@ export function CollectionBuilder({
     // If it's a smart collection, include the filters
     const collectionData = { ...data };
     if (data.type === 'smart' && activeFilters.filters.length > 0) {
-      // Serialize filters for Kometa format
-      const kometaFilters = activeFilters.filters
-        .filter((f) => 'field' in f) // Only process CollectionFilter types, not FilterGroups
-        .map((f) => serializeFilterToKometa(f as any));
+      // Serialize entire filter group for Kometa format
+      const kometaFilters = serializeFilterGroupToKometa(activeFilters);
 
       // Add filters to collection data (this would be properly structured for Kometa)
       (collectionData as any).filters = kometaFilters;
-      (collectionData as any).filter_operator = activeFilters.operator;
     }
     onSave?.(collectionData);
   };
 
-  const handlePreview = () => {
-    // In a real implementation, this would query the Plex server
-    // For now, we'll simulate with a random count
-    setPreviewCount(Math.floor(Math.random() * 200) + 10);
-  };
+  const handlePreview = useCallback(async (): Promise<void> => {
+    if (activeFilters.filters.length === 0) {
+      setPreviewError('Please add at least one filter to generate a preview');
+      return;
+    }
+
+    setIsLoadingPreview(true);
+    setPreviewError(null);
+
+    try {
+      const result = await collectionPreviewService.generatePreview(
+        activeFilters,
+        {
+          max_items: 20,
+          include_external: true,
+          confidence_threshold: 60,
+        }
+      );
+      setPreviewResult(result);
+    } catch (error) {
+      setPreviewError('Failed to generate preview. Please try again.');
+      console.error('Preview error:', error);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  }, [activeFilters]);
+
+  // Auto-update preview when filters change
+  useEffect(() => {
+    if (watchType === 'smart' && activeFilters.filters.length > 0) {
+      const timer = setTimeout(() => {
+        handlePreview();
+      }, 1000); // Debounce for 1 second
+
+      return () => clearTimeout(timer);
+    } else {
+      setPreviewResult(null);
+      return undefined;
+    }
+  }, [activeFilters, watchType, handlePreview]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -345,14 +385,99 @@ export function CollectionBuilder({
                 )}
             </div>
 
-            {previewCount !== null && (
+            {/* Preview Results */}
+            {form.watch('type') === 'smart' && (
               <div className="pt-4 border-t">
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{previewCount}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Estimated items
+                {isLoadingPreview && (
+                  <div className="text-center py-4">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Generating preview...
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {previewError && (
+                  <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                    <div className="text-sm text-red-700 dark:text-red-400">
+                      {previewError}
+                    </div>
+                  </div>
+                )}
+
+                {previewResult && !isLoadingPreview && (
+                  <div className="space-y-3">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold">
+                        {previewResult.total_count}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Total matches
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                        <div className="font-medium text-green-700 dark:text-green-400">
+                          {previewResult.library_matches}
+                        </div>
+                        <div className="text-green-600 dark:text-green-500">
+                          In Library
+                        </div>
+                      </div>
+                      <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                        <div className="font-medium text-blue-700 dark:text-blue-400">
+                          {previewResult.external_matches}
+                        </div>
+                        <div className="text-blue-600 dark:text-blue-500">
+                          External
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm font-medium">
+                          {previewResult.confidence_score}% Confidence
+                        </span>
+                      </div>
+                    </div>
+
+                    {previewResult.items.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-sm font-medium mb-2">
+                          Sample Items:
+                        </div>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                          {previewResult.items.slice(0, 5).map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-2 text-xs"
+                            >
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  item.in_library
+                                    ? 'bg-green-500'
+                                    : 'bg-blue-500'
+                                }`}
+                              />
+                              <span className="truncate">
+                                {item.title} {item.year && `(${item.year})`}
+                              </span>
+                            </div>
+                          ))}
+                          {previewResult.items.length > 5 && (
+                            <div className="text-xs text-gray-500 text-center">
+                              +{previewResult.items.length - 5} more items
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -361,8 +486,20 @@ export function CollectionBuilder({
               variant="outline"
               className="w-full"
               type="button"
+              disabled={
+                isLoadingPreview ||
+                form.watch('type') !== 'smart' ||
+                activeFilters.filters.length === 0
+              }
             >
-              Update Preview
+              {isLoadingPreview ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Updating...
+                </>
+              ) : (
+                'Update Preview'
+              )}
             </Button>
           </CardContent>
         </Card>

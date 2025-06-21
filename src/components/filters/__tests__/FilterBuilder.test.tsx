@@ -24,12 +24,12 @@ describe('FilterBuilder', () => {
     render(<FilterBuilder {...defaultProps} />);
 
     // Should show add filter buttons
-    expect(screen.getByText('Add Genre Filter')).toBeInTheDocument();
-    expect(screen.getByText('Add Year Filter')).toBeInTheDocument();
-    expect(screen.getByText('Add Rating Filter')).toBeInTheDocument();
-    expect(screen.getByText('Add Availability Filter')).toBeInTheDocument();
-    expect(screen.getByText('Add Content Type Filter')).toBeInTheDocument();
-    expect(screen.getByText('Add Resolution Filter')).toBeInTheDocument();
+    expect(screen.getByText('Genre')).toBeInTheDocument();
+    expect(screen.getByText('Year')).toBeInTheDocument();
+    expect(screen.getByText('Rating')).toBeInTheDocument();
+    expect(screen.getByText('Streaming Platform')).toBeInTheDocument();
+    expect(screen.getByText('Content Type')).toBeInTheDocument();
+    expect(screen.getByText('Resolution')).toBeInTheDocument();
   });
 
   it('adds a genre filter when button is clicked', async () => {
@@ -37,7 +37,7 @@ describe('FilterBuilder', () => {
     const onChange = jest.fn();
     render(<FilterBuilder {...defaultProps} onChange={onChange} />);
 
-    await user.click(screen.getByText('Add Genre Filter'));
+    await user.click(screen.getByText('Genre'));
 
     expect(onChange).toHaveBeenCalledWith({
       id: 'root',
@@ -59,7 +59,7 @@ describe('FilterBuilder', () => {
     render(<FilterBuilder {...defaultProps} onChange={onChange} />);
 
     // Add year filter
-    await user.click(screen.getByText('Add Year Filter'));
+    await user.click(screen.getByText('Year'));
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
         filters: [
@@ -74,7 +74,7 @@ describe('FilterBuilder', () => {
 
     // Add rating filter
     onChange.mockClear();
-    await user.click(screen.getByText('Add Rating Filter'));
+    await user.click(screen.getByText('Rating'));
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
         filters: [
@@ -180,13 +180,10 @@ describe('FilterBuilder', () => {
     );
 
     // Find and click the trash icon
-    const deleteButton = screen.getByRole('button', { name: '' });
-    const trashButton = Array.from(
-      deleteButton.parentElement?.querySelectorAll('button') || []
-    ).find((btn) => btn.querySelector('svg[class*="lucide-trash"]'));
+    const deleteButton = screen.getByRole('button', { name: 'Remove filter' });
 
-    if (trashButton) {
-      await user.click(trashButton);
+    if (deleteButton) {
+      await user.click(deleteButton);
       expect(onChange).toHaveBeenCalledWith({
         ...filterWithOne,
         filters: [],
