@@ -51,9 +51,7 @@ describe('MultiSelectFilter', () => {
 
     // Click the dropdown trigger (should be the first button)
     const buttons = screen.getAllByRole('button');
-    const dropdownButton = buttons[0];
-    expect(dropdownButton).toBeDefined();
-    await user.click(dropdownButton);
+    await user.click(buttons[0]!);
 
     // Select first option
     await user.click(screen.getByText('Action'));
@@ -78,9 +76,7 @@ describe('MultiSelectFilter', () => {
 
     // Open dropdown and select another option
     const buttons = screen.getAllByRole('button');
-    const dropdownButton = buttons[0];
-    expect(dropdownButton).toBeDefined();
-    await user.click(dropdownButton);
+    await user.click(buttons[0]!);
     await user.click(screen.getByText('Comedy'));
     expect(onChange).toHaveBeenCalledWith(['action', 'comedy']);
   });
