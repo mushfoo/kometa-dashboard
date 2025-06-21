@@ -3,7 +3,7 @@
   "rules": {
     "prefer-const": "error",
     "no-var": "error",
-    "no-unused-vars": "error"
+    "no-unused-vars": ["error", { "args": "none", "varsIgnorePattern": "^_" }]
   },
   "ignorePatterns": [
     "node_modules/",
