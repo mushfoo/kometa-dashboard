@@ -73,7 +73,7 @@ export function RangeSliderFilter({
   return (
     <div className={`space-y-3 ${className}`}>
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
           {label}
         </label>
 
@@ -85,7 +85,7 @@ export function RangeSliderFilter({
             className={`px-3 py-1 text-xs rounded transition-colors ${
               operator === 'equals'
                 ? 'bg-blue-500 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-700'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Equals
@@ -97,7 +97,7 @@ export function RangeSliderFilter({
             className={`px-3 py-1 text-xs rounded transition-colors ${
               operator === 'greater_than'
                 ? 'bg-blue-500 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-700'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Greater than
@@ -109,7 +109,7 @@ export function RangeSliderFilter({
             className={`px-3 py-1 text-xs rounded transition-colors ${
               operator === 'less_than'
                 ? 'bg-blue-500 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-700'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Less than
@@ -121,7 +121,7 @@ export function RangeSliderFilter({
             className={`px-3 py-1 text-xs rounded transition-colors ${
               operator === 'between'
                 ? 'bg-blue-500 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-700'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Between
@@ -133,16 +133,16 @@ export function RangeSliderFilter({
         <div className="space-y-4">
           <div className="relative pt-1">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-zinc-400">
+              <span className="text-sm text-gray-600 dark:text-zinc-400">
                 From: {formatValue(localValue[0])}
               </span>
-              <span className="text-sm text-zinc-400">
+              <span className="text-sm text-gray-600 dark:text-zinc-400">
                 To: {formatValue(localValue[1])}
               </span>
             </div>
 
             <div className="relative h-2">
-              <div className="absolute w-full h-2 bg-zinc-700 rounded-full" />
+              <div className="absolute w-full h-2 bg-gray-300 dark:bg-zinc-700 rounded-full" />
               <div
                 className="absolute h-2 bg-blue-500 rounded-full"
                 style={{
@@ -186,7 +186,7 @@ export function RangeSliderFilter({
               value={localValue[0]}
               onChange={(e) => handleRangeChange(0, Number(e.target.value))}
               disabled={disabled}
-              className="px-3 py-1 bg-zinc-800 border border-zinc-700 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="px-3 py-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             />
             <input
               type="number"
@@ -196,7 +196,7 @@ export function RangeSliderFilter({
               value={localValue[1]}
               onChange={(e) => handleRangeChange(1, Number(e.target.value))}
               disabled={disabled}
-              className="px-3 py-1 bg-zinc-800 border border-zinc-700 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="px-3 py-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             />
           </div>
         </div>
@@ -216,7 +216,7 @@ export function RangeSliderFilter({
             value={localValue as number}
             onChange={(e) => handleSingleChange(Number(e.target.value))}
             disabled={disabled}
-            className="w-full h-2 bg-zinc-700 rounded-full appearance-none cursor-pointer disabled:cursor-not-allowed [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+            className="w-full h-2 bg-gray-300 dark:bg-zinc-700 rounded-full appearance-none cursor-pointer disabled:cursor-not-allowed [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
           />
 
           <input
@@ -227,7 +227,7 @@ export function RangeSliderFilter({
             value={localValue as number}
             onChange={(e) => handleSingleChange(Number(e.target.value))}
             disabled={disabled}
-            className="w-full px-3 py-1 bg-zinc-800 border border-zinc-700 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full px-3 py-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           />
         </div>
       )}
