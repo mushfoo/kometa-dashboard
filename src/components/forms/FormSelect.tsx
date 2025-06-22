@@ -95,11 +95,11 @@ export function FormSelect<T extends FieldValues>({
   const selectClasses = `
     relative w-full cursor-pointer border rounded-md shadow-sm transition-colors
     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-    disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
+    disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 disabled:cursor-not-allowed
     ${
       hasError
         ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-        : 'border-gray-300 focus:border-blue-500'
+        : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800'
     }
     ${className}
   `
@@ -108,7 +108,7 @@ export function FormSelect<T extends FieldValues>({
 
   const labelClasses = `
     block text-sm font-medium mb-1
-    ${hasError ? 'text-red-700' : 'text-gray-700'}
+    ${hasError ? 'text-red-700 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}
     ${required ? "after:content-['*'] after:text-red-500 after:ml-1" : ''}
   `
     .trim()
@@ -149,7 +149,11 @@ export function FormSelect<T extends FieldValues>({
         >
           <div className="px-3 py-2 flex items-center justify-between">
             <span
-              className={selectedOption ? 'text-gray-900' : 'text-gray-400'}
+              className={
+                selectedOption
+                  ? 'text-gray-900 dark:text-gray-100'
+                  : 'text-gray-400 dark:text-gray-500'
+              }
             >
               {selectedOption ? selectedOption.label : placeholder}
             </span>
@@ -170,13 +174,13 @@ export function FormSelect<T extends FieldValues>({
         </div>
 
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
             {searchable && (
-              <div className="p-2 border-b border-gray-200">
+              <div className="p-2 border-b border-gray-200 dark:border-gray-700">
                 <input
                   ref={searchInputRef}
                   type="text"
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="Search options..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -186,7 +190,7 @@ export function FormSelect<T extends FieldValues>({
 
             <div role="listbox">
               {filteredOptions.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-gray-500">
+                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                   No options found
                 </div>
               ) : (
@@ -197,10 +201,10 @@ export function FormSelect<T extends FieldValues>({
                       px-3 py-2 cursor-pointer text-sm transition-colors
                       ${
                         option.disabled
-                          ? 'text-gray-400 cursor-not-allowed'
+                          ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
                           : currentValue === option.value
-                            ? 'bg-blue-100 text-blue-900'
-                            : 'text-gray-900 hover:bg-gray-100'
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                            : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }
                     `
                       .trim()
@@ -219,13 +223,19 @@ export function FormSelect<T extends FieldValues>({
       </div>
 
       {helpText && !hasError && (
-        <p id={`${name}-description`} className="text-sm text-gray-500">
+        <p
+          id={`${name}-description`}
+          className="text-sm text-gray-500 dark:text-gray-400"
+        >
           {helpText}
         </p>
       )}
 
       {hasError && (
-        <p id={`${name}-error`} className="text-sm text-red-600">
+        <p
+          id={`${name}-error`}
+          className="text-sm text-red-600 dark:text-red-400"
+        >
           {error}
         </p>
       )}

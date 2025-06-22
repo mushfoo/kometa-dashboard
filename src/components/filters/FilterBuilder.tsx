@@ -305,14 +305,14 @@ export function FilterBuilder({
         className={`p-4 rounded-lg border ${
           isValid
             ? isExclude
-              ? 'bg-red-900/20 border-red-700/50'
-              : 'bg-zinc-800/50 border-zinc-700'
-            : 'border-red-500/50 bg-red-900/20'
+              ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700/50'
+              : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-700'
+            : 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-900/20'
         }`}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-medium text-zinc-300 capitalize">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-zinc-300 capitalize">
               {filter.field.replace('_', ' ')} Filter
             </h4>
             <div className="flex items-center gap-1">
@@ -322,7 +322,7 @@ export function FilterBuilder({
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   !isExclude
                     ? 'bg-green-500 text-white'
-                    : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
+                    : 'bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-600'
                 }`}
                 title="Include items matching this filter"
               >
@@ -334,7 +334,7 @@ export function FilterBuilder({
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   isExclude
                     ? 'bg-red-500 text-white'
-                    : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
+                    : 'bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-600'
                 }`}
                 title="Exclude items matching this filter"
               >
@@ -346,7 +346,7 @@ export function FilterBuilder({
             <button
               type="button"
               onClick={() => duplicateFilter(index)}
-              className="text-zinc-500 hover:text-blue-400 transition-colors"
+              className="text-gray-500 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               title="Duplicate filter"
             >
               <Copy className="w-4 h-4" />
@@ -354,7 +354,7 @@ export function FilterBuilder({
             <button
               type="button"
               onClick={() => removeFilter(index)}
-              className="text-zinc-500 hover:text-red-400 transition-colors"
+              className="text-gray-500 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               title="Remove filter"
             >
               <Trash2 className="w-4 h-4" />
@@ -524,14 +524,14 @@ export function FilterBuilder({
     <div className={`space-y-4 ${className}`}>
       {/* Conflict Warnings */}
       {conflicts.length > 0 && (
-        <div className="p-4 bg-yellow-900/20 border border-yellow-700/50 rounded-lg">
+        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-lg">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="text-sm font-medium text-yellow-400 mb-2">
+              <h4 className="text-sm font-medium text-yellow-700 dark:text-yellow-400 mb-2">
                 Logical Conflicts Detected
               </h4>
-              <ul className="text-sm text-yellow-300 space-y-1">
+              <ul className="text-sm text-yellow-600 dark:text-yellow-300 space-y-1">
                 {conflicts.map((conflict, idx) => (
                   <li key={idx}>• {conflict}</li>
                 ))}
@@ -543,8 +543,10 @@ export function FilterBuilder({
 
       {/* Filter Operator Selection */}
       {filters.filters.length > 1 && (
-        <div className="flex items-center gap-4 p-4 bg-zinc-800/30 rounded-lg">
-          <span className="text-sm text-zinc-400">Combine filters using:</span>
+        <div className="flex items-center gap-4 p-4 bg-gray-100 dark:bg-zinc-800/30 rounded-lg">
+          <span className="text-sm text-gray-600 dark:text-zinc-400">
+            Combine filters using:
+          </span>
           <div className="flex gap-2">
             <button
               type="button"
@@ -552,7 +554,7 @@ export function FilterBuilder({
               className={`px-3 py-1 text-sm rounded transition-colors ${
                 filters.operator === 'AND'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-700'
               }`}
             >
               AND (all must match)
@@ -563,7 +565,7 @@ export function FilterBuilder({
               className={`px-3 py-1 text-sm rounded transition-colors ${
                 filters.operator === 'OR'
                   ? 'bg-blue-500 text-white'
-                  : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400 hover:bg-gray-300 dark:hover:bg-zinc-700'
               }`}
             >
               OR (any can match)
@@ -589,12 +591,14 @@ export function FilterBuilder({
 
       {/* Add Filter Buttons */}
       <div className="space-y-3">
-        <div className="text-sm font-medium text-zinc-300">Basic Filters</div>
+        <div className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+          Basic Filters
+        </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => addFilter('genre')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Genre
@@ -602,7 +606,7 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('year')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Year
@@ -610,7 +614,7 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('rating')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Rating
@@ -618,19 +622,21 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('content_type')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Content Type
           </button>
         </div>
 
-        <div className="text-sm font-medium text-zinc-300">Date Filters</div>
+        <div className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+          Date Filters
+        </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => addFilter('date_added')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Date Added
@@ -638,21 +644,21 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('date_released')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Release Date
           </button>
         </div>
 
-        <div className="text-sm font-medium text-zinc-300">
+        <div className="text-sm font-medium text-gray-700 dark:text-zinc-300">
           Metadata Filters
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => addFilter('director')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Director
@@ -660,7 +666,7 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('actor')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Actor
@@ -668,7 +674,7 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('studio')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Studio
@@ -682,7 +688,7 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('availability')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Streaming Platform
@@ -690,7 +696,7 @@ export function FilterBuilder({
           <button
             type="button"
             onClick={() => addFilter('resolution')}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
             Resolution

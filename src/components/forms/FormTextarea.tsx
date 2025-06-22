@@ -37,11 +37,11 @@ export function FormTextarea<T extends FieldValues>({
   const textareaClasses = `
     w-full px-3 py-2 border rounded-md shadow-sm transition-colors resize-vertical
     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-    disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
+    disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 disabled:cursor-not-allowed
     ${
       hasError
         ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'
-        : 'border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+        : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-800'
     }
     ${className}
   `
@@ -50,7 +50,7 @@ export function FormTextarea<T extends FieldValues>({
 
   const labelClasses = `
     block text-sm font-medium mb-1
-    ${hasError ? 'text-red-700' : 'text-gray-700'}
+    ${hasError ? 'text-red-700 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}
     ${required ? "after:content-['*'] after:text-red-500 after:ml-1" : ''}
   `
     .trim()
@@ -83,13 +83,19 @@ export function FormTextarea<T extends FieldValues>({
       <div className="flex justify-between items-start">
         <div className="flex-1">
           {helpText && !hasError && (
-            <p id={`${name}-description`} className="text-sm text-gray-500">
+            <p
+              id={`${name}-description`}
+              className="text-sm text-gray-500 dark:text-gray-400"
+            >
               {helpText}
             </p>
           )}
 
           {hasError && (
-            <p id={`${name}-error`} className="text-sm text-red-600">
+            <p
+              id={`${name}-error`}
+              className="text-sm text-red-600 dark:text-red-400"
+            >
               {error}
             </p>
           )}
@@ -101,9 +107,9 @@ export function FormTextarea<T extends FieldValues>({
             className={`text-xs ml-4 ${
               characterCount > maxLength * 0.9
                 ? characterCount >= maxLength
-                  ? 'text-red-600'
-                  : 'text-yellow-600'
-                : 'text-gray-500'
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-yellow-600 dark:text-yellow-400'
+                : 'text-gray-500 dark:text-gray-400'
             }`}
           >
             {characterCount}
