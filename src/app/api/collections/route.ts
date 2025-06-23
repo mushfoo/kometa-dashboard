@@ -91,13 +91,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         if (lib.collections && Array.isArray(lib.collections)) {
           lib.collections.forEach((collection: any) => {
             const collectionName = Object.keys(collection)[0];
-            allCollections.push({
-              name: collectionName,
-              ...collection[collectionName],
-              library: libraryName,
-              id: `${libraryName}-${collectionName}`,
-              source: 'inline',
-            });
+            if (collectionName) {
+              allCollections.push({
+                name: collectionName,
+                ...collection[collectionName],
+                library: libraryName,
+                id: `${libraryName}-${collectionName}`,
+                source: 'inline',
+              });
+            }
           });
         }
 

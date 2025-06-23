@@ -178,7 +178,7 @@ class SSEBroadcastService {
   private async sendToSSEEndpoint(message: SSEMessage): Promise<void> {
     try {
       // Import and use the connection manager directly to avoid HTTP calls
-      const { connectionManager } = await import('@/app/api/stream/route');
+      const { connectionManager } = await import('@/lib/SSEConnectionManager');
 
       connectionManager.broadcast({
         type: message.type,
