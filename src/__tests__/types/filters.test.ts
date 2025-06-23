@@ -61,7 +61,7 @@ describe('Filter Serialization', () => {
         };
 
         const result = serializeFilterToKometa(filter);
-        expect(result).toEqual({ genre: 'Action' });
+        expect(result).toEqual({ genre: ['Action'] });
       });
     });
 
@@ -124,7 +124,7 @@ describe('Filter Serialization', () => {
         };
 
         const result = serializeFilterToKometa(filter);
-        expect(result).toEqual({ 'genre.not': 'Horror' });
+        expect(result).toEqual({ 'genre.not': ['Horror'] });
       });
 
       it('should handle excluded rating filters with operators', () => {
@@ -176,7 +176,9 @@ describe('Filter Serialization', () => {
               ? '1080p'
               : field === 'content_type'
                 ? 'movie'
-                : 'test-value';
+                : field === 'availability'
+                  ? ['test-value']
+                  : ['test-value'];
           expect(result).toEqual({ [expected]: expectedValue });
         });
       });
@@ -201,7 +203,7 @@ describe('Filter Serialization', () => {
       };
 
       const result = serializeFilterGroupToKometa(group);
-      expect(result).toEqual({ genre: 'Action' });
+      expect(result).toEqual({ genre: ['Action'] });
     });
 
     it('should flatten multiple AND filters to direct properties', () => {
@@ -238,7 +240,7 @@ describe('Filter Serialization', () => {
 
       const result = serializeFilterGroupToKometa(group);
       expect(result).toEqual({
-        genre: 'Action',
+        genre: ['Action'],
         'year.gte': 2000,
         'user_rating.gte': 7.0,
       });
@@ -270,7 +272,7 @@ describe('Filter Serialization', () => {
 
       const result = serializeFilterGroupToKometa(group);
       expect(result).toEqual({
-        any: [{ genre: 'Action' }, { genre: 'Comedy' }],
+        any: [{ genre: ['Action'] }, { genre: ['Comedy'] }],
       });
     });
 
@@ -291,7 +293,7 @@ describe('Filter Serialization', () => {
       };
 
       const result = serializeFilterGroupToKometa(group);
-      expect(result).toEqual({ genre: 'Action' });
+      expect(result).toEqual({ genre: ['Action'] });
     });
 
     it('should handle nested filter groups', () => {
@@ -336,7 +338,7 @@ describe('Filter Serialization', () => {
 
       const result = serializeFilterGroupToKometa(mainGroup);
       expect(result).toEqual({
-        genre: 'Drama',
+        genre: ['Drama'],
         'year.gte': 2010,
         'user_rating.gte': 8.0,
       });
@@ -395,11 +397,11 @@ describe('Filter Serialization', () => {
 
       const result = serializeFilterGroupToKometa(group);
       expect(result).toEqual({
-        genre: 'Sci-Fi',
+        genre: ['Sci-Fi'],
         'year.gte': 2010,
         'year.lte': 2020,
         'user_rating.gte': 7.5,
-        'director.not': 'Christopher Nolan',
+        'director.not': ['Christopher Nolan'],
       });
     });
   });
@@ -441,7 +443,7 @@ describe('Filter Serialization', () => {
 
       // Verify our filters match the expected Kometa structure
       expect(kometaFilters).toEqual({
-        genre: 'Action',
+        genre: ['Action'],
         'user_rating.gte': 7.0,
         'year.gte': 2000,
       });

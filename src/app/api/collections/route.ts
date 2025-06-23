@@ -67,6 +67,10 @@ function processFilters(filters: any): any {
       for (const [subKey, subValue] of Object.entries(value)) {
         processed[`${key}.${subKey}`] = subValue;
       }
+    } else if (Array.isArray(value)) {
+      // Convert arrays to single values for Kometa
+      // Kometa expects single values, not arrays for fields like genre, director, etc.
+      processed[key] = value[0];
     } else {
       processed[key] = value;
     }

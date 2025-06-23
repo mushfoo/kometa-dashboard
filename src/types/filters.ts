@@ -295,11 +295,7 @@ export const serializeFilterToKometa = (
 
   switch (filter.field) {
     case 'genre':
-      // Convert array to single value for Kometa (it expects a string, not array)
-      const genreValue = Array.isArray(filter.value)
-        ? filter.value[0]
-        : filter.value;
-      kometaFilter[isExclude ? 'genre.not' : 'genre'] = genreValue;
+      kometaFilter[isExclude ? 'genre.not' : 'genre'] = filter.value;
       break;
     case 'year':
       const yearField = isExclude ? 'year.not' : 'year';
@@ -328,12 +324,7 @@ export const serializeFilterToKometa = (
       }
       break;
     case 'availability':
-      // Convert array to single value for Kometa
-      const availabilityValue = Array.isArray(filter.value)
-        ? filter.value[0]
-        : filter.value;
-      kometaFilter[isExclude ? 'streaming.not' : 'streaming'] =
-        availabilityValue;
+      kometaFilter[isExclude ? 'streaming.not' : 'streaming'] = filter.value;
       break;
     case 'content_type':
       kometaFilter[isExclude ? 'type.not' : 'type'] = filter.value;
@@ -368,25 +359,13 @@ export const serializeFilterToKometa = (
       }
       break;
     case 'director':
-      // Convert array to single value for Kometa
-      const directorValue = Array.isArray(filter.value)
-        ? filter.value[0]
-        : filter.value;
-      kometaFilter[isExclude ? 'director.not' : 'director'] = directorValue;
+      kometaFilter[isExclude ? 'director.not' : 'director'] = filter.value;
       break;
     case 'actor':
-      // Convert array to single value for Kometa
-      const actorValue = Array.isArray(filter.value)
-        ? filter.value[0]
-        : filter.value;
-      kometaFilter[isExclude ? 'actor.not' : 'actor'] = actorValue;
+      kometaFilter[isExclude ? 'actor.not' : 'actor'] = filter.value;
       break;
     case 'studio':
-      // Convert array to single value for Kometa
-      const studioValue = Array.isArray(filter.value)
-        ? filter.value[0]
-        : filter.value;
-      kometaFilter[isExclude ? 'studio.not' : 'studio'] = studioValue;
+      kometaFilter[isExclude ? 'studio.not' : 'studio'] = filter.value;
       break;
   }
 
@@ -413,8 +392,12 @@ export const serializeFilterGroupToKometa = (
         const nested = flattenFilters(filter.filters);
         Object.assign(flattened, nested);
       } else {
+        // Skip disabled filters
+        const f = filter as CollectionFilter;
+        if (!f.enabled) continue;
+
         // Convert single filter to direct properties
-        const serialized = serializeFilterToKometa(filter as CollectionFilter);
+        const serialized = serializeFilterToKometa(f);
         Object.assign(flattened, serialized);
       }
     }
@@ -428,13 +411,21 @@ export const serializeFilterGroupToKometa = (
     return flattenFilters(group.filters);
   } else {
     // OR with multiple filters - use any: structure
-    const serializedFilters = group.filters.map((filter) => {
-      if (isFilterGroup(filter)) {
-        return serializeFilterGroupToKometa(filter);
-      } else {
-        return serializeFilterToKometa(filter as CollectionFilter);
-      }
-    });
+    const serializedFilters = group.filters
+      .filter((filter) => {
+        // Skip disabled filters
+        if (!isFilterGroup(filter)) {
+          return (filter as CollectionFilter).enabled;
+        }
+        return true;
+      })
+      .map((filter) => {
+        if (isFilterGroup(filter)) {
+          return serializeFilterGroupToKometa(filter);
+        } else {
+          return serializeFilterToKometa(filter as CollectionFilter);
+        }
+      });
 
     result.any = serializedFilters;
   }
