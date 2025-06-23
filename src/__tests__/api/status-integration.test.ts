@@ -166,6 +166,10 @@ describe('/api/status - Integration Tests', () => {
     // Mock fs.readFile to return a config with plex settings
     const fs = require('fs').promises;
     const originalReadFile = fs.readFile;
+    const originalAccess = fs.access;
+
+    // Mock successful storage access
+    fs.access = jest.fn().mockResolvedValue(undefined);
 
     fs.readFile = jest.fn().mockImplementation((path) => {
       if (path.includes('config.yml')) {
@@ -179,6 +183,20 @@ describe('/api/status - Integration Tests', () => {
     // Mock fetch to simulate failed plex connection
     global.fetch = jest.fn().mockRejectedValue(new Error('Connection refused'));
 
+    // Mock exec to ensure Kometa is available (so we get degraded not unhealthy)
+    const { exec } = require('child_process');
+    (exec as jest.Mock).mockImplementation(
+      (cmd: string, callback: Function) => {
+        if (cmd.includes('docker --version')) {
+          callback(null, { stdout: 'Docker version 20.10.0' });
+        } else if (cmd.includes('docker images')) {
+          callback(null, { stdout: 'kometateam/kometa' });
+        } else {
+          callback(new Error('Command not found'));
+        }
+      }
+    );
+
     try {
       const response = await GET(mockRequest);
       const data = await response.json();
@@ -187,9 +205,12 @@ describe('/api/status - Integration Tests', () => {
       expect(data.plex?.configured).toBe(true);
       expect(data.plex?.reachable).toBe(false);
       expect(data.plex?.error).toBeDefined();
+      expect(data.storage.accessible).toBe(true);
+      expect(data.kometa.available).toBe(true);
     } finally {
       // Restore original functions
       fs.readFile = originalReadFile;
+      fs.access = originalAccess;
       delete (global as any).fetch;
     }
   });
