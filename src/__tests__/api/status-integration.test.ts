@@ -3,6 +3,20 @@
  * Tests the actual endpoint behavior without complex mocking
  */
 
+// Mock child_process at the module level before importing the route
+jest.mock('child_process', () => ({
+  exec: jest.fn((cmd: string, callback: Function) => {
+    // Default mock behavior - simulate successful commands for normal tests
+    if (cmd.includes('docker --version')) {
+      callback(null, { stdout: 'Docker version 20.10.0' });
+    } else if (cmd.includes('docker images')) {
+      callback(null, { stdout: 'kometateam/kometa' });
+    } else {
+      callback(new Error('Command not found'));
+    }
+  }),
+}));
+
 import { GET } from '@/app/api/status/route';
 
 describe('/api/status - Integration Tests', () => {
@@ -17,6 +31,21 @@ describe('/api/status - Integration Tests', () => {
       method: 'GET',
       headers: new Map(),
     };
+
+    // Reset exec mock to default behavior before each test
+    const { exec } = require('child_process');
+    (exec as jest.Mock).mockImplementation(
+      (cmd: string, callback: Function) => {
+        // Default mock behavior - simulate successful commands for normal tests
+        if (cmd.includes('docker --version')) {
+          callback(null, { stdout: 'Docker version 20.10.0' });
+        } else if (cmd.includes('docker images')) {
+          callback(null, { stdout: 'kometateam/kometa' });
+        } else {
+          callback(new Error('Command not found'));
+        }
+      }
+    );
   });
 
   afterEach(() => {
@@ -90,5 +119,160 @@ describe('/api/status - Integration Tests', () => {
     const response = await GET(mockRequest);
 
     expect(response.status).toBe(200);
+  });
+
+  it('should mark system as unhealthy when storage is inaccessible', async () => {
+    // Mock fs.access to simulate inaccessible storage
+    const fs = require('fs').promises;
+    const originalAccess = fs.access;
+    fs.access = jest.fn().mockRejectedValue(new Error('Permission denied'));
+
+    try {
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(data.status).toBe('unhealthy');
+      expect(data.storage.accessible).toBe(false);
+    } finally {
+      // Restore original fs.access
+      fs.access = originalAccess;
+    }
+  });
+
+  it('should mark system as unhealthy when kometa is unavailable', async () => {
+    // Use the mocked exec function
+    const { exec } = require('child_process');
+
+    // Mock exec to fail for all kometa-related commands
+    (exec as jest.Mock).mockImplementation(
+      (cmd: string, callback: Function) => {
+        // Fail for all commands (Docker version, Docker images, which kometa, etc.)
+        callback(new Error('Command not found'));
+      }
+    );
+
+    const response = await GET(mockRequest);
+    const data = await response.json();
+
+    expect(data.kometa.available).toBe(false);
+    expect(data.kometa.error).toBeDefined();
+    expect(data.status).toBe('unhealthy');
+
+    // Clear the mock for other tests
+    (exec as jest.Mock).mockReset();
+  });
+
+  it('should mark system as degraded when plex is configured but unreachable', async () => {
+    // Mock fs.readFile to return a config with plex settings
+    const fs = require('fs').promises;
+    const originalReadFile = fs.readFile;
+    const originalAccess = fs.access;
+
+    // Mock successful storage access
+    fs.access = jest.fn().mockResolvedValue(undefined);
+
+    fs.readFile = jest.fn().mockImplementation((path) => {
+      if (path.includes('config.yml')) {
+        return Promise.resolve(
+          'plex:\n  url: http://localhost:32400\n  token: invalid-token'
+        );
+      }
+      return originalReadFile(path);
+    });
+
+    // Mock fetch to simulate failed plex connection
+    global.fetch = jest.fn().mockRejectedValue(new Error('Connection refused'));
+
+    // Mock exec to ensure Kometa is available (so we get degraded not unhealthy)
+    const { exec } = require('child_process');
+    (exec as jest.Mock).mockImplementation(
+      (cmd: string, callback: Function) => {
+        if (cmd.includes('docker --version')) {
+          callback(null, { stdout: 'Docker version 20.10.0' });
+        } else if (cmd.includes('docker images')) {
+          callback(null, { stdout: 'kometateam/kometa' });
+        } else {
+          callback(new Error('Command not found'));
+        }
+      }
+    );
+
+    try {
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(data.status).toBe('degraded');
+      expect(data.plex?.configured).toBe(true);
+      expect(data.plex?.reachable).toBe(false);
+      expect(data.plex?.error).toBeDefined();
+      expect(data.storage.accessible).toBe(true);
+      expect(data.kometa.available).toBe(true);
+    } finally {
+      // Restore original functions
+      fs.readFile = originalReadFile;
+      fs.access = originalAccess;
+      delete (global as any).fetch;
+    }
+  });
+
+  it('should handle plex timeout scenarios', async () => {
+    // Mock fs.readFile to return a config with plex settings
+    const fs = require('fs').promises;
+    const originalReadFile = fs.readFile;
+
+    fs.readFile = jest.fn().mockImplementation((path) => {
+      if (path.includes('config.yml')) {
+        return Promise.resolve(
+          'plex:\n  url: http://localhost:32400\n  token: test-token'
+        );
+      }
+      return originalReadFile(path);
+    });
+
+    // Mock fetch to simulate timeout
+    global.fetch = jest.fn().mockImplementation(() => {
+      return new Promise((resolve, reject) => {
+        const error = new Error('Timeout');
+        error.name = 'AbortError';
+        setTimeout(() => reject(error), 100);
+      });
+    });
+
+    try {
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(data.plex?.configured).toBe(true);
+      expect(data.plex?.reachable).toBe(false);
+      expect(data.plex?.error).toContain('timeout');
+    } finally {
+      // Restore original functions
+      fs.readFile = originalReadFile;
+      delete (global as any).fetch;
+    }
+  });
+
+  it('should handle missing plex configuration', async () => {
+    // Mock fs.readFile to return a config without plex settings
+    const fs = require('fs').promises;
+    const originalReadFile = fs.readFile;
+
+    fs.readFile = jest.fn().mockImplementation((path) => {
+      if (path.includes('config.yml')) {
+        return Promise.resolve('libraries:\n  Movies:\n    operations: {}');
+      }
+      return originalReadFile(path);
+    });
+
+    try {
+      const response = await GET(mockRequest);
+      const data = await response.json();
+
+      expect(data.plex?.configured).toBe(false);
+      expect(data.plex?.reachable).toBeUndefined();
+    } finally {
+      // Restore original functions
+      fs.readFile = originalReadFile;
+    }
   });
 });

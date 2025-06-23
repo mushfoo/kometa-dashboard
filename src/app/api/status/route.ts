@@ -44,15 +44,21 @@ async function checkFileSystemAccess(): Promise<{
     // Check if storage directory exists and is accessible
     await fs.access(storageDir);
 
-    // Check each required subdirectory
+    // Check each required subdirectory, create if missing
     for (const dir of requiredDirs) {
       const dirPath = path.join(storageDir, dir);
       try {
         await fs.access(dirPath);
         directories[dir] = true;
       } catch {
-        directories[dir] = false;
-        accessible = false;
+        // Try to create the directory
+        try {
+          await fs.mkdir(dirPath, { recursive: true });
+          directories[dir] = true;
+        } catch {
+          directories[dir] = false;
+          accessible = false;
+        }
       }
     }
   } catch {
@@ -142,23 +148,67 @@ async function checkPlexConfiguration(): Promise<
   | undefined
 > {
   try {
-    // Check if Plex configuration exists
-    const configPath = path.join(
-      process.cwd(),
-      'storage',
-      'settings',
-      'settings.json'
-    );
+    // Check if Plex configuration exists in main config.yml
+    const configPath = path.join(process.cwd(), 'storage', 'config.yml');
     const configData = await fs.readFile(configPath, 'utf-8');
-    const config = JSON.parse(configData);
 
-    if (config.plex?.url && config.plex?.token) {
-      // TODO: In a real implementation, we would make an HTTP request to the Plex server
-      // For now, we'll just return that it's configured
-      return {
-        configured: true,
-        reachable: true, // Placeholder - would need actual HTTP check
-      };
+    // Simple YAML parsing for plex section
+    const plexMatch = configData.match(
+      /plex:\s*\n\s*url:\s*(.+)\n\s*token:\s*(.+)/
+    );
+
+    if (plexMatch && plexMatch[1] && plexMatch[2]) {
+      const url = plexMatch[1].trim();
+      const token = plexMatch[2].trim();
+
+      if (url && token) {
+        // Test actual HTTP connection to Plex server
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+          const response = await fetch(
+            `${url}/identity?X-Plex-Token=${token}`,
+            {
+              method: 'GET',
+              headers: {
+                Accept: 'application/json',
+              },
+              signal: controller.signal,
+            }
+          );
+
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            return {
+              configured: true,
+              reachable: true,
+            };
+          } else {
+            return {
+              configured: true,
+              reachable: false,
+              error: `Plex server responded with status ${response.status}`,
+            };
+          }
+        } catch (error) {
+          let errorMessage = 'Connection failed';
+          if (error instanceof Error) {
+            if (error.name === 'AbortError') {
+              errorMessage = 'Connection timeout (5s)';
+            } else {
+              errorMessage = error.message;
+            }
+          }
+
+          return {
+            configured: true,
+            reachable: false,
+            error: errorMessage,
+          };
+        }
+      }
     }
 
     return { configured: false };

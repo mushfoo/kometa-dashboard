@@ -127,19 +127,23 @@ class SSEBroadcastService {
    * Broadcast a log entry via SSE
    */
   private async broadcastLogEntry(logEntry: LogOutput): Promise<void> {
-    const message: SSEMessage = {
+    // Send the log data in the format expected by the frontend useSSE hook
+    await this.sendToSSEEndpoint({
       type: 'logs',
       payload: {
-        timestamp: logEntry.timestamp.toISOString(),
-        level: logEntry.level,
-        message: logEntry.message,
-        source: logEntry.source,
+        logs: [
+          {
+            timestamp: logEntry.timestamp.toISOString(),
+            level: logEntry.level,
+            message: logEntry.message,
+            source: logEntry.source,
+            operationId: logEntry.operationId,
+          },
+        ],
       },
       ...(logEntry.operationId && { operationId: logEntry.operationId }),
       level: logEntry.level,
-    };
-
-    await this.sendToSSEEndpoint(message);
+    });
   }
 
   /**
@@ -173,19 +177,15 @@ class SSEBroadcastService {
    */
   private async sendToSSEEndpoint(message: SSEMessage): Promise<void> {
     try {
-      // Use Next.js internal fetch to call our own SSE endpoint
-      const response = await fetch('http://localhost:3000/api/stream', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer internal-service',
-        },
-        body: JSON.stringify(message),
-      });
+      // Import and use the connection manager directly to avoid HTTP calls
+      const { connectionManager } = await import('@/lib/SSEConnectionManager');
 
-      if (!response.ok) {
-        console.warn('Failed to broadcast SSE message:', response.statusText);
-      }
+      connectionManager.broadcast({
+        type: message.type,
+        payload: message.payload,
+        operationId: message.operationId,
+        level: message.level,
+      });
     } catch (error) {
       console.warn('Error broadcasting SSE message:', error);
     }

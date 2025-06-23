@@ -357,11 +357,15 @@ describe('KometaService', () => {
         expect.arrayContaining([
           'run',
           '--rm',
+          '-i',
           '-v',
-          '/test:/config',
+          '/test:/config:rw',
+          '--network',
+          'host',
           'kometateam/kometa',
+          '--run',
           '--config',
-          '/test/config.yml',
+          '/config/config.yml',
         ]),
         expect.any(Object)
       );

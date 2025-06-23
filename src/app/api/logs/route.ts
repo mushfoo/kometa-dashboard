@@ -34,8 +34,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       operationId: searchParams.get('operationId'),
       source: searchParams.get('source'),
       search: searchParams.get('search'),
-      limit: searchParams.get('limit'),
-      offset: searchParams.get('offset'),
+      limit: searchParams.get('limit') || undefined,
+      offset: searchParams.get('offset') || undefined,
     });
 
     const logService = new LogService();

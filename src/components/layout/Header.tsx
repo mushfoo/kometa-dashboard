@@ -3,6 +3,7 @@
 import { Menu, Bell, Sun, Moon, Monitor, Circle } from 'lucide-react';
 import { useAppState } from '@/hooks/useAppState';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
+import Link from 'next/link';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -56,12 +57,16 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Right side */}
         <div className="flex items-center space-x-4">
           {/* System status indicator */}
-          <div className="flex items-center space-x-2">
+          <Link
+            href="/system-status"
+            className="flex items-center space-x-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2 py-1 transition-colors"
+            title="View detailed system status"
+          >
             <Circle className={`h-3 w-3 fill-current ${getStatusColor()}`} />
             <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
               {getStatusText()}
             </span>
-          </div>
+          </Link>
 
           {/* Notifications */}
           <button className="relative rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300">

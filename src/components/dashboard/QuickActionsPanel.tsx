@@ -43,8 +43,11 @@ export function QuickActionsPanel({ className }: QuickActionsPanelProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          configPath: 'storage/config.yml',
-          operationType: 'full_run',
+          type: 'full_run',
+          parameters: {
+            verbosity: 'info',
+            dryRun: false,
+          },
         }),
       });
 
@@ -92,22 +95,29 @@ export function QuickActionsPanel({ className }: QuickActionsPanelProps) {
     setReloadConfigState({ isLoading: true });
 
     try {
-      const response = await fetch('/api/config/validate', {
+      const response = await fetch('/api/operations/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          type: 'config_reload',
+          parameters: {
+            verbosity: 'info',
+            dryRun: false,
+          },
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to validate configuration');
+        throw new Error(errorData.error || 'Failed to reload configuration');
       }
 
       setReloadConfigState({
         isLoading: false,
         lastResult: 'success',
-        lastMessage: 'Configuration reloaded and validated',
+        lastMessage: 'Configuration reload started',
       });
     } catch (error) {
       setReloadConfigState({

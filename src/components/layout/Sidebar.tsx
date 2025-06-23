@@ -2,7 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, Home, Settings, Database, FileText, Activity } from 'lucide-react';
+import {
+  X,
+  Home,
+  Settings,
+  Database,
+  FileText,
+  Activity,
+  Server,
+} from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,6 +23,7 @@ const navigation = [
   { name: 'Collections', href: '/collections', icon: Database },
   { name: 'Logs', href: '/logs', icon: FileText },
   { name: 'Operations', href: '/operations', icon: Activity },
+  { name: 'System Status', href: '/system-status', icon: Server },
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
