@@ -224,6 +224,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Add filters for smart collections
     if (data.type === 'smart' && data.filters) {
+      // Add required builder for smart collections
+      collectionContent.collections[data.name].plex_all = true;
+
       // Convert nested filter objects to Kometa's dot notation
       const processedFilters = processFilters(data.filters);
       Object.assign(collectionContent.collections[data.name], processedFilters);
