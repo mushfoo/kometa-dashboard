@@ -315,7 +315,7 @@ describe('Filter Serialization', () => {
     };
 
     expect(serializeFilterToKometa(filter)).toEqual({
-      year: { gte: 2020 },
+      'year.gte': 2020,
     });
   });
 
@@ -329,7 +329,7 @@ describe('Filter Serialization', () => {
     };
 
     expect(serializeFilterToKometa(filter)).toEqual({
-      year: { lte: 2020 },
+      'year.lte': 2020,
     });
   });
 
@@ -343,7 +343,8 @@ describe('Filter Serialization', () => {
     };
 
     expect(serializeFilterToKometa(filter)).toEqual({
-      year: { gte: 2000, lte: 2020 },
+      'year.gte': 2000,
+      'year.lte': 2020,
     });
   });
 
@@ -357,7 +358,7 @@ describe('Filter Serialization', () => {
     };
 
     expect(serializeFilterToKometa(filter)).toEqual({
-      rating: { gte: 7 },
+      'user_rating.gte': 7,
     });
   });
 
