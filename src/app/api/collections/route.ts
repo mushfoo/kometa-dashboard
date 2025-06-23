@@ -67,6 +67,10 @@ function processFilters(filters: any): any {
       for (const [subKey, subValue] of Object.entries(value)) {
         processed[`${key}.${subKey}`] = subValue;
       }
+    } else if (Array.isArray(value)) {
+      // Convert arrays to single values for Kometa
+      // Kometa expects single values, not arrays for fields like genre, director, etc.
+      processed[key] = value[0];
     } else {
       processed[key] = value;
     }
@@ -224,6 +228,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Add filters for smart collections
     if (data.type === 'smart' && data.filters) {
+      // Add required builder for smart collections
+      collectionContent.collections[data.name].plex_all = true;
+
       // Convert nested filter objects to Kometa's dot notation
       const processedFilters = processFilters(data.filters);
       Object.assign(collectionContent.collections[data.name], processedFilters);

@@ -302,29 +302,25 @@ export const serializeFilterToKometa = (
       if (filter.operator === 'equals') {
         kometaFilter[yearField] = filter.value;
       } else if (filter.operator === 'greater_than') {
-        kometaFilter[yearField] = { gte: filter.value };
+        kometaFilter[`${yearField}.gte`] = filter.value;
       } else if (filter.operator === 'less_than') {
-        kometaFilter[yearField] = { lte: filter.value };
+        kometaFilter[`${yearField}.lte`] = filter.value;
       } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
-        kometaFilter[yearField] = {
-          gte: filter.value[0],
-          lte: filter.value[1],
-        };
+        kometaFilter[`${yearField}.gte`] = filter.value[0];
+        kometaFilter[`${yearField}.lte`] = filter.value[1];
       }
       break;
     case 'rating':
-      const ratingField = isExclude ? 'rating.not' : 'rating';
+      const ratingField = isExclude ? 'user_rating.not' : 'user_rating';
       if (filter.operator === 'equals') {
         kometaFilter[ratingField] = filter.value;
       } else if (filter.operator === 'greater_than') {
-        kometaFilter[ratingField] = { gte: filter.value };
+        kometaFilter[`${ratingField}.gte`] = filter.value;
       } else if (filter.operator === 'less_than') {
-        kometaFilter[ratingField] = { lte: filter.value };
+        kometaFilter[`${ratingField}.lte`] = filter.value;
       } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
-        kometaFilter[ratingField] = {
-          gte: filter.value[0],
-          lte: filter.value[1],
-        };
+        kometaFilter[`${ratingField}.gte`] = filter.value[0];
+        kometaFilter[`${ratingField}.lte`] = filter.value[1];
       }
       break;
     case 'availability':
@@ -337,33 +333,29 @@ export const serializeFilterToKometa = (
       kometaFilter[isExclude ? 'resolution.not' : 'resolution'] = filter.value;
       break;
     case 'date_added':
-      const dateAddedField = isExclude ? 'date_added.not' : 'date_added';
+      const dateAddedField = isExclude ? 'added.not' : 'added';
       if (filter.operator === 'equals') {
         kometaFilter[dateAddedField] = filter.value;
       } else if (filter.operator === 'greater_than') {
-        kometaFilter[dateAddedField] = { gte: filter.value };
+        kometaFilter[`${dateAddedField}.gte`] = filter.value;
       } else if (filter.operator === 'less_than') {
-        kometaFilter[dateAddedField] = { lte: filter.value };
+        kometaFilter[`${dateAddedField}.lte`] = filter.value;
       } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
-        kometaFilter[dateAddedField] = {
-          gte: filter.value[0],
-          lte: filter.value[1],
-        };
+        kometaFilter[`${dateAddedField}.gte`] = filter.value[0];
+        kometaFilter[`${dateAddedField}.lte`] = filter.value[1];
       }
       break;
     case 'date_released':
-      const dateReleasedField = isExclude ? 'release_date.not' : 'release_date';
+      const dateReleasedField = isExclude ? 'release.not' : 'release';
       if (filter.operator === 'equals') {
         kometaFilter[dateReleasedField] = filter.value;
       } else if (filter.operator === 'greater_than') {
-        kometaFilter[dateReleasedField] = { gte: filter.value };
+        kometaFilter[`${dateReleasedField}.gte`] = filter.value;
       } else if (filter.operator === 'less_than') {
-        kometaFilter[dateReleasedField] = { lte: filter.value };
+        kometaFilter[`${dateReleasedField}.lte`] = filter.value;
       } else if (filter.operator === 'between' && Array.isArray(filter.value)) {
-        kometaFilter[dateReleasedField] = {
-          gte: filter.value[0],
-          lte: filter.value[1],
-        };
+        kometaFilter[`${dateReleasedField}.gte`] = filter.value[0];
+        kometaFilter[`${dateReleasedField}.lte`] = filter.value[1];
       }
       break;
     case 'director':
@@ -388,29 +380,53 @@ export const serializeFilterGroupToKometa = (
 
   if (group.filters.length === 0) return result;
 
-  if (group.filters.length === 1) {
-    const filter = group.filters[0];
-    if (filter && isFilterGroup(filter)) {
-      return serializeFilterGroupToKometa(filter);
-    } else if (filter) {
-      return serializeFilterToKometa(filter as CollectionFilter);
-    }
-    return {};
-  }
+  // Flatten all filters to direct properties
+  const flattenFilters = (
+    filters: (CollectionFilter | FilterGroup)[]
+  ): Record<string, unknown> => {
+    const flattened: Record<string, unknown> = {};
 
-  // Multiple filters - need to group them
-  const serializedFilters = group.filters.map((filter) => {
-    if (isFilterGroup(filter)) {
-      return serializeFilterGroupToKometa(filter);
-    } else {
-      return serializeFilterToKometa(filter as CollectionFilter);
-    }
-  });
+    for (const filter of filters) {
+      if (isFilterGroup(filter)) {
+        // Recursively flatten nested groups
+        const nested = flattenFilters(filter.filters);
+        Object.assign(flattened, nested);
+      } else {
+        // Skip disabled filters
+        const f = filter as CollectionFilter;
+        if (!f.enabled) continue;
 
-  // Use all/any based on operator
-  if (group.operator === 'AND') {
-    result.all = serializedFilters;
+        // Convert single filter to direct properties
+        const serialized = serializeFilterToKometa(f);
+        Object.assign(flattened, serialized);
+      }
+    }
+
+    return flattened;
+  };
+
+  // For AND operations, we can directly flatten all filters
+  // For OR operations, we need to use Kometa's any: structure only when necessary
+  if (group.operator === 'AND' || group.filters.length === 1) {
+    return flattenFilters(group.filters);
   } else {
+    // OR with multiple filters - use any: structure
+    const serializedFilters = group.filters
+      .filter((filter) => {
+        // Skip disabled filters
+        if (!isFilterGroup(filter)) {
+          return (filter as CollectionFilter).enabled;
+        }
+        return true;
+      })
+      .map((filter) => {
+        if (isFilterGroup(filter)) {
+          return serializeFilterGroupToKometa(filter);
+        } else {
+          return serializeFilterToKometa(filter as CollectionFilter);
+        }
+      });
+
     result.any = serializedFilters;
   }
 
