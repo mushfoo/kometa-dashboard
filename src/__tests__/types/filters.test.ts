@@ -10,9 +10,11 @@ describe('Filter Serialization', () => {
     describe('field mappings', () => {
       it('should map rating to user_rating', () => {
         const filter: CollectionFilter = {
+          id: '1',
           field: 'rating',
           operator: 'equals',
           value: 8.5,
+          enabled: true,
           ruleOperator: 'include',
         };
 
@@ -22,9 +24,11 @@ describe('Filter Serialization', () => {
 
       it('should map date_added to added', () => {
         const filter: CollectionFilter = {
+          id: '2',
           field: 'date_added',
           operator: 'equals',
           value: '2024-01-01',
+          enabled: true,
           ruleOperator: 'include',
         };
 
@@ -34,9 +38,11 @@ describe('Filter Serialization', () => {
 
       it('should map date_released to release', () => {
         const filter: CollectionFilter = {
+          id: '3',
           field: 'date_released',
           operator: 'equals',
           value: '2023-12-25',
+          enabled: true,
           ruleOperator: 'include',
         };
 
@@ -46,9 +52,11 @@ describe('Filter Serialization', () => {
 
       it('should keep genre mapping unchanged', () => {
         const filter: CollectionFilter = {
+          id: '4',
           field: 'genre',
           operator: 'equals',
-          value: 'Action',
+          value: ['Action'],
+          enabled: true,
           ruleOperator: 'include',
         };
 
@@ -60,9 +68,11 @@ describe('Filter Serialization', () => {
     describe('dot notation operators', () => {
       it('should generate proper dot notation for greater_than operator', () => {
         const filter: CollectionFilter = {
+          id: '5',
           field: 'rating',
           operator: 'greater_than',
           value: 7.0,
+          enabled: true,
           ruleOperator: 'include',
         };
 
@@ -72,9 +82,11 @@ describe('Filter Serialization', () => {
 
       it('should generate proper dot notation for less_than operator', () => {
         const filter: CollectionFilter = {
+          id: '6',
           field: 'year',
           operator: 'less_than',
           value: 2020,
+          enabled: true,
           ruleOperator: 'include',
         };
 
@@ -84,9 +96,11 @@ describe('Filter Serialization', () => {
 
       it('should generate proper dot notation for between operator', () => {
         const filter: CollectionFilter = {
+          id: '7',
           field: 'year',
           operator: 'between',
           value: [2000, 2020],
+          enabled: true,
           ruleOperator: 'include',
         };
 
@@ -101,9 +115,11 @@ describe('Filter Serialization', () => {
     describe('exclusion filters', () => {
       it('should handle excluded genre filters', () => {
         const filter: CollectionFilter = {
+          id: '8',
           field: 'genre',
           operator: 'equals',
-          value: 'Horror',
+          value: ['Horror'],
+          enabled: true,
           ruleOperator: 'exclude',
         };
 
@@ -113,9 +129,11 @@ describe('Filter Serialization', () => {
 
       it('should handle excluded rating filters with operators', () => {
         const filter: CollectionFilter = {
+          id: '9',
           field: 'rating',
           operator: 'greater_than',
           value: 9.0,
+          enabled: true,
           ruleOperator: 'exclude',
         };
 
@@ -137,14 +155,29 @@ describe('Filter Serialization', () => {
       testCases.forEach(({ field, expected }) => {
         it(`should map ${field} to ${expected}`, () => {
           const filter: CollectionFilter = {
+            id: `test-${field}`,
             field,
             operator: 'equals',
-            value: 'test-value',
+            value:
+              field === 'availability'
+                ? ['test-value']
+                : field === 'content_type'
+                  ? 'movie'
+                  : field === 'resolution'
+                    ? '1080p'
+                    : ['test-value'],
+            enabled: true,
             ruleOperator: 'include',
-          };
+          } as CollectionFilter;
 
           const result = serializeFilterToKometa(filter);
-          expect(result).toEqual({ [expected]: 'test-value' });
+          const expectedValue =
+            field === 'resolution'
+              ? '1080p'
+              : field === 'content_type'
+                ? 'movie'
+                : 'test-value';
+          expect(result).toEqual({ [expected]: expectedValue });
         });
       });
     });
@@ -153,12 +186,15 @@ describe('Filter Serialization', () => {
   describe('serializeFilterGroupToKometa', () => {
     it('should flatten single filter to direct properties', () => {
       const group: FilterGroup = {
+        id: 'group-1',
         operator: 'AND',
         filters: [
           {
+            id: '10',
             field: 'genre',
             operator: 'equals',
-            value: 'Action',
+            value: ['Action'],
+            enabled: true,
             ruleOperator: 'include',
           },
         ],
@@ -170,24 +206,31 @@ describe('Filter Serialization', () => {
 
     it('should flatten multiple AND filters to direct properties', () => {
       const group: FilterGroup = {
+        id: 'group-2',
         operator: 'AND',
         filters: [
           {
+            id: '11',
             field: 'genre',
             operator: 'equals',
-            value: 'Action',
+            value: ['Action'],
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '12',
             field: 'year',
             operator: 'greater_than',
             value: 2000,
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '13',
             field: 'rating',
             operator: 'greater_than',
             value: 7.0,
+            enabled: true,
             ruleOperator: 'include',
           },
         ],
@@ -203,18 +246,23 @@ describe('Filter Serialization', () => {
 
     it('should use any structure for OR filters with multiple items', () => {
       const group: FilterGroup = {
+        id: 'group-3',
         operator: 'OR',
         filters: [
           {
+            id: '14',
             field: 'genre',
             operator: 'equals',
-            value: 'Action',
+            value: ['Action'],
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '15',
             field: 'genre',
             operator: 'equals',
-            value: 'Comedy',
+            value: ['Comedy'],
+            enabled: true,
             ruleOperator: 'include',
           },
         ],
@@ -228,12 +276,15 @@ describe('Filter Serialization', () => {
 
     it('should flatten single OR filter to direct properties', () => {
       const group: FilterGroup = {
+        id: 'group-4',
         operator: 'OR',
         filters: [
           {
+            id: '16',
             field: 'genre',
             operator: 'equals',
-            value: 'Action',
+            value: ['Action'],
+            enabled: true,
             ruleOperator: 'include',
           },
         ],
@@ -245,30 +296,38 @@ describe('Filter Serialization', () => {
 
     it('should handle nested filter groups', () => {
       const nestedGroup: FilterGroup = {
+        id: 'nested-group',
         operator: 'AND',
         filters: [
           {
+            id: '17',
             field: 'year',
             operator: 'greater_than',
             value: 2010,
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '18',
             field: 'rating',
             operator: 'greater_than',
             value: 8.0,
+            enabled: true,
             ruleOperator: 'include',
           },
         ],
       };
 
       const mainGroup: FilterGroup = {
+        id: 'main-group',
         operator: 'AND',
         filters: [
           {
+            id: '19',
             field: 'genre',
             operator: 'equals',
-            value: 'Drama',
+            value: ['Drama'],
+            enabled: true,
             ruleOperator: 'include',
           },
           nestedGroup,
@@ -285,6 +344,7 @@ describe('Filter Serialization', () => {
 
     it('should return empty object for empty filter group', () => {
       const group: FilterGroup = {
+        id: 'empty-group',
         operator: 'AND',
         filters: [],
       };
@@ -295,30 +355,39 @@ describe('Filter Serialization', () => {
 
     it('should handle complex filter combinations', () => {
       const group: FilterGroup = {
+        id: 'complex-group',
         operator: 'AND',
         filters: [
           {
+            id: '21',
             field: 'genre',
             operator: 'equals',
-            value: 'Sci-Fi',
+            value: ['Sci-Fi'],
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '22',
             field: 'year',
             operator: 'between',
             value: [2010, 2020],
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '23',
             field: 'rating',
             operator: 'greater_than',
             value: 7.5,
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '24',
             field: 'director',
             operator: 'equals',
-            value: 'Christopher Nolan',
+            value: ['Christopher Nolan'],
+            enabled: true,
             ruleOperator: 'exclude',
           },
         ],
@@ -338,24 +407,31 @@ describe('Filter Serialization', () => {
   describe('Kometa format validation', () => {
     it('should generate valid Kometa collection structure', () => {
       const filters: FilterGroup = {
+        id: 'validation-group',
         operator: 'AND',
         filters: [
           {
+            id: '25',
             field: 'genre',
             operator: 'equals',
-            value: 'Action',
+            value: ['Action'],
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '26',
             field: 'rating',
             operator: 'greater_than',
             value: 7.0,
+            enabled: true,
             ruleOperator: 'include',
           },
           {
+            id: '27',
             field: 'year',
             operator: 'greater_than',
             value: 2000,
+            enabled: true,
             ruleOperator: 'include',
           },
         ],

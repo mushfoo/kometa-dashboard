@@ -27,10 +27,13 @@ describe('Collections API - Filter Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFs.readFile.mockResolvedValue(yaml.dump(mockConfig));
-    mockFs.writeFile.mockResolvedValue();
-    mockFs.copyFile.mockResolvedValue();
-    mockFs.rename.mockResolvedValue();
-    mockFs.mkdir.mockResolvedValue();
+    mockFs.writeFile.mockResolvedValue(undefined);
+    mockFs.copyFile.mockResolvedValue(undefined);
+    mockFs.rename.mockResolvedValue(undefined);
+    mockFs.mkdir.mockResolvedValue(undefined);
+
+    // Mock console.log to avoid logging during tests
+    jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   const createRequest = (body: any) => {

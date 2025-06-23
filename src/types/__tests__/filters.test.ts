@@ -287,7 +287,7 @@ describe('Filter Serialization', () => {
     };
 
     expect(serializeFilterToKometa(filter)).toEqual({
-      genre: ['action', 'comedy'],
+      genre: 'action',
     });
   });
 
@@ -372,7 +372,7 @@ describe('Filter Serialization', () => {
     };
 
     expect(serializeFilterToKometa(filter)).toEqual({
-      streaming: ['netflix', 'hulu'],
+      streaming: 'netflix',
     });
   });
 

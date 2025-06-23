@@ -295,7 +295,11 @@ export const serializeFilterToKometa = (
 
   switch (filter.field) {
     case 'genre':
-      kometaFilter[isExclude ? 'genre.not' : 'genre'] = filter.value;
+      // Convert array to single value for Kometa (it expects a string, not array)
+      const genreValue = Array.isArray(filter.value)
+        ? filter.value[0]
+        : filter.value;
+      kometaFilter[isExclude ? 'genre.not' : 'genre'] = genreValue;
       break;
     case 'year':
       const yearField = isExclude ? 'year.not' : 'year';
@@ -324,7 +328,12 @@ export const serializeFilterToKometa = (
       }
       break;
     case 'availability':
-      kometaFilter[isExclude ? 'streaming.not' : 'streaming'] = filter.value;
+      // Convert array to single value for Kometa
+      const availabilityValue = Array.isArray(filter.value)
+        ? filter.value[0]
+        : filter.value;
+      kometaFilter[isExclude ? 'streaming.not' : 'streaming'] =
+        availabilityValue;
       break;
     case 'content_type':
       kometaFilter[isExclude ? 'type.not' : 'type'] = filter.value;
@@ -359,13 +368,25 @@ export const serializeFilterToKometa = (
       }
       break;
     case 'director':
-      kometaFilter[isExclude ? 'director.not' : 'director'] = filter.value;
+      // Convert array to single value for Kometa
+      const directorValue = Array.isArray(filter.value)
+        ? filter.value[0]
+        : filter.value;
+      kometaFilter[isExclude ? 'director.not' : 'director'] = directorValue;
       break;
     case 'actor':
-      kometaFilter[isExclude ? 'actor.not' : 'actor'] = filter.value;
+      // Convert array to single value for Kometa
+      const actorValue = Array.isArray(filter.value)
+        ? filter.value[0]
+        : filter.value;
+      kometaFilter[isExclude ? 'actor.not' : 'actor'] = actorValue;
       break;
     case 'studio':
-      kometaFilter[isExclude ? 'studio.not' : 'studio'] = filter.value;
+      // Convert array to single value for Kometa
+      const studioValue = Array.isArray(filter.value)
+        ? filter.value[0]
+        : filter.value;
+      kometaFilter[isExclude ? 'studio.not' : 'studio'] = studioValue;
       break;
   }
 
