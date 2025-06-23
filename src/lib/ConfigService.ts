@@ -9,14 +9,19 @@ const KometaConfigSchema = z.object({
   plex: z.object({
     url: z.string().url(),
     token: z.string().min(1),
-    timeout: z.number().optional(),
-    library_types: z.array(z.string()).optional(),
+    timeout: z.number().nullable().optional(),
+    library_types: z.array(z.string()).nullable().optional(),
+    db_cache: z.any().nullable().optional(),
+    clean_bundles: z.boolean().nullable().optional(),
+    empty_trash: z.boolean().nullable().optional(),
+    optimize: z.boolean().nullable().optional(),
+    verify_ssl: z.boolean().nullable().optional(),
   }),
   tmdb: z
     .object({
       apikey: z.string().min(1),
-      language: z.string().optional(),
-      region: z.string().optional(),
+      language: z.string().nullable().optional(),
+      region: z.string().nullable().optional(),
     })
     .optional(),
   trakt: z
@@ -26,12 +31,13 @@ const KometaConfigSchema = z.object({
       authorization: z
         .object({
           access_token: z.string().min(1),
-          token_type: z.string().optional(),
-          expires_in: z.number().optional(),
-          refresh_token: z.string().optional(),
-          scope: z.string().optional(),
+          token_type: z.string().nullable().optional(),
+          expires_in: z.number().nullable().optional(),
+          refresh_token: z.string().nullable().optional(),
+          scope: z.string().nullable().optional(),
         })
         .optional(),
+      pin: z.string().nullable().optional(),
     })
     .optional(),
   imdb: z
@@ -39,16 +45,22 @@ const KometaConfigSchema = z.object({
       apikey: z.string().min(1),
     })
     .optional(),
+  radarr: z.any().optional(),
+  sonarr: z.any().optional(),
   libraries: z.record(z.string(), z.any()).optional(),
   settings: z
     .object({
-      run_again_delay: z.number().optional(),
-      asset_directory: z.array(z.string()).optional(),
-      sync_mode: z.enum(['append', 'sync']).optional(),
-      delete_below_minimum: z.boolean().optional(),
-      create_asset_folders: z.boolean().optional(),
-      playlist_sync_to_user: z.boolean().optional(),
+      run_again_delay: z.number().nullable().optional(),
+      asset_directory: z
+        .union([z.string(), z.array(z.string())])
+        .nullable()
+        .optional(),
+      sync_mode: z.enum(['append', 'sync']).nullable().optional(),
+      delete_below_minimum: z.boolean().nullable().optional(),
+      create_asset_folders: z.boolean().nullable().optional(),
+      playlist_sync_to_user: z.boolean().nullable().optional(),
     })
+    .passthrough() // Allow additional properties that aren't defined
     .optional(),
   webhooks: z.record(z.string(), z.any()).optional(),
   playlist_files: z.array(z.any()).optional(),

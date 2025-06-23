@@ -3,18 +3,25 @@ import { useConfigStore } from '@/stores/configStore';
 import { useQuery } from '@tanstack/react-query';
 
 interface SystemStatus {
-  healthy: boolean;
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  uptime: number;
+  memory: NodeJS.MemoryUsage;
+  version: string;
+  storage: {
+    accessible: boolean;
+    directories: Record<string, boolean>;
+  };
   kometa: {
     available: boolean;
+    method?: 'docker' | 'path';
     version?: string;
+    error?: string;
   };
-  plex: {
-    connected: boolean;
-    serverName?: string;
-  };
-  storage: {
-    available: boolean;
-    freeSpace?: number;
+  plex?: {
+    configured: boolean;
+    reachable?: boolean;
+    error?: string;
   };
 }
 
@@ -72,6 +79,6 @@ export function useAppState() {
     // System Status
     systemStatus,
     isStatusLoading: statusLoading,
-    isHealthy: systemStatus?.healthy ?? false,
+    isHealthy: systemStatus?.status === 'healthy',
   };
 }

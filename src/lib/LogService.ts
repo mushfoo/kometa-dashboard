@@ -18,14 +18,14 @@ type LogEntry = z.infer<typeof LogEntry>;
 
 // Query parameters for filtering logs
 const LogQueryParams = z.object({
-  level: z.enum(['DEBUG', 'INFO', 'WARNING', 'ERROR']).optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  operationId: z.string().optional(),
-  source: z.string().optional(),
-  search: z.string().optional(), // Text search in messages
-  limit: z.coerce.number().min(1).max(1000).default(100),
-  offset: z.coerce.number().min(0).default(0),
+  level: z.enum(['DEBUG', 'INFO', 'WARNING', 'ERROR']).optional().nullable(),
+  startDate: z.string().datetime().optional().nullable(),
+  endDate: z.string().datetime().optional().nullable(),
+  operationId: z.string().optional().nullable(),
+  source: z.string().optional().nullable(),
+  search: z.string().optional().nullable(), // Text search in messages
+  limit: z.coerce.number().min(1).max(1000).optional().default(100),
+  offset: z.coerce.number().min(0).optional().default(0),
 });
 
 type LogQueryParams = z.infer<typeof LogQueryParams>;
@@ -81,33 +81,33 @@ class LogService {
     let filtered = logs;
 
     // Filter by log level
-    if (filters.level) {
+    if (filters.level && filters.level !== null) {
       filtered = filtered.filter((log) => log.level === filters.level);
     }
 
     // Filter by date range
-    if (filters.startDate) {
+    if (filters.startDate && filters.startDate !== null) {
       filtered = filtered.filter((log) => log.timestamp >= filters.startDate!);
     }
 
-    if (filters.endDate) {
+    if (filters.endDate && filters.endDate !== null) {
       filtered = filtered.filter((log) => log.timestamp <= filters.endDate!);
     }
 
     // Filter by operation ID
-    if (filters.operationId) {
+    if (filters.operationId && filters.operationId !== null) {
       filtered = filtered.filter(
         (log) => log.operationId === filters.operationId
       );
     }
 
     // Filter by source
-    if (filters.source) {
+    if (filters.source && filters.source !== null) {
       filtered = filtered.filter((log) => log.source === filters.source);
     }
 
     // Text search in messages
-    if (filters.search) {
+    if (filters.search && filters.search !== null) {
       const searchTerm = filters.search.toLowerCase();
       filtered = filtered.filter((log) =>
         log.message.toLowerCase().includes(searchTerm)

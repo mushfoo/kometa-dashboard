@@ -66,7 +66,7 @@ export class KometaService extends EventEmitter {
   private currentProcess: ChildProcess | null = null;
   private processInfo: ProcessInfo | null = null;
   private logBuffer: LogOutput[] = [];
-  private readonly maxLogBuffer = 1000;
+  private readonly maxLogBuffer = 2000;
 
   constructor() {
     super();
@@ -273,22 +273,63 @@ export class KometaService extends EventEmitter {
     configPath: string,
     operationId: string
   ): Promise<ChildProcess> {
-    const dockerArgs = [
+    // Fix the config path for Docker - it expects /config/config.yml inside the container
+    const configDir = path.dirname(configPath);
+    const configFileName = path.basename(configPath);
+
+    // Update args to use the container path
+    const dockerArgs = args.map((arg) => {
+      if (arg === configPath) {
+        return `/config/${configFileName}`;
+      }
+      return arg;
+    });
+
+    const fullDockerArgs = [
       'run',
       '--rm',
+      '-i',
       '-v',
-      `${path.dirname(configPath)}:/config`,
+      `${configDir}:/config:rw`,
+      '--network',
+      'host', // Allow access to host network for Plex
       'kometateam/kometa',
-      ...args,
+      ...dockerArgs,
     ];
 
-    return spawn('docker', dockerArgs, {
-      stdio: ['ignore', 'pipe', 'pipe'],
+    const childProcess = spawn('docker', fullDockerArgs, {
+      stdio: ['pipe', 'pipe', 'pipe'],
       env: {
         ...process.env,
         KOMETA_OPERATION_ID: operationId,
       },
+      detached: false,
     });
+
+    // Add immediate error handler to catch spawn errors
+    childProcess.on('error', (error) => {
+      console.error('Docker spawn error:', error);
+    });
+
+    // Output raw Docker logs to console
+    childProcess.stdout?.on('data', (data) => {
+      process.stdout.write(data);
+    });
+
+    childProcess.stderr?.on('data', (data) => {
+      process.stderr.write(data);
+    });
+
+    // Also add timeout to detect hanging processes
+    const processTimeout = setTimeout(() => {
+      childProcess.kill('SIGTERM');
+    }, 30000);
+
+    childProcess.on('exit', (code, signal) => {
+      clearTimeout(processTimeout);
+    });
+
+    return childProcess;
   }
 
   /**
@@ -312,7 +353,10 @@ export class KometaService extends EventEmitter {
    * Build command line arguments for Kometa
    */
   private buildKometaArgs(config: KometaConfig): string[] {
-    const args = ['--config', config.configPath];
+    const args = ['--run']; // Start with --run as per documentation
+
+    // Add config path (will be converted to container path)
+    args.push('--config', config.configPath);
 
     // Add verbosity flag
     switch (config.verbosity) {
@@ -404,6 +448,19 @@ export class KometaService extends EventEmitter {
     process.on('exit', (code, signal) => {
       if (!this.processInfo) return;
 
+      // Process any remaining buffered output
+      if (stdoutBuffer.trim()) {
+        const logEntry = this.parseLogLine(stdoutBuffer, 'stdout', operationId);
+        this.addToLogBuffer(logEntry);
+        this.emit('logOutput', logEntry);
+      }
+
+      if (stderrBuffer.trim()) {
+        const logEntry = this.parseLogLine(stderrBuffer, 'stderr', operationId);
+        this.addToLogBuffer(logEntry);
+        this.emit('logOutput', logEntry);
+      }
+
       this.processInfo.endTime = new Date();
       this.processInfo.exitCode = code ?? undefined;
       this.processInfo.signal = signal ?? undefined;
@@ -423,8 +480,10 @@ export class KometaService extends EventEmitter {
         status: this.processInfo.status,
       });
 
-      // Clean up
-      this.currentProcess = null;
+      // Delay cleanup to allow UI to collect logs
+      setTimeout(() => {
+        this.currentProcess = null;
+      }, 5000); // Keep logs available for 5 seconds after process ends
     });
 
     // Handle process errors

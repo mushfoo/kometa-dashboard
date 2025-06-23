@@ -20,7 +20,6 @@ import {
   Server,
   Settings,
   Clock,
-  MemoryStick,
 } from 'lucide-react';
 
 interface SystemStatus {
@@ -73,10 +72,6 @@ export default function SystemStatusPage() {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours}h ${minutes}m`;
-  };
-
-  const formatMemory = (bytes: number) => {
-    return `${Math.round(bytes / 1024 / 1024)} MB`;
   };
 
   const getStatusIcon = (isHealthy: boolean) => {
@@ -185,7 +180,7 @@ export default function SystemStatusPage() {
       </Card>
 
       {/* System Information */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -201,29 +196,6 @@ export default function SystemStatusPage() {
             <div className="flex justify-between">
               <span>Uptime:</span>
               <span>{formatUptime(status.uptime)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MemoryStick className="h-5 w-5" />
-              Memory Usage
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span>RSS:</span>
-              <span>{formatMemory(status.memory.rss)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Heap Used:</span>
-              <span>{formatMemory(status.memory.heapUsed)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Heap Total:</span>
-              <span>{formatMemory(status.memory.heapTotal)}</span>
             </div>
           </CardContent>
         </Card>

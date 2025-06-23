@@ -85,7 +85,12 @@ class SSEConnectionManager {
           continue;
         }
 
-        connection.controller.enqueue(`data: ${JSON.stringify(data)}\n\n`);
+        // Send the payload directly for data matching the connection type
+        const messageData =
+          data.type === connection.filters.type ? data.payload : data;
+        connection.controller.enqueue(
+          `data: ${JSON.stringify(messageData)}\n\n`
+        );
         connection.lastActivity = new Date();
       } catch (error) {
         console.warn(`Failed to send to connection ${connectionId}:`, error);
@@ -185,6 +190,9 @@ class SSEConnectionManager {
 
 // Global connection manager instance
 const connectionManager = new SSEConnectionManager();
+
+// Export for use by other services
+export { connectionManager };
 
 // Rate limiting for SSE connections
 const connectionRateLimit = new Map<
@@ -407,30 +415,31 @@ async function sendBufferedData(
         // Get recent log entries from KometaService
         const recentLogs = sseBroadcastService.getRecentLogs(filters.buffer);
 
-        // Send each log entry as a separate message
-        for (const logEntry of recentLogs) {
-          // Apply filters
+        // Filter logs
+        const filteredLogs = recentLogs.filter((logEntry) => {
           if (filters.level && logEntry.level !== filters.level) {
-            continue;
+            return false;
           }
           if (
             filters.operationId &&
             logEntry.operationId !== filters.operationId
           ) {
-            continue;
+            return false;
           }
+          return true;
+        });
 
+        // Send all logs as a single batch
+        if (filteredLogs.length > 0) {
           controller.enqueue(
             `data: ${JSON.stringify({
-              type: 'logs',
-              payload: {
+              logs: filteredLogs.map((logEntry) => ({
                 timestamp: logEntry.timestamp.toISOString(),
                 level: logEntry.level,
                 message: logEntry.message,
                 source: logEntry.source,
-              },
-              operationId: logEntry.operationId,
-              level: logEntry.level,
+                operationId: logEntry.operationId,
+              })),
             })}\n\n`
           );
         }

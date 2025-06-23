@@ -30,6 +30,7 @@ const collectionSchema = z.object({
   description: z.string().optional(),
   poster: z.string().url().optional().or(z.literal('')),
   type: z.enum(['smart', 'manual']),
+  library: z.string().min(1, 'Library is required'),
   sort_order: z
     .enum([
       'alpha',
@@ -51,17 +52,20 @@ type CollectionFormData = z.infer<typeof collectionSchema>;
 interface CollectionBuilderProps {
   onSave?: (collection: CollectionFormData) => void;
   initialData?: Partial<CollectionFormData>;
+  isSaving?: boolean;
 }
 
 export function CollectionBuilder({
   onSave,
   initialData,
+  isSaving = false,
 }: CollectionBuilderProps) {
   const [previewResult, setPreviewResult] = useState<PreviewResult | null>(
     null
   );
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [libraries, setLibraries] = useState<string[]>([]);
   const { activeFilters, setActiveFilters, presets, savePreset, loadPreset } =
     useFilterStore();
 
@@ -72,6 +76,7 @@ export function CollectionBuilder({
       description: '',
       poster: '',
       type: 'smart',
+      library: '',
       sort_order: 'alpha',
       visible_library: true,
       visible_home: false,
@@ -80,6 +85,32 @@ export function CollectionBuilder({
       ...initialData,
     },
   });
+
+  // Load available libraries on component mount
+  useEffect(() => {
+    const loadLibraries = async () => {
+      try {
+        const response = await fetch('/api/config/libraries');
+        if (response.ok) {
+          const data = await response.json();
+          // The API returns an array of library objects with library_name property
+          const libraryNames = Array.isArray(data)
+            ? data.map((lib: any) => lib.library_name)
+            : [];
+          setLibraries(libraryNames);
+
+          // Set default library if none selected and libraries available
+          if (!form.watch('library') && libraryNames.length > 0) {
+            form.setValue('library', libraryNames[0] || '');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load libraries:', error);
+      }
+    };
+
+    loadLibraries();
+  }, [form]);
 
   const watchType = form.watch('type');
 
@@ -162,6 +193,17 @@ export function CollectionBuilder({
                   label="Collection Name"
                   placeholder="My Awesome Collection"
                   required
+                />
+
+                <FormSelect
+                  form={form}
+                  name="library"
+                  label="Library"
+                  required
+                  options={libraries.map((lib) => ({
+                    value: lib,
+                    label: lib,
+                  }))}
                 />
 
                 <FormTextarea
@@ -298,11 +340,21 @@ export function CollectionBuilder({
               </div>
 
               <div className="flex gap-3">
-                <Button type="submit">Create Collection</Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Creating Collection...
+                    </>
+                  ) : (
+                    'Create Collection'
+                  )}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => form.reset()}
+                  disabled={isSaving}
                 >
                   Reset
                 </Button>
@@ -435,6 +487,15 @@ export function CollectionBuilder({
                         </div>
                       </div>
                     </div>
+
+                    {previewResult.external_matches === 0 &&
+                      previewResult.library_matches > 0 && (
+                        <div className="text-center text-xs text-gray-500 mt-2">
+                          <Info className="w-3 h-3 inline mr-1" />
+                          External APIs not configured - showing library matches
+                          only
+                        </div>
+                      )}
 
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1">

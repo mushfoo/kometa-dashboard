@@ -273,6 +273,13 @@ export class CollectionPreviewService {
     if (!options.include_external) return [];
 
     try {
+      // Check if TMDb is available before making API calls
+      const isApiAvailable = await this.checkTMDbAvailability();
+      if (!isApiAvailable) {
+        console.log('TMDb API not configured - using library-only preview');
+        return [];
+      }
+
       const kometaFilters = serializeFilterGroupToKometa(filters);
       const externalItems: PreviewItem[] = [];
 
@@ -322,6 +329,17 @@ export class CollectionPreviewService {
     } catch (error) {
       console.error('Error getting external matches:', error);
       return [];
+    }
+  }
+
+  /**
+   * Check if TMDb API is available and configured
+   */
+  private async checkTMDbAvailability(): Promise<boolean> {
+    try {
+      return await tmdbService.validateApiKey();
+    } catch (error) {
+      return false;
     }
   }
 

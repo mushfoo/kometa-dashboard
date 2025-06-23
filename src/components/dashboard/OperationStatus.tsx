@@ -90,8 +90,11 @@ export function OperationStatus({ className }: OperationStatusProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          configPath: 'storage/config.yml',
-          operationType: 'full_run',
+          type: 'full_run',
+          parameters: {
+            verbosity: 'info',
+            dryRun: false,
+          },
         }),
       });
 
