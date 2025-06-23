@@ -3,11 +3,24 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CollectionBuilder } from '../CollectionBuilder';
 
+// Mock fetch globally
+global.fetch = jest.fn();
+
 describe('CollectionBuilder', () => {
   const mockOnSave = jest.fn();
+  const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Default mock for libraries API
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => [
+        { library_name: 'Movies' },
+        { library_name: 'TV Shows' },
+      ],
+    } as Response);
   });
 
   it('renders all form fields', () => {
@@ -55,6 +68,11 @@ describe('CollectionBuilder', () => {
     const user = userEvent.setup();
     render(<CollectionBuilder onSave={mockOnSave} />);
 
+    // Wait for libraries to load
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Movies')).toBeInTheDocument();
+    });
+
     // Fill in form
     await user.type(
       screen.getByLabelText(/collection name/i),
@@ -84,6 +102,7 @@ describe('CollectionBuilder', () => {
         description: 'A test collection description',
         poster: 'https://example.com/poster.jpg',
         type: 'smart',
+        library: 'Movies',
         sort_order: 'release',
         visible_library: true,
         visible_home: false,

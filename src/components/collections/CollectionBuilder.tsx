@@ -91,7 +91,7 @@ export function CollectionBuilder({
     const loadLibraries = async () => {
       try {
         const response = await fetch('/api/config/libraries');
-        if (response.ok) {
+        if (response && response.ok) {
           const data = await response.json();
           // The API returns an array of library objects with library_name property
           const libraryNames = Array.isArray(data)
